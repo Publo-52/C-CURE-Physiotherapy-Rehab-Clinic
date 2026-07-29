@@ -1,5 +1,5 @@
 const { PrismaClient } = require('@prisma/client')
-const argon2 = require('argon2')
+const bcrypt = require('bcryptjs')
 
 const prisma = new PrismaClient()
 
@@ -10,7 +10,7 @@ async function main() {
     return
   }
 
-  const hashedPassword = await argon2.hash('admin123') // Default password
+  const hashedPassword = bcrypt.hashSync('admin123', 10) // Default password
 
   await prisma.admin.create({
     data: {
@@ -31,3 +31,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
+

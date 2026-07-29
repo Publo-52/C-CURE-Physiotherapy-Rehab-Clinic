@@ -3,7 +3,7 @@
 import prisma from '@/lib/prisma'
 import { createSession, deleteSession } from '@/lib/session'
 import { redirect } from 'next/navigation'
-import argon2 from 'argon2'
+import bcrypt from 'bcryptjs'
 
 export async function login(formData: FormData) {
   const email = formData.get('email') as string
@@ -21,7 +21,7 @@ export async function login(formData: FormData) {
     return { error: 'Invalid credentials' }
   }
 
-  const isValidPassword = await argon2.verify(admin.password, password)
+  const isValidPassword = await bcrypt.compare(password, admin.password)
 
   if (!isValidPassword) {
     return { error: 'Invalid credentials' }
@@ -41,3 +41,4 @@ export async function logout() {
   await deleteSession()
   redirect('/login')
 }
+
