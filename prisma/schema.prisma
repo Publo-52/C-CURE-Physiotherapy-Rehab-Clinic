@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Patient {
+  id               String          @id @default(uuid())
+  patientId        String          @unique
+  registrationDate DateTime        @default(now())
+  name             String
+  photoUrl         String?
+  age              Int?
+  gender           String?
+  dob              DateTime?
+  occupation       String?
+  bloodGroup       String?
+  phone            String
+  alternatePhone   String?
+  whatsapp         String?
+  email            String?
+  aadhaar          String?
+  address          String?
+  area             String?
+  landmark         String?
+  city             String?
+  state            String?
+  pinCode          String?
+  googleMapsLink   String?
+  
+  emerContactName  String?
+  emerContactPhone String?
+  emerRelation     String?
+
+  disease          String?
+  diagnosis        String?
+  chiefComplaint   String?
+  symptoms         String?
+  painScale        Int?
+  bloodPressure    String?
+  height           Float?
+  weight           Float?
+  bmi              Float?
+  allergies        String?
+  previousSurgery  String?
+  medicalHistory   String?
+  currentMedication String?
+  previousPhysio   String?
+
+  status           String          @default("Active")
+
+  visits           Visit[]
+  payments         Payment[]
+  treatmentPlans   TreatmentPlan[]
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model TreatmentPlan {
+  id                   String   @id @default(uuid())
+  patientId            String
+  patient              Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  goals                String?
+  diagnosisNotes       String?
+  protocol             String?
+  manualTherapy        String?
+  electrotherapy       String?
+  exerciseTherapy      String?
+  stretching           String?
+  strengthening        String?
+  homeExercisePlan     String?
+  frequency            String?
+  expectedRecoveryTime String?
+  precautions          String?
+  therapistNotes       String?
+  currentSessionNumber Int      @default(0)
+  plannedTotalSessions Int?
+  recoveryPercentage   Int      @default(0)
+  
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Visit {
+  id                  String   @id @default(uuid())
+  visitNumber         Int
+  date                DateTime
+  type                String
+  gpsLocation         String?
+  duration            Int?
+  painBefore          Int?
+  painAfter           Int?
+  treatmentGiven      String?
+  exerciseGiven       String?
+  equipmentUsed       String?
+  improvementPercent  Int?
+  notes               String?
+  photos              String?
+  prescriptionUrl     String?
+  voiceRecordingUrl   String?
+  attachments         String?
+  
+  nextVisitDate       DateTime?
+  reminderDate        DateTime?
+  status              String   @default("Completed")
+
+  patientId           String
+  patient             Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  payment             Payment?
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Payment {
+  id                  String   @id @default(uuid())
+  invoiceNumber       String   @unique
+  patientId           String
+  patient             Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  visitId             String?  @unique
+  visit               Visit?   @relation(fields: [visitId], references: [id], onDelete: SetNull)
+  
+  consultationFee     Float    @default(0)
+  visitFee            Float    @default(0)
+  extraCharges        Float    @default(0)
+  medicineCharges     Float    @default(0)
+  equipmentCharges    Float    @default(0)
+  discount            Float    @default(0)
+  tax                 Float    @default(0)
+  
+  totalBill           Float    @default(0)
+  advanceReceived     Float    @default(0)
+  amountPaidToday     Float    @default(0)
+  remainingDue        Float    @default(0)
+  previousDue         Float    @default(0)
+  totalDue            Float    @default(0)
+  refund              Float    @default(0)
+  
+  paymentDate         DateTime @default(now())
+  expectedNextPayment DateTime?
+  dueCollectionDate   DateTime?
+  
+  paymentMode         String
+  transactionId       String?
+  upiRefNumber        String?
+  bankRefNumber       String?
+  receiptNumber       String?
+  paymentNotes        String?
+  
+  status              String
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  date        DateTime @default(now())
+  category    String
+  amount      Float
+  description String?
+  receiptUrl  String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
