@@ -29,18 +29,33 @@ export default async function DashboardPage() {
     }
   })
 
+  // Get recent 5 patients for the list
+  const recentPatients = await prisma.patient.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 5,
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      status: true
+    }
+  })
+
   // Calculate outstanding dues (sum of remainingDue from the LATEST payment of each patient)
-  // Since SQLite doesn't support complex distinct on sums easily, we'll fetch latest payments
-  const patientsWithPayments = await prisma.patient.findMany({
-    include: {
+  // Fetching only required fields to avoid memory overload and slow queries
+  const patientsForDues = await prisma.patient.findMany({
+    select: {
       payments: {
         orderBy: { createdAt: 'desc' },
-        take: 1
+        take: 1,
+        select: {
+          remainingDue: true
+        }
       }
     }
   })
   
-  const totalOutstandingDues = patientsWithPayments.reduce((acc, patient) => {
+  const totalOutstandingDues = patientsForDues.reduce((acc, patient) => {
     if (patient.payments.length > 0) {
       const latestPayment = patient.payments[0]
       if (latestPayment.remainingDue > 0) {
@@ -117,7 +132,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-8">
-              {patientsWithPayments.slice(0, 5).map(patient => (
+              {recentPatients.map(patient => (
                 <div key={patient.id} className="flex items-center">
                   <div className="ml-4 space-y-1">
                     <p className="text-sm font-medium leading-none">{patient.name}</p>
