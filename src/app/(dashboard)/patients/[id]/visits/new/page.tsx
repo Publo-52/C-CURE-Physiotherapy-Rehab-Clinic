@@ -16,11 +16,14 @@ export default function NewVisitPage() {
   const params = useParams()
   const patientId = params.id as string
   const [loading, setLoading] = useState(false)
+  const [visitType, setVisitType] = useState('Clinic Visit')
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
     const formData = new FormData(e.currentTarget)
+    // Manually add Select value since base-ui portals it outside the form
+    formData.set('type', visitType)
     
     const result = await createVisit(patientId, formData)
     
@@ -54,8 +57,8 @@ export default function NewVisitPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="type">Visit Type *</Label>
-                <Select name="type" defaultValue="Clinic Visit">
+                <Label>Visit Type *</Label>
+                <Select value={visitType} onValueChange={(v) => v && setVisitType(v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>

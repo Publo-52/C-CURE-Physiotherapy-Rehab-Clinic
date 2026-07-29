@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createPayment } from '@/app/actions/payments'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,7 @@ export default function NewPaymentPage() {
   const params = useParams()
   const patientId = params.id as string
   const [loading, setLoading] = useState(false)
+  const [paymentMode, setPaymentMode] = useState('Cash')
   
   // Real-time calculation state
   const [consultationFee, setConsultationFee] = useState(0)
@@ -23,7 +24,7 @@ export default function NewPaymentPage() {
   const [extraCharges, setExtraCharges] = useState(0)
   const [discount, setDiscount] = useState(0)
   const [amountPaidToday, setAmountPaidToday] = useState(0)
-  const [previousDue, setPreviousDue] = useState(0) // Usually fetched from server, but editable for now
+  const [previousDue, setPreviousDue] = useState(0)
 
   const totalBill = consultationFee + visitFee + extraCharges - discount
   const totalDue = previousDue + totalBill
@@ -33,6 +34,8 @@ export default function NewPaymentPage() {
     e.preventDefault()
     setLoading(true)
     const formData = new FormData(e.currentTarget)
+    // Manually add Select value since base-ui portals it outside the form
+    formData.set('paymentMode', paymentMode)
     
     const result = await createPayment(patientId, formData)
     
@@ -67,8 +70,8 @@ export default function NewPaymentPage() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="paymentMode">Payment Mode *</Label>
-                  <Select name="paymentMode" defaultValue="Cash">
+                  <Label>Payment Mode *</Label>
+                  <Select value={paymentMode} onValueChange={(v) => v && setPaymentMode(v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select mode" />
                     </SelectTrigger>
@@ -104,7 +107,7 @@ export default function NewPaymentPage() {
                 <div className="space-y-2">
                   <Label htmlFor="previousDue">Previous Outstanding Due (₹)</Label>
                   <Input id="previousDue" name="previousDue" type="number" value={previousDue} onChange={(e) => setPreviousDue(Number(e.target.value))} />
-                  <p className="text-xs text-muted-foreground">Automatically pulled from ledger (Editable for adjustments)</p>
+                  <p className="text-xs text-muted-foreground">Editable for manual adjustments</p>
                 </div>
 
                 <div className="space-y-2">
@@ -179,6 +182,10 @@ export default function NewPaymentPage() {
             <div className={`border-t pt-4 mt-4 flex justify-between font-bold text-xl ${remainingDue > 0 ? 'text-destructive' : remainingDue < 0 ? 'text-green-600' : ''}`}>
               <span>{remainingDue < 0 ? 'Advance' : 'Remaining Due'}</span>
               <span>₹{Math.abs(remainingDue)}</span>
+            </div>
+
+            <div className="text-xs text-center text-muted-foreground mt-2 p-2 rounded bg-muted">
+              Mode: <span className="font-medium text-foreground">{paymentMode}</span>
             </div>
 
             <Button type="submit" form="payment-form" className="w-full mt-6" disabled={loading}>

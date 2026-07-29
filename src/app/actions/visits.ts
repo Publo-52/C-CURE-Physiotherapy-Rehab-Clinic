@@ -3,15 +3,23 @@
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
+function safeInt(val: any, fallback: number | null = null): number | null {
+  if (val === null || val === undefined || val === '') return fallback
+  const parsed = parseInt(String(val), 10)
+  return isNaN(parsed) ? fallback : parsed
+}
+
 export async function createVisit(patientId: string, formData: FormData) {
-  const type = formData.get('type') as string
-  const date = new Date(formData.get('date') as string)
-  const duration = parseInt(formData.get('duration') as string) || 30
-  const painBefore = parseInt(formData.get('painBefore') as string) || 0
-  const painAfter = parseInt(formData.get('painAfter') as string) || 0
-  const treatmentGiven = formData.get('treatmentGiven') as string
-  const exerciseGiven = formData.get('exerciseGiven') as string
-  const notes = formData.get('notes') as string
+  const type = (formData.get('type') as string) || 'Clinic Visit'
+  const dateStr = formData.get('date') as string
+  const date = dateStr && !isNaN(Date.parse(dateStr)) ? new Date(dateStr) : new Date()
+  
+  const duration = safeInt(formData.get('duration'), 30)
+  const painBefore = safeInt(formData.get('painBefore'), 0)
+  const painAfter = safeInt(formData.get('painAfter'), 0)
+  const treatmentGiven = (formData.get('treatmentGiven') as string)?.trim() || null
+  const exerciseGiven = (formData.get('exerciseGiven') as string)?.trim() || null
+  const notes = (formData.get('notes') as string)?.trim() || null
 
   try {
     const lastVisit = await prisma.visit.findFirst({
@@ -37,9 +45,12 @@ export async function createVisit(patientId: string, formData: FormData) {
     })
 
     revalidatePath(`/patients/${patientId}`)
+    revalidatePath(`/calendar`)
+    revalidatePath(`/`)
     return { success: true, visitId: visit.id }
-  } catch (error) {
-    console.error(error)
-    return { error: 'Failed to record visit.' }
+  } catch (error: any) {
+    console.error('Error creating visit:', error?.message || error)
+    return { error: `Failed to record visit: ${error?.message || 'Database error'}` }
   }
 }
+

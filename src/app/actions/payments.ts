@@ -3,16 +3,28 @@
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
+function safeFloat(val: any, fallback = 0): number {
+  if (val === null || val === undefined || val === '') return fallback
+  const parsed = parseFloat(String(val))
+  return isNaN(parsed) ? fallback : parsed
+}
+
+function safeDate(val: any, fallback = new Date()): Date {
+  if (!val || val === '') return fallback
+  const d = new Date(val)
+  return isNaN(d.getTime()) ? fallback : d
+}
+
 export async function createPayment(patientId: string, formData: FormData) {
-  const consultationFee = parseFloat(formData.get('consultationFee') as string) || 0
-  const visitFee = parseFloat(formData.get('visitFee') as string) || 0
-  const extraCharges = parseFloat(formData.get('extraCharges') as string) || 0
-  const discount = parseFloat(formData.get('discount') as string) || 0
+  const consultationFee = safeFloat(formData.get('consultationFee'))
+  const visitFee = safeFloat(formData.get('visitFee'))
+  const extraCharges = safeFloat(formData.get('extraCharges'))
+  const discount = safeFloat(formData.get('discount'))
   
   const totalBill = consultationFee + visitFee + extraCharges - discount
   
-  const amountPaidToday = parseFloat(formData.get('amountPaidToday') as string) || 0
-  const previousDue = parseFloat(formData.get('previousDue') as string) || 0
+  const amountPaidToday = safeFloat(formData.get('amountPaidToday'))
+  const previousDue = safeFloat(formData.get('previousDue'))
   
   const totalDue = previousDue + totalBill
   const remainingDue = totalDue - amountPaidToday
@@ -22,11 +34,16 @@ export async function createPayment(patientId: string, formData: FormData) {
   else if (remainingDue > 0 && amountPaidToday === 0) status = 'Due'
   else if (remainingDue < 0) status = 'Advance Paid'
 
-  const paymentMode = formData.get('paymentMode') as string
-  const paymentDate = new Date(formData.get('paymentDate') as string)
+  const paymentMode = (formData.get('paymentMode') as string) || 'Cash'
+  const paymentDate = safeDate(formData.get('paymentDate'))
   
   const expectedNextPaymentStr = formData.get('expectedNextPayment') as string
-  const expectedNextPayment = expectedNextPaymentStr ? new Date(expectedNextPaymentStr) : null
+  const expectedNextPayment = expectedNextPaymentStr
+    ? safeDate(expectedNextPaymentStr, undefined as any)
+    : null
+
+  const paymentNotes = (formData.get('paymentNotes') as string)?.trim() || null
+  const transactionId = (formData.get('transactionId') as string)?.trim() || null
 
   // Auto-generate Invoice ID
   const lastPayment = await prisma.payment.findFirst({
@@ -60,8 +77,8 @@ export async function createPayment(patientId: string, formData: FormData) {
         paymentMode,
         paymentDate,
         expectedNextPayment,
-        paymentNotes: formData.get('paymentNotes') as string,
-        transactionId: formData.get('transactionId') as string,
+        paymentNotes,
+        transactionId,
       }
     })
 
@@ -70,8 +87,8 @@ export async function createPayment(patientId: string, formData: FormData) {
     revalidatePath(`/`)
     
     return { success: true, paymentId: payment.id }
-  } catch (error) {
-    console.error(error)
-    return { error: 'Failed to record payment.' }
+  } catch (error: any) {
+    console.error('Error creating payment:', error?.message || error)
+    return { error: `Failed to record payment: ${error?.message || 'Database error'}` }
   }
 }

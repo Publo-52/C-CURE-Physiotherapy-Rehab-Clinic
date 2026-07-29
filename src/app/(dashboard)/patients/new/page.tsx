@@ -14,11 +14,16 @@ import { Textarea } from '@/components/ui/textarea'
 export default function NewPatientPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [gender, setGender] = useState('Male')
+  const [status, setStatus] = useState('Active')
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
     const formData = new FormData(e.currentTarget)
+    // Manually add Select values since base-ui portals them outside the form
+    formData.set('gender', gender)
+    formData.set('status', status)
     
     const result = await createPatient(formData)
     
@@ -70,8 +75,8 @@ export default function NewPatientPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
-                <Select name="gender" defaultValue="Male">
+                <Label>Gender</Label>
+                <Select value={gender} onValueChange={(v) => v && setGender(v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
@@ -84,8 +89,8 @@ export default function NewPatientPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select name="status" defaultValue="Active">
+                <Label>Status</Label>
+                <Select value={status} onValueChange={(v) => v && setStatus(v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
@@ -117,7 +122,7 @@ export default function NewPatientPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="disease">Primary Condition / Disease *</Label>
+                <Label htmlFor="disease">Primary Condition / Disease</Label>
                 <Input id="disease" name="disease" placeholder="e.g., Frozen Shoulder, Lumbar Spondylosis" />
               </div>
 
@@ -172,4 +177,3 @@ export default function NewPatientPage() {
     </div>
   )
 }
-
