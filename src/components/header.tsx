@@ -1,9 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { useTheme } from "next-themes"
 import { Moon, Sun, Menu, Activity } from "lucide-react"
 import { Button } from "./ui/button"
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "./ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from "./ui/sheet"
 import { navItems } from "./sidebar"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -12,11 +13,12 @@ import { cn } from "@/lib/utils"
 export function Header() {
   const { theme, setTheme } = useTheme()
   const pathname = usePathname()
+  const [open, setOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background px-6 shadow-sm">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 shadow-sm">
       <div className="flex items-center md:hidden">
-        <Sheet>
+        <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger render={<Button variant="ghost" size="icon" className="mr-2" />}>
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle menu</span>
@@ -35,6 +37,7 @@ export function Header() {
                     <Link
                       key={item.name}
                       href={item.href}
+                      onClick={() => setOpen(false)}
                       className={cn(
                         "flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
                         isActive
@@ -58,7 +61,7 @@ export function Header() {
           </SheetContent>
         </Sheet>
       </div>
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-4 ml-auto">
         <Button
           variant="ghost"
           size="icon"
@@ -73,3 +76,4 @@ export function Header() {
     </header>
   )
 }
+

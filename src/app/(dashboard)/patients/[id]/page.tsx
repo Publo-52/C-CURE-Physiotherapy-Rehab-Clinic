@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Edit, User, Phone, Activity, MapPin, CalendarDays, IndianRupee } from "lucide-react"
+import { Edit, User, Phone, Activity, MapPin, CalendarDays, IndianRupee, Mail, AlertCircle } from "lucide-react"
+import { DeletePatientButton } from "./delete-button"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -21,11 +22,9 @@ export default async function PatientProfilePage({ params }: Props) {
     include: {
       visits: {
         orderBy: { date: 'desc' },
-        take: 5
       },
       payments: {
         orderBy: { paymentDate: 'desc' },
-        take: 5
       },
       treatmentPlans: true
     }
@@ -33,106 +32,123 @@ export default async function PatientProfilePage({ params }: Props) {
 
   if (!patient) return notFound()
 
+  const recentVisits = patient.visits.slice(0, 5)
+  const recentPayments = patient.payments.slice(0, 5)
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <User className="h-8 w-8 text-primary" />
+      {/* Header - Mobile friendly wrap */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card p-4 sm:p-6 rounded-xl border shadow-sm">
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="flex h-14 w-14 sm:h-16 sm:w-16 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
+            <User className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
           </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{patient.name}</h1>
-            <div className="flex items-center gap-2 text-muted-foreground mt-1">
-              <span className="font-mono text-sm bg-muted px-2 py-0.5 rounded">{patient.patientId}</span>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">{patient.name}</h1>
+            <div className="flex flex-wrap items-center gap-2 text-muted-foreground mt-1 text-xs sm:text-sm">
+              <span className="font-mono bg-muted px-2 py-0.5 rounded">{patient.patientId}</span>
               <span>•</span>
-              <Badge variant={patient.status === 'Active' ? 'default' : 'secondary'}>
+              <Badge variant={patient.status === 'Active' ? 'default' : patient.status === 'Completed' ? 'outline' : 'secondary'}>
                 {patient.status}
               </Badge>
+              {patient.age && <span>• {patient.age} Yrs ({patient.gender || 'N/A'})</span>}
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Link href={`/patients/${patient.id}/visits/new`}>
-            <Button variant="outline">
-              <CalendarDays className="h-4 w-4 mr-2" /> Record Visit
+
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
+          <Link href={`/patients/${patient.id}/visits/new`} className="flex-1 sm:flex-initial">
+            <Button variant="outline" size="sm" className="w-full">
+              <CalendarDays className="h-4 w-4 mr-1.5" /> Record Visit
             </Button>
           </Link>
-          <Link href={`/patients/${patient.id}/payments/new`}>
-            <Button variant="default">
-              <IndianRupee className="h-4 w-4 mr-2" /> Record Payment
+          <Link href={`/patients/${patient.id}/payments/new`} className="flex-1 sm:flex-initial">
+            <Button variant="default" size="sm" className="w-full">
+              <IndianRupee className="h-4 w-4 mr-1.5" /> Record Payment
             </Button>
           </Link>
-          <Button variant="ghost" size="icon">
-            <Edit className="h-4 w-4" />
-          </Button>
+          <Link href={`/patients/${patient.id}/edit`}>
+            <Button variant="outline" size="sm">
+              <Edit className="h-4 w-4 mr-1.5" /> Edit
+            </Button>
+          </Link>
+          <DeletePatientButton patientId={patient.id} patientName={patient.name} />
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs - Mobile friendly horizontal scroll navigation */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 max-w-3xl">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="medical">Medical History</TabsTrigger>
-          <TabsTrigger value="treatment">Treatment Plan</TabsTrigger>
-          <TabsTrigger value="visits">Visits</TabsTrigger>
-          <TabsTrigger value="payments">Financials</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-1 scrollbar-none">
+          <TabsList className="flex w-max min-w-full sm:grid sm:grid-cols-5 sm:max-w-3xl">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="medical">Medical History</TabsTrigger>
+            <TabsTrigger value="treatment">Treatment Plan</TabsTrigger>
+            <TabsTrigger value="visits">Visits ({patient.visits.length})</TabsTrigger>
+            <TabsTrigger value="payments">Financials ({patient.payments.length})</TabsTrigger>
+          </TabsList>
+        </div>
 
         <div className="mt-6">
           <TabsContent value="overview" className="space-y-6 m-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Phone className="h-4 w-4" /> Contact
+                    <Phone className="h-4 w-4" /> Contact Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-1 text-sm">
                   <p className="font-medium">{patient.phone}</p>
+                  {patient.email && <p className="text-muted-foreground text-xs flex items-center gap-1"><Mail className="h-3 w-3" /> {patient.email}</p>}
+                  {patient.alternatePhone && <p className="text-muted-foreground text-xs">Alt: {patient.alternatePhone}</p>}
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Activity className="h-4 w-4" /> Condition
+                    <Activity className="h-4 w-4" /> Primary Condition
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="font-medium">{patient.disease || "Not specified"}</p>
+                  {patient.aadhaar && <p className="text-xs text-muted-foreground mt-1">Aadhaar: {patient.aadhaar}</p>}
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="sm:col-span-2 lg:col-span-1">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <MapPin className="h-4 w-4" /> Address
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="font-medium truncate">{patient.address || "Not specified"}</p>
+                  <p className="font-medium text-sm">{patient.address || "Not specified"}</p>
                 </CardContent>
               </Card>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <CalendarDays className="h-5 w-5 text-primary" /> Recent Visits
                   </CardTitle>
+                  <Link href={`/patients/${patient.id}/visits/new`}>
+                    <Button variant="ghost" size="sm" className="text-xs">+ Add</Button>
+                  </Link>
                 </CardHeader>
                 <CardContent>
-                  {patient.visits.length === 0 ? (
-                    <p className="text-muted-foreground text-sm">No recent visits.</p>
+                  {recentVisits.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">No recorded visits yet.</p>
                   ) : (
                     <ul className="space-y-4">
-                      {patient.visits.map(visit => (
+                      {recentVisits.map(visit => (
                         <li key={visit.id} className="flex justify-between items-center text-sm border-b pb-2 last:border-0 last:pb-0">
                           <div>
                             <p className="font-medium">Visit #{visit.visitNumber}</p>
-                            <p className="text-muted-foreground">{new Date(visit.date).toLocaleDateString()}</p>
+                            <p className="text-muted-foreground text-xs">{new Date(visit.date).toLocaleDateString()}</p>
+                            {visit.treatmentGiven && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{visit.treatmentGiven}</p>}
                           </div>
                           <Badge variant="outline">{visit.type}</Badge>
                         </li>
@@ -143,25 +159,28 @@ export default async function PatientProfilePage({ params }: Props) {
               </Card>
               
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <IndianRupee className="h-5 w-5 text-primary" /> Recent Payments
                   </CardTitle>
+                  <Link href={`/patients/${patient.id}/payments/new`}>
+                    <Button variant="ghost" size="sm" className="text-xs">+ Add</Button>
+                  </Link>
                 </CardHeader>
                 <CardContent>
-                  {patient.payments.length === 0 ? (
+                  {recentPayments.length === 0 ? (
                     <p className="text-muted-foreground text-sm">No payment records.</p>
                   ) : (
                     <ul className="space-y-4">
-                      {patient.payments.map(payment => (
+                      {recentPayments.map(payment => (
                         <li key={payment.id} className="flex justify-between items-center text-sm border-b pb-2 last:border-0 last:pb-0">
                           <div>
-                            <p className="font-medium">{payment.invoiceNumber}</p>
-                            <p className="text-muted-foreground">{new Date(payment.paymentDate).toLocaleDateString()}</p>
+                            <p className="font-medium font-mono text-xs">{payment.invoiceNumber}</p>
+                            <p className="text-muted-foreground text-xs">{new Date(payment.paymentDate).toLocaleDateString()}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-medium">₹{payment.amountPaidToday}</p>
-                            <Badge variant={payment.status === 'Paid' ? 'default' : 'destructive'} className="mt-1">
+                            <p className="font-medium text-green-600">₹{payment.amountPaidToday}</p>
+                            <Badge variant={payment.status === 'Paid' ? 'default' : 'destructive'} className="mt-1 text-[10px]">
                               {payment.status}
                             </Badge>
                           </div>
@@ -177,27 +196,34 @@ export default async function PatientProfilePage({ params }: Props) {
           <TabsContent value="medical" className="m-0">
             <Card>
               <CardHeader>
-                <CardTitle>Medical History</CardTitle>
+                <CardTitle>Medical & Clinical Details</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Chief Complaint</h3>
-                    <p className="mt-1">{patient.chiefComplaint || "—"}</p>
+                  <div className="bg-muted/30 p-4 rounded-lg border">
+                    <h3 className="text-sm font-semibold text-primary">Chief Complaint</h3>
+                    <p className="mt-1 text-sm">{patient.chiefComplaint || "No chief complaint recorded."}</p>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Diagnosis</h3>
-                    <p className="mt-1">{patient.diagnosis || "—"}</p>
+                  <div className="bg-muted/30 p-4 rounded-lg border">
+                    <h3 className="text-sm font-semibold text-primary">Diagnosis</h3>
+                    <p className="mt-1 text-sm">{patient.diagnosis || "No specific diagnosis recorded."}</p>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Past Medical History</h3>
-                    <p className="mt-1">{patient.medicalHistory || "—"}</p>
+                  <div className="bg-muted/30 p-4 rounded-lg border">
+                    <h3 className="text-sm font-semibold text-primary">Past Medical History</h3>
+                    <p className="mt-1 text-sm">{patient.medicalHistory || "None recorded."}</p>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Current Medication</h3>
-                    <p className="mt-1">{patient.currentMedication || "—"}</p>
+                  <div className="bg-muted/30 p-4 rounded-lg border">
+                    <h3 className="text-sm font-semibold text-primary">Current Medication</h3>
+                    <p className="mt-1 text-sm">{patient.currentMedication || "None recorded."}</p>
                   </div>
                 </div>
+
+                {(patient.emerContactName || patient.emerContactPhone) && (
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-2">Emergency Contact</h3>
+                    <p className="text-sm font-medium">{patient.emerContactName || 'N/A'} - {patient.emerContactPhone || 'N/A'}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -209,7 +235,7 @@ export default async function PatientProfilePage({ params }: Props) {
               </CardHeader>
               <CardContent>
                 {patient.treatmentPlans.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">No active treatment plans.</p>
+                  <p className="text-muted-foreground text-sm py-4">No active treatment plans recorded yet.</p>
                 ) : (
                   patient.treatmentPlans.map(plan => (
                     <div key={plan.id} className="border rounded-md p-4 space-y-4">
@@ -234,26 +260,92 @@ export default async function PatientProfilePage({ params }: Props) {
             </Card>
           </TabsContent>
 
-          <TabsContent value="visits" className="m-0">
+          <TabsContent value="visits" className="m-0 space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Visit History</h2>
+              <Link href={`/patients/${patient.id}/visits/new`}>
+                <Button size="sm"><CalendarDays className="h-4 w-4 mr-1.5" /> Record Visit</Button>
+              </Link>
+            </div>
             <Card>
-              <CardHeader>
-                <CardTitle>All Visits</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Expandable full list of visits will go here */}
-                <p className="text-muted-foreground text-sm">Complete visit history module coming soon.</p>
+              <CardContent className="p-0">
+                {patient.visits.length === 0 ? (
+                  <p className="text-muted-foreground text-sm text-center py-8">No visit history found.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b bg-muted/40">
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Visit #</th>
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Date</th>
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Type</th>
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Pain Scale</th>
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Treatment</th>
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {patient.visits.map((visit) => (
+                          <tr key={visit.id} className="border-b last:border-0 hover:bg-muted/20">
+                            <td className="py-3 px-4 font-medium">Visit #{visit.visitNumber}</td>
+                            <td className="py-3 px-4">{new Date(visit.date).toLocaleString()}</td>
+                            <td className="py-3 px-4"><Badge variant="outline">{visit.type}</Badge></td>
+                            <td className="py-3 px-4">{visit.painBefore ?? 'N/A'} &rarr; {visit.painAfter ?? 'N/A'}</td>
+                            <td className="py-3 px-4 max-w-xs truncate">{visit.treatmentGiven || '—'}</td>
+                            <td className="py-3 px-4 max-w-xs truncate text-muted-foreground">{visit.notes || '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="payments" className="m-0">
+          <TabsContent value="payments" className="m-0 space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Financial & Ledger History</h2>
+              <Link href={`/patients/${patient.id}/payments/new`}>
+                <Button size="sm"><IndianRupee className="h-4 w-4 mr-1.5" /> Record Payment</Button>
+              </Link>
+            </div>
             <Card>
-              <CardHeader>
-                <CardTitle>Financial History</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Expandable full list of payments will go here */}
-                <p className="text-muted-foreground text-sm">Complete payment ledger module coming soon.</p>
+              <CardContent className="p-0">
+                {patient.payments.length === 0 ? (
+                  <p className="text-muted-foreground text-sm text-center py-8">No payment records found.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b bg-muted/40">
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Invoice</th>
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Date</th>
+                          <th className="text-right py-3 px-4 font-medium text-muted-foreground">Total Bill</th>
+                          <th className="text-right py-3 px-4 font-medium text-muted-foreground">Paid</th>
+                          <th className="text-right py-3 px-4 font-medium text-muted-foreground">Due</th>
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Mode</th>
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {patient.payments.map((p) => (
+                          <tr key={p.id} className="border-b last:border-0 hover:bg-muted/20">
+                            <td className="py-3 px-4 font-mono font-medium">{p.invoiceNumber}</td>
+                            <td className="py-3 px-4">{new Date(p.paymentDate).toLocaleDateString()}</td>
+                            <td className="py-3 px-4 text-right font-medium">₹{p.totalBill}</td>
+                            <td className="py-3 px-4 text-right text-green-600 font-medium">₹{p.amountPaidToday}</td>
+                            <td className={`py-3 px-4 text-right font-medium ${p.remainingDue > 0 ? 'text-destructive' : ''}`}>₹{p.remainingDue}</td>
+                            <td className="py-3 px-4">{p.paymentMode}</td>
+                            <td className="py-3 px-4">
+                              <Badge variant={p.status === 'Paid' ? 'default' : 'destructive'}>{p.status}</Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -262,3 +354,4 @@ export default async function PatientProfilePage({ params }: Props) {
     </div>
   )
 }
+

@@ -1,17 +1,26 @@
 'use server'
 
 import prisma from '@/lib/prisma'
-import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
 export async function createPatient(formData: FormData) {
-  // Extract all fields
   const name = formData.get('name') as string
   const phone = formData.get('phone') as string
   const age = formData.get('age') ? parseInt(formData.get('age') as string) : null
   const gender = formData.get('gender') as string
   const disease = formData.get('disease') as string
   const address = formData.get('address') as string
+  const email = formData.get('email') as string
+  const alternatePhone = formData.get('alternatePhone') as string
+  const whatsapp = formData.get('whatsapp') as string
+  const aadhaar = formData.get('aadhaar') as string
+  const chiefComplaint = formData.get('chiefComplaint') as string
+  const diagnosis = formData.get('diagnosis') as string
+  const medicalHistory = formData.get('medicalHistory') as string
+  const currentMedication = formData.get('currentMedication') as string
+  const emerContactName = formData.get('emerContactName') as string
+  const emerContactPhone = formData.get('emerContactPhone') as string
+  const status = (formData.get('status') as string) || 'Active'
 
   if (!name || !phone) {
     return { error: 'Name and Phone are required.' }
@@ -41,16 +50,99 @@ export async function createPatient(formData: FormData) {
         gender,
         disease,
         address,
-        // We can add other fields here based on the form
+        email,
+        alternatePhone,
+        whatsapp,
+        aadhaar,
+        chiefComplaint,
+        diagnosis,
+        medicalHistory,
+        currentMedication,
+        emerContactName,
+        emerContactPhone,
+        status,
       }
     })
 
     revalidatePath('/patients')
-    // We can't redirect directly inside a try-catch cleanly if we want to catch DB errors,
-    // so we return the success ID and redirect on the client, or redirect after the try block.
+    revalidatePath('/')
     return { success: true, patientId: patient.id }
   } catch (error: any) {
-    console.error(error)
+    console.error('Error creating patient:', error)
     return { error: 'Failed to create patient.' }
   }
 }
+
+export async function updatePatient(id: string, formData: FormData) {
+  const name = formData.get('name') as string
+  const phone = formData.get('phone') as string
+  const age = formData.get('age') ? parseInt(formData.get('age') as string) : null
+  const gender = formData.get('gender') as string
+  const disease = formData.get('disease') as string
+  const address = formData.get('address') as string
+  const email = formData.get('email') as string
+  const alternatePhone = formData.get('alternatePhone') as string
+  const whatsapp = formData.get('whatsapp') as string
+  const aadhaar = formData.get('aadhaar') as string
+  const chiefComplaint = formData.get('chiefComplaint') as string
+  const diagnosis = formData.get('diagnosis') as string
+  const medicalHistory = formData.get('medicalHistory') as string
+  const currentMedication = formData.get('currentMedication') as string
+  const emerContactName = formData.get('emerContactName') as string
+  const emerContactPhone = formData.get('emerContactPhone') as string
+  const status = (formData.get('status') as string) || 'Active'
+
+  if (!name || !phone) {
+    return { error: 'Name and Phone are required.' }
+  }
+
+  try {
+    const patient = await prisma.patient.update({
+      where: { id },
+      data: {
+        name,
+        phone,
+        age,
+        gender,
+        disease,
+        address,
+        email,
+        alternatePhone,
+        whatsapp,
+        aadhaar,
+        chiefComplaint,
+        diagnosis,
+        medicalHistory,
+        currentMedication,
+        emerContactName,
+        emerContactPhone,
+        status,
+      }
+    })
+
+    revalidatePath(`/patients/${id}`)
+    revalidatePath('/patients')
+    revalidatePath('/')
+    return { success: true, patientId: patient.id }
+  } catch (error: any) {
+    console.error('Error updating patient:', error)
+    return { error: 'Failed to update patient.' }
+  }
+}
+
+export async function deletePatient(id: string) {
+  try {
+    await prisma.patient.delete({
+      where: { id }
+    })
+
+    revalidatePath('/patients')
+    revalidatePath('/payments')
+    revalidatePath('/')
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error deleting patient:', error)
+    return { error: 'Failed to delete patient.' }
+  }
+}
+
