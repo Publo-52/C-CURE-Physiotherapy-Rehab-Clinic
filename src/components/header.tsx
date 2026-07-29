@@ -3,7 +3,7 @@
 import { useTheme } from "next-themes"
 import { Moon, Sun, Menu, Activity } from "lucide-react"
 import { Button } from "./ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "./ui/sheet"
 import { navItems } from "./sidebar"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -17,13 +17,12 @@ export function Header() {
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background px-6 shadow-sm">
       <div className="flex items-center md:hidden">
         <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="mr-2">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
+          <SheetTrigger render={<Button variant="ghost" size="icon" className="mr-2" />}>
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
           </SheetTrigger>
           <SheetContent side="left" className="w-64 p-0">
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <div className="flex h-16 items-center border-b px-6">
               <Activity className="h-6 w-6 text-primary mr-2" />
               <span className="text-xl font-bold">Phisiyo</span>
