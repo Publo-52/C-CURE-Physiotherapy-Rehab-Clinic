@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
 import { logout } from "@/app/actions/auth"
 
-const navItems = [
+export const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Patients", href: "/patients", icon: Users },
   { name: "Payments", href: "/payments", icon: IndianRupee },
@@ -27,7 +27,7 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <div className="flex h-full w-64 flex-col bg-card border-r shadow-sm">
+    <div className="hidden md:flex h-full w-64 flex-col bg-card border-r shadow-sm">
       <div className="flex h-16 items-center border-b px-6">
         <Activity className="h-6 w-6 text-primary mr-2" />
         <span className="text-xl font-bold">Phisiyo</span>
