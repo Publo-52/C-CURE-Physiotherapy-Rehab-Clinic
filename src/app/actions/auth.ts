@@ -27,10 +27,14 @@ export async function login(formData: FormData) {
     return { error: 'Invalid credentials' }
   }
 
-  await prisma.admin.update({
-    where: { id: admin.id },
-    data: { lastLogin: new Date() },
-  })
+  try {
+    await prisma.admin.update({
+      where: { id: admin.id },
+      data: { lastLogin: new Date() },
+    })
+  } catch (error) {
+    console.warn("Could not update lastLogin. If running on Vercel with SQLite, writes are not supported.", error)
+  }
 
   await createSession(admin.id)
   

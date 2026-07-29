@@ -17,13 +17,18 @@ export default function LoginPage() {
     setLoading(true)
     const formData = new FormData(e.currentTarget)
     
-    const result = await login(formData)
-    
-    if (result?.error) {
-      toast.error(result.error)
+    try {
+      const result = await login(formData)
+      
+      if (result?.error) {
+        toast.error(result.error)
+        setLoading(false)
+      }
+      // If successful, the action will redirect, no need to set loading false
+    } catch (error: any) {
+      toast.error(error.message || 'An unexpected error occurred during login.')
       setLoading(false)
     }
-    // If successful, the action will redirect
   }
 
   return (
