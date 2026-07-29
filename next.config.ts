@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   devIndicators: false,
+  outputFileTracingIncludes: {
+    "/**/*": ["./prisma/dev.db", "./dev.db"]
+  }
 };
 
 export default nextConfig;
