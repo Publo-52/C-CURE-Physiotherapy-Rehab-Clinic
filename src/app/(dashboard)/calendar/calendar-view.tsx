@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, User, Clock, Plus, X } from 'lucide-react'
+import { useState, useMemo, useTransition } from 'react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, User, Clock, Plus, X, GripVertical } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { toast } from 'react-hot-toast'
+import { updateVisitDate } from '@/app/actions/calendar'
 
 interface VisitItem {
   id: string
@@ -65,12 +67,20 @@ export default function CalendarView({ visits, patients }: CalendarViewProps) {
   const [selectedVisit, setSelectedVisit] = useState<VisitItem | null>(null)
   const [filterType, setFilterType] = useState('All')
   const [view, setView] = useState<'month' | 'week' | 'list'>('month')
+  const [isPending, startTransition] = useTransition()
+  
+  // Optimistic visits for drag and drop responsiveness
+  const [optimisticVisits, setOptimisticVisits] = useState<VisitItem[]>(visits)
+  
+  useMemo(() => {
+    setOptimisticVisits(visits)
+  }, [visits])
 
   const filteredVisits = useMemo(() =>
     filterType === 'All'
-      ? visits
-      : visits.filter(v => v.type === filterType),
-    [visits, filterType]
+      ? optimisticVisits
+      : optimisticVisits.filter(v => v.type === filterType),
+    [optimisticVisits, filterType]
   )
 
   const visitsByDay = useMemo(() => {
@@ -106,6 +116,41 @@ export default function CalendarView({ visits, patients }: CalendarViewProps) {
 
   const colorFor = (type: string) =>
     VISIT_COLORS[type] ?? { bg: 'bg-gray-500/20', text: 'text-gray-300', dot: 'bg-gray-500' }
+
+  // Drag and Drop Handlers
+  const handleDragStart = (e: React.DragEvent, visitId: string) => {
+    e.dataTransfer.setData('text/plain', visitId)
+  }
+
+  const handleDrop = (e: React.DragEvent, targetDate: Date) => {
+    e.preventDefault()
+    const visitId = e.dataTransfer.getData('text/plain')
+    if (!visitId) return
+
+    const visit = optimisticVisits.find(v => v.id === visitId)
+    if (!visit || isSameDay(new Date(visit.date), targetDate)) return
+
+    // Optimistic Update
+    const newDateStr = targetDate.toISOString()
+    setOptimisticVisits(prev => prev.map(v => 
+      v.id === visitId ? { ...v, date: newDateStr } : v
+    ))
+    
+    toast.success('Visit rescheduled successfully!')
+
+    // Server Action
+    startTransition(async () => {
+      const res = await updateVisitDate(visitId, newDateStr)
+      if (res.error) {
+        toast.error(res.error)
+        setOptimisticVisits(visits) // Revert on error
+      }
+    })
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
 
   return (
     <div className="space-y-6">
@@ -208,7 +253,9 @@ export default function CalendarView({ visits, patients }: CalendarViewProps) {
                 return (
                   <div
                     key={i}
-                    className={`min-h-[90px] p-1.5 border-b border-r last:border-r-0 transition-colors ${
+                    onDragOver={handleDragOver}
+                    onDrop={isValid ? (e) => handleDrop(e, cellDate) : undefined}
+                    className={`min-h-[100px] p-1.5 border-b border-r last:border-r-0 transition-colors ${
                       !isValid ? 'bg-muted/20' : 'hover:bg-muted/30'
                     }`}
                   >
@@ -229,10 +276,13 @@ export default function CalendarView({ visits, patients }: CalendarViewProps) {
                             return (
                               <button
                                 key={v.id}
+                                draggable={true}
+                                onDragStart={(e) => handleDragStart(e, v.id)}
                                 onClick={() => setSelectedVisit(v)}
-                                className={`w-full text-left px-1.5 py-0.5 rounded text-[10px] font-medium truncate leading-4 ${c.bg} ${c.text} hover:opacity-80 transition-opacity`}
+                                className={`w-full text-left px-1.5 py-0.5 rounded text-[10px] font-medium truncate leading-4 cursor-grab active:cursor-grabbing ${c.bg} ${c.text} hover:opacity-80 transition-opacity flex items-center justify-between`}
                               >
-                                {v.patient.name}
+                                <span className="truncate">{v.patient.name}</span>
+                                <GripVertical className="h-2.5 w-2.5 opacity-50 flex-shrink-0" />
                               </button>
                             )
                           })}
@@ -277,16 +327,24 @@ export default function CalendarView({ visits, patients }: CalendarViewProps) {
                   const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
                   const dayVisits = visitsByDay[key] ?? []
                   return (
-                    <div key={i} className={`p-1.5 border-r last:border-r-0 min-h-[300px] space-y-1 ${isSameDay(d, today) ? 'bg-primary/5' : ''}`}>
+                    <div 
+                      key={i} 
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, d)}
+                      className={`p-1.5 border-r last:border-r-0 min-h-[300px] space-y-1 ${isSameDay(d, today) ? 'bg-primary/5' : ''}`}
+                    >
                       {dayVisits.map(v => {
                         const c = colorFor(v.type)
                         return (
                           <button
                             key={v.id}
+                            draggable={true}
+                            onDragStart={(e) => handleDragStart(e, v.id)}
                             onClick={() => setSelectedVisit(v)}
-                            className={`w-full text-left px-1.5 py-1 rounded text-[10px] font-medium leading-snug ${c.bg} ${c.text} hover:opacity-80 transition-opacity`}
+                            className={`w-full text-left px-1.5 py-1 rounded text-[10px] font-medium leading-snug cursor-grab active:cursor-grabbing ${c.bg} ${c.text} hover:opacity-80 transition-opacity relative group`}
                           >
-                            <div className="truncate">{v.patient.name}</div>
+                            <GripVertical className="absolute right-1 top-1 h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+                            <div className="truncate pr-4">{v.patient.name}</div>
                             <div className="opacity-70">{new Date(v.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                           </button>
                         )

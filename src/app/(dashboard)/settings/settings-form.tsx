@@ -15,8 +15,8 @@ export default function SettingsForm() {
   const [practiceLoading, setPracticeLoading] = useState(false)
 
   // Practice state
-  const [physioName, setPhysioName] = useState('Dr. Sonatan')
-  const [clinicName, setClinicName] = useState('Sonatan Physiotherapy & Rehabilitation Center')
+  const [physioName, setPhysioName] = useState('Dr. Sonatan Manna')
+  const [clinicName, setClinicName] = useState('C-CURE PHYSIOTHERAPY & REHAB CLINIC')
   const [phone, setPhone] = useState('+91 9876543210')
   const [defaultFee, setDefaultFee] = useState('500')
 

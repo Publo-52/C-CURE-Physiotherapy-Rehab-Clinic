@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Activity } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
@@ -33,17 +34,24 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="space-y-2 text-center">
-          <div className="flex justify-center mb-2">
-            <div className="h-12 w-12 bg-primary/10 text-primary rounded-full flex items-center justify-center">
-              <Activity className="h-6 w-6" />
+      <Card className="w-full max-w-md shadow-xl border-t-4 border-t-primary">
+        <CardHeader className="space-y-4 text-center pb-6">
+          <div className="flex justify-center">
+            <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-sm">
+              <Image src="/doctor-sonatan.png" alt="Dr. Sonatan Manna" fill className="object-cover" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Phisiyo Portal</CardTitle>
-          <CardDescription>
-            Sign in to your practice management dashboard
-          </CardDescription>
+          <div>
+            <CardTitle className="text-xl font-extrabold text-primary uppercase tracking-wider mb-1">
+              C-CURE Physiotherapy
+            </CardTitle>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              & Rehab Clinic
+            </p>
+            <CardDescription className="text-sm">
+              Dr. Sonatan Manna's Management Dashboard
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -53,7 +61,7 @@ export default function LoginPage() {
                 id="email" 
                 name="email"
                 type="email" 
-                placeholder="admin@phisiyo.com" 
+                placeholder="admin@c-cure.com" 
                 required 
                 autoComplete="email"
               />

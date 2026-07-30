@@ -10,6 +10,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'react-hot-toast'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+
+const patientSchema = z.object({
+  name: z.string().min(2, 'Patient Name required (min 2 characters)'),
+  phone: z.string().regex(/^\+?[0-9]{10,15}$/, 'Phone Number invalid (10-15 digits required)'),
+  email: z.string().email('Invalid Email').or(z.literal('')),
+  alternatePhone: z.string().optional(),
+  age: z.string().refine(val => !val || (parseInt(val) >= 1 && parseInt(val) <= 120), 'Age must be between 1 and 120').optional(),
+  gender: z.string(),
+  status: z.string(),
+  aadhaar: z.string().optional(),
+  address: z.string().optional(),
+  disease: z.string().min(2, 'Primary Condition required'),
+  chiefComplaint: z.string().optional(),
+  diagnosis: z.string().optional(),
+  medicalHistory: z.string().optional(),
+  currentMedication: z.string().optional(),
+  emerContactName: z.string().optional(),
+  emerContactPhone: z.string().optional(),
+})
+
+type PatientFormValues = z.infer<typeof patientSchema>
 
 interface EditPatientFormProps {
   patient: {
@@ -37,16 +61,41 @@ interface EditPatientFormProps {
 export default function EditPatientForm({ patient }: EditPatientFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [gender, setGender] = useState(patient.gender || 'Male')
-  const [status, setStatus] = useState(patient.status || 'Active')
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors }
+  } = useForm<PatientFormValues>({
+    resolver: zodResolver(patientSchema),
+    defaultValues: {
+      name: patient.name,
+      phone: patient.phone,
+      email: patient.email || '',
+      alternatePhone: patient.alternatePhone || '',
+      age: patient.age ? String(patient.age) : '',
+      gender: patient.gender || 'Male',
+      status: patient.status || 'Active',
+      aadhaar: patient.aadhaar || '',
+      address: patient.address || '',
+      disease: patient.disease || '',
+      chiefComplaint: patient.chiefComplaint || '',
+      diagnosis: patient.diagnosis || '',
+      medicalHistory: patient.medicalHistory || '',
+      currentMedication: patient.currentMedication || '',
+      emerContactName: patient.emerContactName || '',
+      emerContactPhone: patient.emerContactPhone || ''
+    },
+    mode: 'onChange'
+  })
+
+  const onSubmit = async (data: PatientFormValues) => {
     setLoading(true)
-    const formData = new FormData(e.currentTarget)
-    // Manually add Select values since base-ui portals them outside the form
-    formData.set('gender', gender)
-    formData.set('status', status)
+    const formData = new FormData()
+    Object.entries(data).forEach(([key, value]) => {
+      if (value) formData.append(key, value)
+    })
     
     const result = await updatePatient(patient.id, formData)
     
@@ -60,7 +109,7 @@ export default function EditPatientForm({ patient }: EditPatientFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Personal & Contact Information</CardTitle>
@@ -69,64 +118,80 @@ export default function EditPatientForm({ patient }: EditPatientFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name *</Label>
-              <Input id="name" name="name" required defaultValue={patient.name} />
+              <Input id="name" className={errors.name ? 'border-destructive' : ''} {...register('name')} />
+              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number *</Label>
-              <Input id="phone" name="phone" required defaultValue={patient.phone} />
+              <Input id="phone" className={errors.phone ? 'border-destructive' : ''} {...register('phone')} />
+              {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
-              <Input id="email" name="email" type="email" defaultValue={patient.email || ''} />
+              <Input id="email" type="email" className={errors.email ? 'border-destructive' : ''} {...register('email')} />
+              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="alternatePhone">Alternate Phone / WhatsApp</Label>
-              <Input id="alternatePhone" name="alternatePhone" defaultValue={patient.alternatePhone || ''} />
+              <Input id="alternatePhone" {...register('alternatePhone')} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="age">Age</Label>
-              <Input id="age" name="age" type="number" defaultValue={patient.age ?? ''} />
+              <Input id="age" type="number" className={errors.age ? 'border-destructive' : ''} {...register('age')} />
+              {errors.age && <p className="text-xs text-destructive">{errors.age.message}</p>}
             </div>
             
             <div className="space-y-2">
               <Label>Gender</Label>
-              <Select value={gender} onValueChange={(v) => v && setGender(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Female">Female</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="gender"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select value={status} onValueChange={(v) => v && setStatus(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                  <SelectItem value="Inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="aadhaar">Aadhaar / ID Number</Label>
-              <Input id="aadhaar" name="aadhaar" defaultValue={patient.aadhaar || ''} />
+              <Input id="aadhaar" {...register('aadhaar')} />
             </div>
 
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="address">Address</Label>
-              <Input id="address" name="address" defaultValue={patient.address || ''} />
+              <Input id="address" {...register('address')} />
             </div>
           </div>
         </CardContent>
@@ -139,28 +204,29 @@ export default function EditPatientForm({ patient }: EditPatientFormProps) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="disease">Primary Condition / Disease</Label>
-              <Input id="disease" name="disease" defaultValue={patient.disease || ''} />
+              <Label htmlFor="disease">Primary Condition / Disease *</Label>
+              <Input id="disease" className={errors.disease ? 'border-destructive' : ''} {...register('disease')} />
+              {errors.disease && <p className="text-xs text-destructive">{errors.disease.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="chiefComplaint">Chief Complaint</Label>
-              <Textarea id="chiefComplaint" name="chiefComplaint" defaultValue={patient.chiefComplaint || ''} />
+              <Textarea id="chiefComplaint" {...register('chiefComplaint')} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="diagnosis">Diagnosis Details</Label>
-              <Textarea id="diagnosis" name="diagnosis" defaultValue={patient.diagnosis || ''} />
+              <Textarea id="diagnosis" {...register('diagnosis')} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="medicalHistory">Past Medical History</Label>
-              <Textarea id="medicalHistory" name="medicalHistory" defaultValue={patient.medicalHistory || ''} />
+              <Textarea id="medicalHistory" {...register('medicalHistory')} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="currentMedication">Current Medication</Label>
-              <Textarea id="currentMedication" name="currentMedication" defaultValue={patient.currentMedication || ''} />
+              <Textarea id="currentMedication" {...register('currentMedication')} />
             </div>
           </div>
         </CardContent>
@@ -174,17 +240,17 @@ export default function EditPatientForm({ patient }: EditPatientFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="emerContactName">Contact Person Name</Label>
-              <Input id="emerContactName" name="emerContactName" defaultValue={patient.emerContactName || ''} />
+              <Input id="emerContactName" {...register('emerContactName')} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="emerContactPhone">Contact Person Phone</Label>
-              <Input id="emerContactPhone" name="emerContactPhone" defaultValue={patient.emerContactPhone || ''} />
+              <Input id="emerContactPhone" {...register('emerContactPhone')} />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex justify-end gap-3">
+      <div className="flex justify-end gap-3 sticky bottom-4 bg-background/80 p-4 rounded-xl border backdrop-blur-sm z-10 shadow-lg">
         <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
         <Button type="submit" disabled={loading}>
           {loading ? 'Saving Changes...' : 'Update Patient'}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createPatient } from '@/app/actions/patients'
 import { Button } from '@/components/ui/button'
@@ -10,49 +10,91 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'react-hot-toast'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+
+const patientSchema = z.object({
+  name: z.string().min(2, 'Patient Name required (min 2 characters)'),
+  phone: z.string().regex(/^\+?[0-9]{10,15}$/, 'Phone Number invalid (10-15 digits required)'),
+  email: z.string().email('Invalid Email').or(z.literal('')),
+  alternatePhone: z.string().optional(),
+  age: z.string().refine(val => !val || (parseInt(val) >= 1 && parseInt(val) <= 120), 'Age must be between 1 and 120').optional(),
+  gender: z.string(),
+  status: z.string(),
+  aadhaar: z.string().optional(),
+  address: z.string().optional(),
+  disease: z.string().min(2, 'Primary Condition required'),
+  chiefComplaint: z.string().optional(),
+  diagnosis: z.string().optional(),
+  medicalHistory: z.string().optional(),
+  currentMedication: z.string().optional(),
+  emerContactName: z.string().optional(),
+  emerContactPhone: z.string().optional(),
+})
+
+type PatientFormValues = z.infer<typeof patientSchema>
+
+const DRAFT_KEY = 'patient_form_draft'
 
 export default function NewPatientPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [gender, setGender] = useState('Male')
-  const [status, setStatus] = useState('Active')
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [draftRestored, setDraftRestored] = useState(false)
 
-  const validate = (formData: FormData): boolean => {
-    const newErrors: Record<string, string> = {}
-    const name = (formData.get('name') as string)?.trim()
-    const phone = (formData.get('phone') as string)?.trim()
-    const age = formData.get('age') as string
-    const email = (formData.get('email') as string)?.trim()
-    const disease = (formData.get('disease') as string)?.trim()
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    reset,
+    formState: { errors }
+  } = useForm<PatientFormValues>({
+    resolver: zodResolver(patientSchema),
+    defaultValues: {
+      name: '', phone: '', email: '', alternatePhone: '', age: '',
+      gender: 'Male', status: 'Active', aadhaar: '', address: '',
+      disease: '', chiefComplaint: '', diagnosis: '',
+      medicalHistory: '', currentMedication: '',
+      emerContactName: '', emerContactPhone: ''
+    },
+    mode: 'onChange'
+  })
 
-    if (!name || name.length < 2) newErrors.name = 'Full name is required (min 2 characters).'
-    if (!phone || !/^\+?[0-9]{10,15}$/.test(phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Enter a valid phone number (10–15 digits).'
+  // Watch all values for auto-save
+  const formValues = watch()
+
+  // Load draft on mount
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY)
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft)
+        reset(parsed)
+        toast.success('Restored auto-saved draft')
+      } catch (e) {
+        console.error('Failed to parse draft')
+      }
     }
-    if (age && (parseInt(age) < 1 || parseInt(age) > 120)) {
-      newErrors.age = 'Age must be between 1 and 120.'
-    }
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Enter a valid email address.'
-    }
-    if (!disease || disease.length < 2) {
-      newErrors.disease = 'Primary condition/disease is required.'
-    }
+    setDraftRestored(true)
+  }, [reset])
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+  // Save draft on change (debounced)
+  useEffect(() => {
+    if (!draftRestored) return
+    const timer = setTimeout(() => {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(formValues))
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [formValues, draftRestored])
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    formData.set('gender', gender)
-    formData.set('status', status)
-
-    if (!validate(formData)) return
-
+  const onSubmit = async (data: PatientFormValues) => {
     setLoading(true)
+    const formData = new FormData()
+    Object.entries(data).forEach(([key, value]) => {
+      if (value) formData.append(key, value)
+    })
+    
     const result = await createPatient(formData)
     
     if (result.error) {
@@ -60,6 +102,7 @@ export default function NewPatientPage() {
       setLoading(false)
     } else if (result.success) {
       toast.success('Patient created successfully!')
+      localStorage.removeItem(DRAFT_KEY) // Clear draft on success
       router.push(`/patients/${result.patientId}`)
     }
   }
@@ -68,10 +111,10 @@ export default function NewPatientPage() {
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">New Patient</h1>
-        <Button variant="outline" onClick={() => router.back()}>Cancel</Button>
+        <Button variant="outline" onClick={() => router.back()} type="button">Cancel</Button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Personal & Contact Information</CardTitle>
@@ -80,68 +123,80 @@ export default function NewPatientPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name *</Label>
-                <Input id="name" name="name" required placeholder="John Doe" className={errors.name ? 'border-destructive' : ''} />
-                {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+                <Input id="name" placeholder="John Doe" className={errors.name ? 'border-destructive' : ''} {...register('name')} />
+                {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number *</Label>
-                <Input id="phone" name="phone" required placeholder="+91 9876543210" className={errors.phone ? 'border-destructive' : ''} />
-                {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
+                <Input id="phone" placeholder="+91 9876543210" className={errors.phone ? 'border-destructive' : ''} {...register('phone')} />
+                {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
-                <Input id="email" name="email" type="email" placeholder="patient@example.com" className={errors.email ? 'border-destructive' : ''} />
-                {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                <Input id="email" type="email" placeholder="patient@example.com" className={errors.email ? 'border-destructive' : ''} {...register('email')} />
+                {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="alternatePhone">Alternate Phone / WhatsApp</Label>
-                <Input id="alternatePhone" name="alternatePhone" placeholder="+91 9876543211" />
+                <Input id="alternatePhone" placeholder="+91 9876543211" {...register('alternatePhone')} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="age">Age</Label>
-                <Input id="age" name="age" type="number" placeholder="45" className={errors.age ? 'border-destructive' : ''} />
-                {errors.age && <p className="text-xs text-destructive">{errors.age}</p>}
+                <Input id="age" type="number" placeholder="45" className={errors.age ? 'border-destructive' : ''} {...register('age')} />
+                {errors.age && <p className="text-xs text-destructive">{errors.age.message}</p>}
               </div>
               
               <div className="space-y-2">
                 <Label>Gender</Label>
-                <Select value={gender} onValueChange={(v) => v && setGender(v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="gender"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
 
               <div className="space-y-2">
                 <Label>Status</Label>
-                <Select value={status} onValueChange={(v) => v && setStatus(v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                        <SelectItem value="Inactive">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="aadhaar">Aadhaar / ID Number</Label>
-                <Input id="aadhaar" name="aadhaar" placeholder="1234 5678 9012" />
+                <Input id="aadhaar" placeholder="1234 5678 9012" {...register('aadhaar')} />
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="address">Address</Label>
-                <Input id="address" name="address" placeholder="123 Main St, City" />
+                <Input id="address" placeholder="123 Main St, City" {...register('address')} />
               </div>
             </div>
           </CardContent>
@@ -155,28 +210,28 @@ export default function NewPatientPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="disease">Primary Condition / Disease *</Label>
-                <Input id="disease" name="disease" required placeholder="e.g., Frozen Shoulder, Lumbar Spondylosis" className={errors.disease ? 'border-destructive' : ''} />
-                {errors.disease && <p className="text-xs text-destructive">{errors.disease}</p>}
+                <Input id="disease" placeholder="e.g., Frozen Shoulder, Lumbar Spondylosis" className={errors.disease ? 'border-destructive' : ''} {...register('disease')} />
+                {errors.disease && <p className="text-xs text-destructive">{errors.disease.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="chiefComplaint">Chief Complaint</Label>
-                <Textarea id="chiefComplaint" name="chiefComplaint" placeholder="Describe symptoms and primary issues..." />
+                <Textarea id="chiefComplaint" placeholder="Describe symptoms and primary issues..." {...register('chiefComplaint')} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="diagnosis">Diagnosis Details</Label>
-                <Textarea id="diagnosis" name="diagnosis" placeholder="Medical diagnosis from physician or assessment..." />
+                <Textarea id="diagnosis" placeholder="Medical diagnosis from physician or assessment..." {...register('diagnosis')} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="medicalHistory">Past Medical History</Label>
-                <Textarea id="medicalHistory" name="medicalHistory" placeholder="Surgeries, chronic conditions, prior physio..." />
+                <Textarea id="medicalHistory" placeholder="Surgeries, chronic conditions, prior physio..." {...register('medicalHistory')} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="currentMedication">Current Medication</Label>
-                <Textarea id="currentMedication" name="currentMedication" placeholder="Prescriptions, pain killers, supplements..." />
+                <Textarea id="currentMedication" placeholder="Prescriptions, pain killers, supplements..." {...register('currentMedication')} />
               </div>
             </div>
           </CardContent>
@@ -190,18 +245,18 @@ export default function NewPatientPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="emerContactName">Contact Person Name</Label>
-                <Input id="emerContactName" name="emerContactName" placeholder="Spouse / Relative Name" />
+                <Input id="emerContactName" placeholder="Spouse / Relative Name" {...register('emerContactName')} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="emerContactPhone">Contact Person Phone</Label>
-                <Input id="emerContactPhone" name="emerContactPhone" placeholder="+91 9876543210" />
+                <Input id="emerContactPhone" placeholder="+91 9876543210" {...register('emerContactPhone')} />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-3">
-          <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+        <div className="flex justify-end gap-3 sticky bottom-4 bg-background/80 p-4 rounded-xl border backdrop-blur-sm z-10 shadow-lg">
+          <Button type="button" variant="outline" onClick={() => { localStorage.removeItem(DRAFT_KEY); router.back() }}>Discard Draft & Cancel</Button>
           <Button type="submit" disabled={loading}>
             {loading ? 'Saving...' : 'Save Patient'}
           </Button>

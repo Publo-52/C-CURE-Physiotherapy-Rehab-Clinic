@@ -61,6 +61,7 @@ model Patient {
   previousPhysio   String?
 
   status           String          @default("Active")
+  presentStatus    Boolean         @default(false)
 
   visits           Visit[]
   payments         Payment[]

@@ -157,4 +157,17 @@ export async function deletePatient(id: string) {
   }
 }
 
-
+export async function togglePresentStatus(id: string, status: boolean) {
+  try {
+    const patient = await prisma.patient.update({
+      where: { id },
+      data: { presentStatus: status }
+    })
+    revalidatePath('/patients')
+    revalidatePath('/')
+    return { success: true, presentStatus: patient.presentStatus }
+  } catch (error: any) {
+    console.error('Error toggling present status:', error?.message || error)
+    return { error: `Failed to update status: ${error?.message || 'Database error'}` }
+  }
+}

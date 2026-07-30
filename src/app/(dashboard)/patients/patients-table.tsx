@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { 
   Table, 
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Search, User, Edit, Trash2, Eye, CheckCircle2, XCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { deletePatient } from '@/app/actions/patients'
+import { deletePatient, togglePresentStatus } from '@/app/actions/patients'
 import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
@@ -25,6 +25,7 @@ interface PatientItem {
   phone: string
   disease?: string | null
   status: string
+  presentStatus: boolean
   registrationDate: Date | string
 }
 
@@ -37,8 +38,15 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  // Track "Present" state per patient (doctor present toggle)
-  const [presentMap, setPresentMap] = useState<Record<string, boolean>>({})
+  const [isPending, startTransition] = useTransition()
+  const [optimisticPresent, setOptimisticPresent] = useState<Record<string, boolean>>({})
+
+  // Initialize optimistic state from props if not set
+  initialPatients.forEach(p => {
+    if (optimisticPresent[p.id] === undefined) {
+      optimisticPresent[p.id] = p.presentStatus
+    }
+  })
 
   const filteredPatients = initialPatients.filter((patient) => {
     const matchesSearch = 
@@ -67,14 +75,24 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
     }
   }
 
-  const togglePresent = (id: string, name: string) => {
-    setPresentMap(prev => {
-      const next = !prev[id]
-      toast(next ? `✅ Dr. Sonatan marked Present for ${name}` : `❌ Marked Absent for ${name}`, {
-        icon: next ? '🟢' : '🔴',
-        duration: 2000,
-      })
-      return { ...prev, [id]: next }
+  const handleTogglePresent = async (id: string, name: string, currentStatus: boolean) => {
+    const nextStatus = !currentStatus
+    
+    // Optimistic update
+    setOptimisticPresent(prev => ({ ...prev, [id]: nextStatus }))
+    
+    toast(nextStatus ? `✅ Dr. Sonatan marked Present for ${name}` : `❌ Marked Absent for ${name}`, {
+      icon: nextStatus ? '🟢' : '🔴',
+      duration: 2000,
+    })
+
+    startTransition(async () => {
+      const res = await togglePresentStatus(id, nextStatus)
+      if (res.error) {
+        toast.error(res.error)
+        // Revert optimistic update
+        setOptimisticPresent(prev => ({ ...prev, [id]: currentStatus }))
+      }
     })
   }
 
@@ -139,7 +157,7 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
               </TableRow>
             ) : (
               filteredPatients.map((patient) => {
-                const isPresent = !!presentMap[patient.id]
+                const isPresent = optimisticPresent[patient.id]
                 return (
                   <TableRow key={patient.id} className="hover:bg-muted/30">
                     <TableCell className="font-medium font-mono text-xs">{patient.patientId}</TableCell>
@@ -166,8 +184,9 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
                     {/* Present Toggle Column */}
                     <TableCell className="text-center">
                       <button
-                        onClick={() => togglePresent(patient.id, patient.name)}
+                        onClick={() => handleTogglePresent(patient.id, patient.name, isPresent)}
                         title={isPresent ? 'Doctor Present — click to mark Absent' : 'Mark Doctor as Present'}
+                        disabled={isPending}
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all border ${
                           isPresent
                             ? 'bg-green-500/10 text-green-600 border-green-500/30 hover:bg-green-500/20'

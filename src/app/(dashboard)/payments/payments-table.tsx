@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { Search, Share2, Copy, Check, MessageCircle } from 'lucide-react'
+import { Search, Share2, Copy, Check, MessageCircle, Printer, Download } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'react-hot-toast'
@@ -90,6 +90,80 @@ Thank you for visiting us! 🙏`
     }
   }
 
+  const handlePrintPDF = () => {
+    const printContent = `
+      <html>
+        <head>
+          <title>Payment Receipt - ${payment.invoiceNumber}</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #0ea5e9; padding-bottom: 20px; }
+            .header h1 { color: #0ea5e9; margin: 0 0 10px 0; font-size: 28px; text-transform: uppercase; letter-spacing: 1px; }
+            .header p { margin: 5px 0; font-size: 16px; color: #555; font-weight: bold; }
+            .title { text-align: center; font-size: 20px; text-transform: uppercase; margin-bottom: 20px; background: #f0f9ff; padding: 10px; border-radius: 5px;}
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+            .box { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+            .box p { margin: 8px 0; font-size: 14px; }
+            .box strong { display: inline-block; width: 120px; color: #475569; }
+            .amounts { background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #bbf7d0; text-align: right; margin-bottom: 30px; }
+            .amounts p { margin: 10px 0; font-size: 16px; }
+            .amounts .total { font-size: 20px; font-weight: bold; color: #166534; border-top: 1px solid #bbf7d0; padding-top: 10px; }
+            .footer { text-align: center; margin-top: 40px; font-size: 14px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+            @media print {
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>C-CURE PHYSIOTHERAPY & REHAB CLINIC</h1>
+            <p>Dr. Sonatan Manna</p>
+          </div>
+          <div class="title">Payment Receipt</div>
+          
+          <div class="grid">
+            <div class="box">
+              <p><strong>Invoice Number:</strong> ${payment.invoiceNumber}</p>
+              <p><strong>Date:</strong> ${dateStr}</p>
+              <p><strong>Payment Mode:</strong> ${payment.paymentMode}</p>
+              <p><strong>Status:</strong> ${payment.status}</p>
+            </div>
+            <div class="box">
+              <p><strong>Patient Name:</strong> ${payment.patient.name}</p>
+              <p><strong>Patient ID:</strong> ${payment.patient.patientId}</p>
+            </div>
+          </div>
+
+          <div class="amounts">
+            <p><strong>Total Bill:</strong> ₹${payment.totalBill}</p>
+            <p><strong>Previous Due:</strong> ₹${payment.remainingDue + payment.amountPaidToday - payment.totalBill > 0 ? payment.remainingDue + payment.amountPaidToday - payment.totalBill : 0}</p>
+            <div class="total">Amount Paid Today: ₹${payment.amountPaidToday}</div>
+            <p style="color: ${payment.remainingDue > 0 ? '#dc2626' : '#16a34a'}; margin-top: 10px;">
+              <strong>Current Due:</strong> ₹${payment.remainingDue}
+            </p>
+          </div>
+
+          <div class="footer">
+            <p>Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.</p>
+            <p>Wishing you a speedy recovery!</p>
+          </div>
+        </body>
+      </html>
+    `
+    const printWindow = window.open('', '_blank', 'width=800,height=900')
+    if (printWindow) {
+      printWindow.document.write(printContent)
+      printWindow.document.close()
+      printWindow.focus()
+      // Wait for styling to apply
+      setTimeout(() => {
+        printWindow.print()
+        printWindow.close()
+      }, 250)
+    }
+    setOpen(false)
+  }
+
   return (
     <div className="relative inline-block">
       <button
@@ -125,6 +199,14 @@ Thank you for visiting us! 🙏`
                 <Share2 className="h-4 w-4" />
                 Share / More...
               </button>
+              <button
+                onClick={handlePrintPDF}
+                className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-orange-500/10 text-orange-600 transition-colors"
+              >
+                <Printer className="h-4 w-4" />
+                Print / Save PDF
+              </button>
+              <div className="h-px bg-border my-1 mx-2" />
               <button
                 onClick={handleCopy}
                 className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-muted transition-colors text-foreground"

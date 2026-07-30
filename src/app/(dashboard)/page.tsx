@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import prisma from "@/lib/prisma"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, IndianRupee, Activity, Calendar, UserPlus, ArrowRight } from "lucide-react"
+import { Users, IndianRupee, Activity, Calendar, UserPlus, ArrowRight, CheckCircle2, XCircle, ClipboardCheck } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import DashboardChart from "./dashboard-chart"
@@ -18,19 +18,32 @@ export default async function DashboardPage() {
     where: { status: 'Active' }
   })
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  const todayEnd = new Date(todayStart)
+  todayEnd.setDate(todayEnd.getDate() + 1)
 
   const todaysVisits = await prisma.visit.count({
-    where: {
-      date: {
-        gte: today,
-        lt: tomorrow
-      }
-    }
+    where: { date: { gte: todayStart, lt: todayEnd } }
   })
+
+  const todaysRegistered = await prisma.patient.count({
+    where: { createdAt: { gte: todayStart, lt: todayEnd } }
+  })
+
+  const presentPatients = await prisma.patient.count({
+    where: { presentStatus: true }
+  })
+
+  const todaysVisitsData = await prisma.visit.findMany({
+    where: { date: { gte: todayStart, lt: todayEnd } },
+    select: { status: true, patient: { select: { presentStatus: true } } }
+  })
+  
+  const todaysCompletedSessions = todaysVisitsData.filter(v => v.status === 'Completed').length
+  
+  // Scheduled today but not present
+  const absentPatients = todaysVisitsData.filter(v => !v.patient.presentStatus).length
 
   // Get recent 5 patients for the list
   const recentPatients = await prisma.patient.findMany({
@@ -163,6 +176,52 @@ export default async function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold text-destructive">₹{totalOutstandingDues}</div>
             <p className="text-xs text-muted-foreground">Pending collections</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-primary/5 border-primary/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-primary">Registered Today</CardTitle>
+            <UserPlus className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">{todaysRegistered}</div>
+            <p className="text-xs text-primary/70">New patients today</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-green-500/5 border-green-500/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-green-700 dark:text-green-400">Present Patients</CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-700 dark:text-green-400">{presentPatients}</div>
+            <p className="text-xs text-green-600/70 dark:text-green-400/70">Currently marked present</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-rose-500/5 border-rose-500/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-rose-700 dark:text-rose-400">Absent Patients</CardTitle>
+            <XCircle className="h-4 w-4 text-rose-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-rose-700 dark:text-rose-400">{absentPatients}</div>
+            <p className="text-xs text-rose-600/70 dark:text-rose-400/70">Scheduled but absent</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-blue-500/5 border-blue-500/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-400">Completed Sessions</CardTitle>
+            <ClipboardCheck className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">{todaysCompletedSessions}</div>
+            <p className="text-xs text-blue-600/70 dark:text-blue-400/70">Finished today</p>
           </CardContent>
         </Card>
       </div>
