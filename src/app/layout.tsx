@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Phisiyo - Practice Management",
-  description: "Enterprise-Grade Personal Physiotherapist Practice Management Web Application",
+  title: "C-CURE Physiotherapy & Rehab Clinic",
+  description: "C-CURE Physiotherapy & Rehab Clinic - Dr. Sonatan Manna - Patient Management System",
 };
 
 export default function RootLayout({

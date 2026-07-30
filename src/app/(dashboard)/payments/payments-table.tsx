@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { Search } from 'lucide-react'
+import { Search, Share2, Copy, Check, MessageCircle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { toast } from 'react-hot-toast'
 
 interface PaymentItem {
   id: string
@@ -33,6 +34,110 @@ const statusColor: Record<string, 'default' | 'secondary' | 'destructive' | 'out
   'Due': 'destructive',
   'Overdue': 'destructive',
   'Advance Paid': 'outline',
+}
+
+function ShareDropdown({ payment }: { payment: PaymentItem }) {
+  const [open, setOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const dateStr = new Date(payment.paymentDate).toLocaleDateString('en-IN')
+  const paymentText = 
+`🏥 *C-CURE Physiotherapy & Rehab Clinic*
+👨‍⚕️ Dr. Sonatan Manna
+
+📋 *Payment Receipt*
+━━━━━━━━━━━━━━━━━━━━
+🆔 Invoice: ${payment.invoiceNumber}
+👤 Patient: ${payment.patient.name} (${payment.patient.patientId})
+📅 Date: ${dateStr}
+━━━━━━━━━━━━━━━━━━━━
+💰 Total Bill: ₹${payment.totalBill}
+✅ Amount Paid: ₹${payment.amountPaidToday}
+${payment.remainingDue > 0 ? `⚠️ Remaining Due: ₹${payment.remainingDue}` : '✅ No Dues Remaining'}
+💳 Payment Mode: ${payment.paymentMode}
+📊 Status: ${payment.status}
+━━━━━━━━━━━━━━━━━━━━
+Thank you for visiting us! 🙏`
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(paymentText).then(() => {
+      setCopied(true)
+      toast.success('Payment details copied to clipboard!')
+      setTimeout(() => setCopied(false), 2000)
+      setOpen(false)
+    })
+  }
+
+  const handleWhatsApp = () => {
+    const encoded = encodeURIComponent(paymentText)
+    window.open(`https://wa.me/?text=${encoded}`, '_blank')
+    setOpen(false)
+  }
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Payment Receipt - ${payment.invoiceNumber}`,
+          text: paymentText,
+        })
+      } catch (e) {
+        // User cancelled
+      }
+      setOpen(false)
+    } else {
+      handleCopy()
+    }
+  }
+
+  return (
+    <div className="relative inline-block">
+      <button
+        onClick={() => setOpen(o => !o)}
+        title="Share Payment Record"
+        className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+      >
+        <Share2 className="h-3.5 w-3.5" />
+      </button>
+
+      {open && (
+        <>
+          {/* Backdrop */}
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          {/* Dropdown */}
+          <div className="absolute right-0 top-8 z-50 w-48 bg-card border rounded-xl shadow-lg overflow-hidden">
+            <div className="px-3 py-2 border-b">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Share Receipt</p>
+              <p className="text-[10px] text-muted-foreground truncate">{payment.invoiceNumber}</p>
+            </div>
+            <div className="p-1">
+              <button
+                onClick={handleWhatsApp}
+                className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-green-500/10 text-green-600 transition-colors"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Share on WhatsApp
+              </button>
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-blue-500/10 text-blue-600 transition-colors"
+              >
+                <Share2 className="h-4 w-4" />
+                Share / More...
+              </button>
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-muted transition-colors text-foreground"
+              >
+                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                {copied ? 'Copied!' : 'Copy Text'}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 export default function PaymentsTable({ payments }: PaymentsTableProps) {
@@ -103,6 +208,7 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
                   <th className="text-right py-3 px-4 font-medium text-muted-foreground">Due</th>
                   <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
                   <th className="text-left py-3 px-4 font-medium text-muted-foreground">Mode</th>
+                  <th className="text-center py-3 px-4 font-medium text-muted-foreground">Share</th>
                 </tr>
               </thead>
               <tbody>
@@ -127,6 +233,9 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
                       <Badge variant={statusColor[p.status] || 'secondary'}>{p.status}</Badge>
                     </td>
                     <td className="py-3 px-4 text-muted-foreground">{p.paymentMode}</td>
+                    <td className="py-3 px-4 text-center">
+                      <ShareDropdown payment={p} />
+                    </td>
                   </tr>
                 ))}
               </tbody>

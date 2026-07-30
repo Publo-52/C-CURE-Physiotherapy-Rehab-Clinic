@@ -16,15 +16,43 @@ export default function NewPatientPage() {
   const [loading, setLoading] = useState(false)
   const [gender, setGender] = useState('Male')
   const [status, setStatus] = useState('Active')
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const validate = (formData: FormData): boolean => {
+    const newErrors: Record<string, string> = {}
+    const name = (formData.get('name') as string)?.trim()
+    const phone = (formData.get('phone') as string)?.trim()
+    const age = formData.get('age') as string
+    const email = (formData.get('email') as string)?.trim()
+    const disease = (formData.get('disease') as string)?.trim()
+
+    if (!name || name.length < 2) newErrors.name = 'Full name is required (min 2 characters).'
+    if (!phone || !/^\+?[0-9]{10,15}$/.test(phone.replace(/\s/g, ''))) {
+      newErrors.phone = 'Enter a valid phone number (10–15 digits).'
+    }
+    if (age && (parseInt(age) < 1 || parseInt(age) > 120)) {
+      newErrors.age = 'Age must be between 1 and 120.'
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Enter a valid email address.'
+    }
+    if (!disease || disease.length < 2) {
+      newErrors.disease = 'Primary condition/disease is required.'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setLoading(true)
     const formData = new FormData(e.currentTarget)
-    // Manually add Select values since base-ui portals them outside the form
     formData.set('gender', gender)
     formData.set('status', status)
-    
+
+    if (!validate(formData)) return
+
+    setLoading(true)
     const result = await createPatient(formData)
     
     if (result.error) {
@@ -52,16 +80,19 @@ export default function NewPatientPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name *</Label>
-                <Input id="name" name="name" required placeholder="John Doe" />
+                <Input id="name" name="name" required placeholder="John Doe" className={errors.name ? 'border-destructive' : ''} />
+                {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number *</Label>
-                <Input id="phone" name="phone" required placeholder="+91 9876543210" />
+                <Input id="phone" name="phone" required placeholder="+91 9876543210" className={errors.phone ? 'border-destructive' : ''} />
+                {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
-                <Input id="email" name="email" type="email" placeholder="patient@example.com" />
+                <Input id="email" name="email" type="email" placeholder="patient@example.com" className={errors.email ? 'border-destructive' : ''} />
+                {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
               </div>
 
               <div className="space-y-2">
@@ -71,7 +102,8 @@ export default function NewPatientPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="age">Age</Label>
-                <Input id="age" name="age" type="number" placeholder="45" />
+                <Input id="age" name="age" type="number" placeholder="45" className={errors.age ? 'border-destructive' : ''} />
+                {errors.age && <p className="text-xs text-destructive">{errors.age}</p>}
               </div>
               
               <div className="space-y-2">
@@ -122,8 +154,9 @@ export default function NewPatientPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="disease">Primary Condition / Disease</Label>
-                <Input id="disease" name="disease" placeholder="e.g., Frozen Shoulder, Lumbar Spondylosis" />
+                <Label htmlFor="disease">Primary Condition / Disease *</Label>
+                <Input id="disease" name="disease" required placeholder="e.g., Frozen Shoulder, Lumbar Spondylosis" className={errors.disease ? 'border-destructive' : ''} />
+                {errors.disease && <p className="text-xs text-destructive">{errors.disease}</p>}
               </div>
 
               <div className="space-y-2">
