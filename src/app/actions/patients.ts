@@ -161,7 +161,10 @@ export async function togglePresentStatus(id: string, status: boolean) {
   try {
     const patient = await prisma.patient.update({
       where: { id },
-      data: { presentStatus: status }
+      data: { 
+        presentStatus: status,
+        visitDoneToday: false
+      }
     })
     revalidatePath('/patients')
     revalidatePath('/')
@@ -169,5 +172,23 @@ export async function togglePresentStatus(id: string, status: boolean) {
   } catch (error: any) {
     console.error('Error toggling present status:', error?.message || error)
     return { error: `Failed to update status: ${error?.message || 'Database error'}` }
+  }
+}
+
+export async function markVisitDone(id: string) {
+  try {
+    const patient = await prisma.patient.update({
+      where: { id },
+      data: {
+        presentStatus: false,
+        visitDoneToday: true
+      }
+    })
+    revalidatePath('/patients')
+    revalidatePath('/')
+    return { success: true, visitDoneToday: patient.visitDoneToday }
+  } catch (error: any) {
+    console.error('Error marking visit as done:', error?.message || error)
+    return { error: `Failed to mark visit done: ${error?.message || 'Database error'}` }
   }
 }

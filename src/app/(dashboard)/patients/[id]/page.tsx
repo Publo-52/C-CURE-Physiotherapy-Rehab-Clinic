@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Edit, User, Phone, Activity, MapPin, CalendarDays, IndianRupee, Mail, AlertCircle } from "lucide-react"
+import { Edit, User, Phone, Activity, MapPin, CalendarDays, IndianRupee, Mail, AlertCircle, FileText } from "lucide-react"
 import { DeletePatientButton } from "./delete-button"
+import { formatDate } from "@/lib/utils"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -65,6 +66,11 @@ export default async function PatientProfilePage({ params }: Props) {
           <Link href={`/patients/${patient.id}/payments/new`} className="flex-1 sm:flex-initial">
             <Button variant="default" size="sm" className="w-full">
               <IndianRupee className="h-4 w-4 mr-1.5" /> Record Payment
+            </Button>
+          </Link>
+          <Link href={`/patients/${patient.id}/invoice`}>
+            <Button variant="outline" size="sm" className="border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10">
+              <FileText className="h-4 w-4 mr-1.5" /> Generate Invoice
             </Button>
           </Link>
           <Link href={`/patients/${patient.id}/edit`}>
@@ -147,7 +153,7 @@ export default async function PatientProfilePage({ params }: Props) {
                         <li key={visit.id} className="flex justify-between items-center text-sm border-b pb-2 last:border-0 last:pb-0">
                           <div>
                             <p className="font-medium">Visit #{visit.visitNumber}</p>
-                            <p className="text-muted-foreground text-xs">{new Date(visit.date).toLocaleDateString()}</p>
+                            <p className="text-muted-foreground text-xs">{formatDate(visit.date)}</p>
                             {visit.treatmentGiven && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{visit.treatmentGiven}</p>}
                           </div>
                           <Badge variant="outline">{visit.type}</Badge>
@@ -176,7 +182,7 @@ export default async function PatientProfilePage({ params }: Props) {
                         <li key={payment.id} className="flex justify-between items-center text-sm border-b pb-2 last:border-0 last:pb-0">
                           <div>
                             <p className="font-medium font-mono text-xs">{payment.invoiceNumber}</p>
-                            <p className="text-muted-foreground text-xs">{new Date(payment.paymentDate).toLocaleDateString()}</p>
+                            <p className="text-muted-foreground text-xs">{formatDate(payment.paymentDate)}</p>
                           </div>
                           <div className="text-right">
                             <p className="font-medium text-green-600">₹{payment.amountPaidToday}</p>
@@ -288,7 +294,7 @@ export default async function PatientProfilePage({ params }: Props) {
                         {patient.visits.map((visit) => (
                           <tr key={visit.id} className="border-b last:border-0 hover:bg-muted/20">
                             <td className="py-3 px-4 font-medium">Visit #{visit.visitNumber}</td>
-                            <td className="py-3 px-4">{new Date(visit.date).toLocaleString()}</td>
+                            <td className="py-3 px-4">{formatDate(visit.date)}</td>
                             <td className="py-3 px-4"><Badge variant="outline">{visit.type}</Badge></td>
                             <td className="py-3 px-4">{visit.painBefore ?? 'N/A'} &rarr; {visit.painAfter ?? 'N/A'}</td>
                             <td className="py-3 px-4 max-w-xs truncate">{visit.treatmentGiven || '—'}</td>
@@ -332,7 +338,7 @@ export default async function PatientProfilePage({ params }: Props) {
                         {patient.payments.map((p) => (
                           <tr key={p.id} className="border-b last:border-0 hover:bg-muted/20">
                             <td className="py-3 px-4 font-mono font-medium">{p.invoiceNumber}</td>
-                            <td className="py-3 px-4">{new Date(p.paymentDate).toLocaleDateString()}</td>
+                            <td className="py-3 px-4">{formatDate(p.paymentDate)}</td>
                             <td className="py-3 px-4 text-right font-medium">₹{p.totalBill}</td>
                             <td className="py-3 px-4 text-right text-green-600 font-medium">₹{p.amountPaidToday}</td>
                             <td className={`py-3 px-4 text-right font-medium ${p.remainingDue > 0 ? 'text-destructive' : ''}`}>₹{p.remainingDue}</td>

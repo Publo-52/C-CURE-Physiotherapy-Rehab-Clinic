@@ -7,6 +7,7 @@ import { Search, Share2, Copy, Check, MessageCircle, Printer, Download } from 'l
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'react-hot-toast'
+import { formatDate } from '@/lib/utils'
 
 interface PaymentItem {
   id: string
@@ -40,7 +41,7 @@ function ShareDropdown({ payment }: { payment: PaymentItem }) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const dateStr = new Date(payment.paymentDate).toLocaleDateString('en-IN')
+  const dateStr = formatDate(payment.paymentDate)
   const paymentText = 
 `🏥 *C-CURE Physiotherapy & Rehab Clinic*
 👨‍⚕️ Dr. Sonatan Manna
@@ -304,7 +305,7 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
                       <span className="text-muted-foreground text-xs font-mono">{p.patient.patientId}</span>
                     </td>
                     <td className="py-3 px-4 text-muted-foreground text-xs">
-                      {new Date(p.paymentDate).toLocaleDateString()}
+                      {formatDate(p.paymentDate)}
                     </td>
                     <td className="py-3 px-4 text-right font-medium">₹{p.totalBill}</td>
                     <td className="py-3 px-4 text-right text-green-600 font-medium">₹{p.amountPaidToday}</td>

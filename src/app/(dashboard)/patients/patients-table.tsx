@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import { deletePatient, togglePresentStatus } from '@/app/actions/patients'
 import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
+import { formatDate } from '@/lib/utils'
 
 interface PatientItem {
   id: string
@@ -26,6 +27,7 @@ interface PatientItem {
   disease?: string | null
   status: string
   presentStatus: boolean
+  visitDoneToday: boolean
   registrationDate: Date | string
 }
 
@@ -40,11 +42,15 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [optimisticPresent, setOptimisticPresent] = useState<Record<string, boolean>>({})
+  const [optimisticDone, setOptimisticDone] = useState<Record<string, boolean>>({})
 
   // Initialize optimistic state from props if not set
   initialPatients.forEach(p => {
     if (optimisticPresent[p.id] === undefined) {
       optimisticPresent[p.id] = p.presentStatus
+    }
+    if (optimisticDone[p.id] === undefined) {
+      optimisticDone[p.id] = p.visitDoneToday
     }
   })
 
@@ -77,12 +83,14 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
 
   const handleTogglePresent = async (id: string, name: string, currentStatus: boolean) => {
     const nextStatus = !currentStatus
+    const originalDone = optimisticDone[id]
     
     // Optimistic update
     setOptimisticPresent(prev => ({ ...prev, [id]: nextStatus }))
+    setOptimisticDone(prev => ({ ...prev, [id]: false }))
     
-    toast(nextStatus ? `✅ Dr. Sonatan marked Present for ${name}` : `❌ Marked Absent for ${name}`, {
-      icon: nextStatus ? '🟢' : '🔴',
+    toast(nextStatus ? `Scheduled visit for ${name} today` : `Removed ${name} from today's visits`, {
+      icon: nextStatus ? '📅' : '🗑️',
       duration: 2000,
     })
 
@@ -92,6 +100,9 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
         toast.error(res.error)
         // Revert optimistic update
         setOptimisticPresent(prev => ({ ...prev, [id]: currentStatus }))
+        setOptimisticDone(prev => ({ ...prev, [id]: originalDone }))
+      } else {
+        router.refresh()
       }
     })
   }
@@ -139,12 +150,7 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
               <TableHead>Condition</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Registered</TableHead>
-              <TableHead className="text-center">
-                <span className="flex items-center gap-1 justify-center">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                  Present
-                </span>
-              </TableHead>
+              <TableHead className="text-center">To Visit Today</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -158,6 +164,7 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
             ) : (
               filteredPatients.map((patient) => {
                 const isPresent = optimisticPresent[patient.id]
+                const isDone = optimisticDone[patient.id]
                 return (
                   <TableRow key={patient.id} className="hover:bg-muted/30">
                     <TableCell className="font-medium font-mono text-xs">{patient.patientId}</TableCell>
@@ -179,25 +186,30 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
-                      {new Date(patient.registrationDate).toLocaleDateString()}
+                      {formatDate(patient.registrationDate)}
                     </TableCell>
-                    {/* Present Toggle Column */}
+                    {/* To Visit Checkbox Column */}
                     <TableCell className="text-center">
-                      <button
-                        onClick={() => handleTogglePresent(patient.id, patient.name, isPresent)}
-                        title={isPresent ? 'Doctor Present — click to mark Absent' : 'Mark Doctor as Present'}
-                        disabled={isPending}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all border ${
-                          isPresent
-                            ? 'bg-green-500/10 text-green-600 border-green-500/30 hover:bg-green-500/20'
-                            : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
-                        }`}
-                      >
-                        {isPresent
-                          ? <><CheckCircle2 className="h-3.5 w-3.5" /> Present</>
-                          : <><XCircle className="h-3.5 w-3.5" /> Absent</>
-                        }
-                      </button>
+                      <div className="flex justify-center">
+                        {isDone ? (
+                          <button
+                            onClick={() => handleTogglePresent(patient.id, patient.name, true)}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-600 border border-green-500/30 hover:bg-green-500/20 cursor-pointer transition-colors"
+                            title="Marked Done today — click to reset"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Done
+                          </button>
+                        ) : (
+                          <input
+                            type="checkbox"
+                            checked={isPresent}
+                            disabled={isPending}
+                            onChange={() => handleTogglePresent(patient.id, patient.name, isPresent)}
+                            className="h-4 w-4 rounded-md border-input bg-background text-primary focus:ring-ring focus:ring-2 focus:ring-offset-2 accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                            title={isPresent ? "Scheduled to visit — uncheck to remove" : "Check to schedule visit today"}
+                          />
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">

@@ -24,6 +24,7 @@ export default function NewPaymentPage() {
   const [extraCharges, setExtraCharges] = useState(0)
   const [discount, setDiscount] = useState(0)
   const [amountPaidToday, setAmountPaidToday] = useState(0)
+  const [defaultPaymentDate] = useState(() => new Date().toISOString().slice(0, 16))
   const [previousDue, setPreviousDue] = useState(0)
 
   const totalBill = consultationFee + visitFee + extraCharges - discount
@@ -66,7 +67,7 @@ export default function NewPaymentPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="paymentDate">Payment Date *</Label>
-                  <Input id="paymentDate" name="paymentDate" type="datetime-local" required defaultValue={new Date().toISOString().slice(0, 16)} />
+                  <Input id="paymentDate" name="paymentDate" type="datetime-local" required defaultValue={defaultPaymentDate} />
                 </div>
                 
                 <div className="space-y-2">

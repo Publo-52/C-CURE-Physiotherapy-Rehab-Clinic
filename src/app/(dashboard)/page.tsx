@@ -6,6 +6,7 @@ import { Users, IndianRupee, Activity, Calendar, UserPlus, ArrowRight, CheckCirc
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import DashboardChart from "./dashboard-chart"
+import { VisitQueue } from "./visit-queue"
 
 export default async function DashboardPage() {
   // Fetch KPI data
@@ -33,6 +34,18 @@ export default async function DashboardPage() {
 
   const presentPatients = await prisma.patient.count({
     where: { presentStatus: true }
+  })
+
+  const queuePatients = await prisma.patient.findMany({
+    where: { presentStatus: true },
+    select: {
+      id: true,
+      patientId: true,
+      name: true,
+      phone: true,
+      disease: true
+    },
+    orderBy: { name: 'asc' }
   })
 
   const todaysVisitsData = await prisma.visit.findMany({
@@ -235,29 +248,43 @@ export default async function DashboardPage() {
             <DashboardChart data={chartData} />
           </CardContent>
         </Card>
-        <Card className="lg:col-span-3">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Recent Patients</CardTitle>
-            <Link href="/patients" className="text-xs text-primary hover:underline flex items-center gap-1">
-              View All <ArrowRight className="h-3 w-3" />
-            </Link>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentPatients.map(patient => (
-                <Link key={patient.id} href={`/patients/${patient.id}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div>
-                    <p className="text-sm font-medium leading-none">{patient.name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {patient.phone} • {patient.disease || 'General'}
-                    </p>
-                  </div>
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-mono">{patient.patientId}</span>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-3 space-y-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Today's Visit Queue</CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">Active patients scheduled for visits today</p>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <VisitQueue initialPatients={queuePatients} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Recent Patients</CardTitle>
+              <Link href="/patients" className="text-xs text-primary hover:underline flex items-center gap-1">
+                View All <ArrowRight className="h-3 w-3" />
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentPatients.map(patient => (
+                  <Link key={patient.id} href={`/patients/${patient.id}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div>
+                      <p className="text-sm font-medium leading-none">{patient.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {patient.phone} • {patient.disease || 'General'}
+                      </p>
+                    </div>
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-mono">{patient.patientId}</span>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

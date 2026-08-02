@@ -17,6 +17,7 @@ export default function NewVisitPage() {
   const patientId = params.id as string
   const [loading, setLoading] = useState(false)
   const [visitType, setVisitType] = useState('Clinic Visit')
+  const [defaultVisitDate] = useState(() => new Date().toISOString().slice(0, 16))
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -53,7 +54,7 @@ export default function NewVisitPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="date">Visit Date & Time *</Label>
-                <Input id="date" name="date" type="datetime-local" required defaultValue={new Date().toISOString().slice(0, 16)} />
+                <Input id="date" name="date" type="datetime-local" required defaultValue={defaultVisitDate} />
               </div>
               
               <div className="space-y-2">
