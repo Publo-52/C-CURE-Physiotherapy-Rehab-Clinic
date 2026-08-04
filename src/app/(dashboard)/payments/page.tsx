@@ -23,10 +23,10 @@ export default async function PaymentsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Collected</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-500" />
+            <TrendingUp className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">₹{totalCollected.toFixed(0)}</div>
+            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">₹{totalCollected.toFixed(0)}</div>
             <p className="text-xs text-muted-foreground">Total payments received</p>
           </CardContent>
         </Card>
@@ -43,10 +43,10 @@ export default async function PaymentsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Accounts</CardTitle>
-            <AlertCircle className="h-4 w-4 text-orange-500" />
+            <AlertCircle className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-500">{overduePayments.length}</div>
+            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{overduePayments.length}</div>
             <p className="text-xs text-muted-foreground">patients with pending dues</p>
           </CardContent>
         </Card>

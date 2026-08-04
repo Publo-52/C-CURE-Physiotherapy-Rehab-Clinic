@@ -25,8 +25,10 @@ export default function DashboardChart({ data }: DashboardChartProps) {
               backgroundColor: 'var(--card)', 
               borderColor: 'var(--border)', 
               borderRadius: '8px',
-              fontSize: '12px'
-            }} 
+              fontSize: '12px',
+              color: 'var(--foreground)'
+            }}
+            labelStyle={{ color: 'var(--muted-foreground)' }}
             formatter={(value: any, name: any) => [
               name === 'revenue' ? `₹${value}` : `${value} visits`,
               name === 'revenue' ? 'Revenue' : 'Visits'

@@ -42,7 +42,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-xl border-t-4 border-t-primary">
         <CardHeader className="space-y-4 text-center pb-6">
           <div className="flex justify-center">
-            <div className="bg-white border rounded-2xl p-2.5 shadow-sm">
+            <div className="bg-card border border-border/40 rounded-2xl p-2.5 shadow-sm">
               <img src="/logo.jpg" alt="C-CURE Logo" className="h-28 w-auto object-contain" />
             </div>
           </div>

@@ -87,37 +87,38 @@
 
 /* ── Dark Mode ───────────────────────────────────────────────────── */
 .dark {
-  --background: oklch(0.13 0.015 250);
-  --foreground: oklch(0.96 0.005 210);
-  --card: oklch(0.18 0.015 245);
-  --card-foreground: oklch(0.96 0.005 210);
-  --popover: oklch(0.18 0.015 245);
-  --popover-foreground: oklch(0.96 0.005 210);
-  --primary: oklch(0.65 0.17 190);
+  --background: oklch(0.135 0.015 250);
+  --foreground: oklch(0.95 0.006 210);
+  --card: oklch(0.185 0.016 245);
+  --card-foreground: oklch(0.95 0.006 210);
+  --popover: oklch(0.185 0.016 245);
+  --popover-foreground: oklch(0.95 0.006 210);
+  /* Brighter teal in dark for contrast */
+  --primary: oklch(0.68 0.16 190);
   --primary-foreground: oklch(0.10 0.02 250);
-  --secondary: oklch(0.22 0.02 245);
+  --secondary: oklch(0.23 0.02 245);
   --secondary-foreground: oklch(0.90 0.005 210);
-  --muted: oklch(0.22 0.015 245);
-  --muted-foreground: oklch(0.65 0.02 220);
-  --accent: oklch(0.24 0.03 200);
+  --muted: oklch(0.23 0.016 245);
+  --muted-foreground: oklch(0.68 0.02 220);
+  --accent: oklch(0.26 0.03 200);
   --accent-foreground: oklch(0.92 0.01 200);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.65 0.17 190);
-  --chart-1: oklch(0.65 0.17 190);
-  --chart-2: oklch(0.72 0.14 170);
-  --chart-3: oklch(0.60 0.10 210);
-  --chart-4: oklch(0.50 0.14 240);
-  --chart-5: oklch(0.40 0.08 260);
-  --sidebar: oklch(0.16 0.015 248);
-  --sidebar-foreground: oklch(0.96 0.005 210);
-  --sidebar-primary: oklch(0.65 0.17 190);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.68 0.16 190);
+  --chart-1: oklch(0.68 0.16 190);
+  --chart-2: oklch(0.74 0.14 170);
+  --chart-3: oklch(0.62 0.10 210);
+  --chart-4: oklch(0.52 0.14 240);
+  --chart-5: oklch(0.42 0.08 260);
+  --sidebar: oklch(0.165 0.016 248);
+  --sidebar-foreground: oklch(0.95 0.006 210);
+  --sidebar-primary: oklch(0.68 0.16 190);
   --sidebar-primary-foreground: oklch(0.10 0.02 250);
-  --sidebar-accent: oklch(0.24 0.03 200);
+  --sidebar-accent: oklch(0.26 0.03 200);
   --sidebar-accent-foreground: oklch(0.92 0.01 200);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.65 0.17 190);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.68 0.16 190);
 }
 
 @layer base {
@@ -138,54 +139,77 @@
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.52 0.16 195 / 30%);
+    background: oklch(0.52 0.16 195 / 35%);
     border-radius: 99px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.52 0.16 195 / 60%);
+    background: oklch(0.52 0.16 195 / 65%);
   }
 }
 
 @layer utilities {
+  /* Glassmorphism — light */
   .glass {
-    background: oklch(1 0 0 / 70%);
+    background: oklch(1 0 0 / 75%);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid oklch(1 0 0 / 20%);
+    border: 1px solid oklch(1 0 0 / 25%);
   }
-  .dark .glass {
-    background: oklch(0.18 0.015 245 / 70%);
-    border-color: oklch(1 0 0 / 8%);
-  }
+
+  /* card-hover lift effect */
   .card-hover {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   .card-hover:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 40px oklch(0.52 0.16 195 / 12%);
+    box-shadow: 0 12px 40px oklch(0.52 0.16 195 / 14%);
   }
+
+  /* Gradient text — teal to blue */
   .gradient-text {
-    background: linear-gradient(135deg, oklch(0.52 0.16 195), oklch(0.40 0.14 230));
+    background: linear-gradient(135deg, oklch(0.52 0.16 195), oklch(0.42 0.14 230));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
+  /* Fade-in animation */
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   .fade-in-up { animation: fadeInUp 0.4s ease both; }
 
+  /* Pulsing live indicator dot */
   @keyframes pulseDot {
     0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.5; transform: scale(0.85); }
+    50%       { opacity: 0.45; transform: scale(0.8); }
   }
   .pulse-dot { animation: pulseDot 2s ease-in-out infinite; }
 
+  /* Slide in from left */
   @keyframes slideInLeft {
     from { opacity: 0; transform: translateX(-16px); }
     to   { opacity: 1; transform: translateX(0); }
   }
   .slide-in-left { animation: slideInLeft 0.35s ease both; }
+}
+
+/* ── Dark mode glass override (plain CSS, works without Tailwind variant) ── */
+.dark .glass {
+  background: oklch(0.185 0.016 245 / 80%);
+  border-color: oklch(1 0 0 / 10%);
+}
+
+/* Dark mode card-hover shadow */
+.dark .card-hover:hover {
+  box-shadow: 0 12px 40px oklch(0.68 0.16 190 / 18%);
+}
+
+/* Dark mode gradient text (brighter for dark backgrounds) */
+.dark .gradient-text {
+  background: linear-gradient(135deg, oklch(0.72 0.16 190), oklch(0.62 0.14 225));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

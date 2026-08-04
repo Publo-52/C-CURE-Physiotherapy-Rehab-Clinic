@@ -65,7 +65,7 @@ export function Sidebar({ profile }: SidebarProps) {
       <div className="flex flex-col border-b bg-gradient-to-b from-primary/10 to-primary/5 px-4 pt-4 pb-4 space-y-3">
 
         {/* Clinic Logo Header */}
-        <div className="flex justify-center bg-white border border-border/40 rounded-2xl p-2.5 shadow-sm">
+        <div className="flex justify-center bg-card border border-border/40 rounded-2xl p-2.5 shadow-sm">
           <img
             src="/logo.jpg"
             alt="C-CURE Logo"

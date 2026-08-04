@@ -37,7 +37,7 @@ export function Header({ profile }: HeaderProps) {
   const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between px-4 md:px-6 shadow-sm" style={{background:'oklch(1 0 0 / 90%)', backdropFilter:'blur(16px)', borderBottom:'1px solid oklch(0.91 0.008 210)', borderBottomColor:'oklch(0.52 0.16 195 / 20%)'}}>
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between px-4 md:px-6 bg-background/90 dark:bg-background/95 backdrop-blur-md border-b border-primary/15 shadow-sm">
       <div className="flex items-center md:hidden w-full justify-between">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger render={<Button variant="ghost" size="icon" className="mr-2" />}>

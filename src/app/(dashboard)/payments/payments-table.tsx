@@ -308,7 +308,7 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
                       {formatDate(p.paymentDate)}
                     </td>
                     <td className="py-3 px-4 text-right font-medium">₹{p.totalBill}</td>
-                    <td className="py-3 px-4 text-right text-green-600 font-medium">₹{p.amountPaidToday}</td>
+                    <td className="py-3 px-4 text-right text-emerald-600 dark:text-emerald-400 font-medium">₹{p.amountPaidToday}</td>
                     <td className={`py-3 px-4 text-right font-medium ${p.remainingDue > 0 ? 'text-destructive' : ''}`}>
                       ₹{p.remainingDue}
                     </td>
