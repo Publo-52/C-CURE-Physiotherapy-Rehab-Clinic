@@ -20,7 +20,7 @@ export const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Patients", href: "/patients", icon: Users },
   { name: "Payments", href: "/payments", icon: IndianRupee },
-  { name: "Calendar", href: "/calendar", icon: Calendar },
+  { name: "Scheduler", href: "/calendar", icon: Calendar },
   { name: "Settings", href: "/settings", icon: Settings },
 ]
 

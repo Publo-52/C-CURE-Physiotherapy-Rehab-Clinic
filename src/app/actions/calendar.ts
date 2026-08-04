@@ -32,3 +32,72 @@ export async function updateVisitDate(visitId: string, newDateStr: string) {
     return { error: 'Failed to update visit date' }
   }
 }
+
+export async function createScheduledVisit(data: {
+  patientId: string
+  date: string
+  type: string
+  duration?: number
+  treatmentGiven?: string
+  exerciseGiven?: string
+  notes?: string
+}) {
+  try {
+    const { patientId, date, type, duration = 30, treatmentGiven, exerciseGiven, notes } = data
+    if (!patientId || !date || !type) {
+      return { error: 'Patient, Date, and Type are required.' }
+    }
+
+    const lastVisit = await prisma.visit.findFirst({
+      where: { patientId },
+      orderBy: { visitNumber: 'desc' },
+    })
+    const visitNumber = lastVisit ? lastVisit.visitNumber + 1 : 1
+
+    const visit = await prisma.visit.create({
+      data: {
+        patientId,
+        visitNumber,
+        date: new Date(date),
+        type,
+        duration,
+        treatmentGiven,
+        exerciseGiven,
+        notes,
+        status: 'Scheduled',
+      },
+      include: {
+        patient: {
+          select: {
+            id: true,
+            name: true,
+            patientId: true,
+            phone: true,
+          }
+        }
+      }
+    })
+
+    revalidatePath('/calendar')
+    revalidatePath('/')
+    return { success: true, visit }
+  } catch (error: any) {
+    console.error('Error creating scheduled visit:', error)
+    return { error: error.message || 'Failed to create visit' }
+  }
+}
+
+export async function deleteVisit(visitId: string) {
+  try {
+    await prisma.visit.delete({
+      where: { id: visitId }
+    })
+    revalidatePath('/calendar')
+    revalidatePath('/')
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error deleting visit:', error)
+    return { error: 'Failed to delete visit' }
+  }
+}
+

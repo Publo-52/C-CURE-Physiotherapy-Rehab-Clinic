@@ -28,12 +28,18 @@ export default async function CalendarPage() {
 
   try {
     patients = await prisma.patient.findMany({
+      where: {
+        status: 'Active'
+      },
       select: {
         id: true,
         name: true,
         patientId: true,
       },
-      take: 50
+      orderBy: {
+        name: 'asc'
+      },
+      take: 1000
     })
   } catch (error) {
     console.error('Calendar: Failed to load patients:', error)
