@@ -11,14 +11,34 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 
-export function Header() {
+interface HeaderProps {
+  profile?: {
+    practitionerName: string
+    clinicName: string
+    phone: string
+    email: string
+    address: string
+    workingHours: string
+  } | null
+}
+
+export function Header({ profile }: HeaderProps) {
   const { theme, setTheme } = useTheme()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
+  const name = profile?.practitionerName || 'Sanatan Manna'
+  const clinicName = profile?.clinicName || 'C-CURE Physiotherapy & Rehab Clinic'
+  const phone = profile?.phone || '7942688985'
+  const email = profile?.email || 'sanatan.manna28072015@gmail.com'
+  const address = profile?.address || 'Moyna, Midnapore, West Bengal'
+  const workingHours = profile?.workingHours || 'Open 24 Hours'
+
+  const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 shadow-sm">
-      <div className="flex items-center md:hidden">
+      <div className="flex items-center md:hidden w-full justify-between">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger render={<Button variant="ghost" size="icon" className="mr-2" />}>
             <Menu className="h-5 w-5" />
@@ -26,27 +46,35 @@ export function Header() {
           </SheetTrigger>
           <SheetContent side="left" className="w-64 p-0">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+            
             {/* Mobile Clinic Header */}
-            <div className="flex flex-col items-center border-b px-4 py-4 bg-primary/5">
-              <div className="flex items-center gap-2 mb-3 w-full">
-                <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary-foreground text-[10px] font-bold">CC</span>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-primary leading-tight uppercase tracking-wide">C-CURE</p>
-                  <p className="text-[9px] text-muted-foreground leading-tight">Physiotherapy & Rehab Clinic</p>
-                </div>
+            <div className="flex flex-col border-b bg-gradient-to-b from-primary/10 to-primary/5 px-4 pt-4 pb-4 space-y-3">
+              {/* Logo */}
+              <div className="flex justify-center bg-white border border-border/40 rounded-2xl p-2 shadow-sm">
+                <img
+                  src="/logo.jpg"
+                  alt="C-CURE Logo"
+                  className="h-14 w-auto object-contain"
+                />
               </div>
-              <div className="flex items-center gap-2 w-full bg-background/50 rounded-lg p-2 border">
-                <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border-2 border-primary/30">
-                  <Image src="/doctor-sonatan.png" alt="Dr. Sonatan Manna" width={32} height={32} className="object-cover w-full h-full" />
+
+              {/* Profile details */}
+              <div className="bg-background/80 backdrop-blur-sm rounded-xl border border-border/50 p-2.5 space-y-1.5 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <div className="h-9 w-9 rounded-full overflow-hidden flex-shrink-0 bg-muted">
+                    <img src="/doctor-sonatan.png" alt={name} className="object-cover w-full h-full" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold truncate leading-tight">{name}</p>
+                    <p className="text-[9px] text-primary font-semibold mt-0.5">Physiotherapist</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-semibold leading-tight">Dr. Sonatan Manna</p>
-                  <p className="text-[10px] text-muted-foreground">Physiotherapist</p>
-                </div>
+                <div className="border-t border-border/50 my-1" />
+                <p className="text-[9px] text-muted-foreground font-semibold">📞 {phone}</p>
+                <p className="text-[9px] text-muted-foreground font-semibold truncate">✉️ {email}</p>
               </div>
             </div>
+
             <div className="flex-1 overflow-auto py-4">
               <nav className="space-y-1 px-4">
                 {navItems.map((item) => {
@@ -57,16 +85,16 @@ export function Header() {
                       href={item.href}
                       onClick={() => setOpen(false)}
                       className={cn(
-                        "flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                        "flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold transition-all",
                         isActive
-                          ? "bg-primary/10 text-primary"
+                          ? "bg-primary text-primary-foreground shadow-sm"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
                       <item.icon
                         className={cn(
-                          "mr-3 h-5 w-5 flex-shrink-0",
-                          isActive ? "text-primary" : "text-muted-foreground"
+                          "mr-3 h-4.5 w-4.5 flex-shrink-0",
+                          isActive ? "text-primary-foreground" : "text-muted-foreground"
                         )}
                         aria-hidden="true"
                       />
@@ -78,15 +106,10 @@ export function Header() {
             </div>
           </SheetContent>
         </Sheet>
-        {/* Mobile title */}
-        <div className="flex items-center gap-1.5">
-          <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground text-[9px] font-bold">CC</span>
-          </div>
-          <div>
-            <p className="text-[11px] font-bold text-primary uppercase tracking-wide leading-tight">C-CURE</p>
-            <p className="text-[9px] text-muted-foreground leading-tight hidden sm:block">Physiotherapy & Rehab</p>
-          </div>
+
+        {/* Mobile Navbar Logo */}
+        <div className="flex items-center gap-2">
+          <img src="/logo.jpg" alt="Logo" className="h-7 w-auto object-contain bg-white p-0.5 rounded-lg border shadow-sm" />
         </div>
       </div>
       {/* Desktop center branding */}

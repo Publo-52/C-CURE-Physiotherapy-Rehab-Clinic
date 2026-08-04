@@ -476,11 +476,14 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                                 draggable={true}
                                 onDragStart={(e) => handleDragStart(e, item.id)}
                                 onClick={() => setSelectedDetail({ type: item.itemType, data: item.original })}
-                                className={`w-full text-left px-2 py-1 rounded-lg text-[10px] font-bold truncate cursor-grab active:cursor-grabbing border ${st.bg} ${st.text} ${st.border} hover:scale-[1.01] transition-all flex items-center gap-1.5 shadow-sm`}
+                                className={`w-full text-left px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg text-[9px] sm:text-[10px] font-bold truncate cursor-grab active:cursor-grabbing border ${st.bg} ${st.text} ${st.border} hover:scale-[1.01] transition-all flex items-center justify-center sm:justify-between gap-1 shadow-sm`}
                               >
-                                <IconComponent className="h-3 w-3 flex-shrink-0 opacity-80" />
-                                <span className="truncate flex-1">{item.title}</span>
-                                <GripVertical className="h-3 w-3 opacity-30 flex-shrink-0" />
+                                <span className={`sm:hidden block h-1.5 w-1.5 rounded-full ${st.dot}`} />
+                                <span className="hidden sm:inline-flex items-center gap-1.5 w-full min-w-0">
+                                  <IconComponent className="h-3 w-3 flex-shrink-0 opacity-80" />
+                                  <span className="truncate flex-1">{item.title}</span>
+                                  <GripVertical className="h-3 w-3 opacity-30 flex-shrink-0" />
+                                </span>
                               </button>
                             )
                           })}
