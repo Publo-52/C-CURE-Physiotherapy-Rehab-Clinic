@@ -37,7 +37,7 @@ export function Header({ profile }: HeaderProps) {
   const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 shadow-sm">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between px-4 md:px-6 shadow-sm" style={{background:'oklch(1 0 0 / 90%)', backdropFilter:'blur(16px)', borderBottom:'1px solid oklch(0.91 0.008 210)', borderBottomColor:'oklch(0.52 0.16 195 / 20%)'}}>
       <div className="flex items-center md:hidden w-full justify-between">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger render={<Button variant="ghost" size="icon" className="mr-2" />}>
@@ -114,7 +114,7 @@ export function Header({ profile }: HeaderProps) {
       </div>
       {/* Desktop center branding */}
       <div className="hidden md:flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-        <span className="text-sm font-semibold text-muted-foreground">C-CURE Physiotherapy & Rehab Clinic</span>
+        <span className="text-sm font-semibold gradient-text">C-CURE Physiotherapy &amp; Rehab Clinic</span>
       </div>
       <div className="flex items-center space-x-4 ml-auto">
         <Button
