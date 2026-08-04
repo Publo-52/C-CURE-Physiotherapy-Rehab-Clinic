@@ -31,7 +31,8 @@ export default async function DashboardPage() {
     recentPatients,
     totalOutstandingDuesResult,
     pastPayments,
-    upcomingEvents,
+    rawEvents,
+    scheduledVisits,
   ] = await Promise.all([
     prisma.payment.aggregate({ _sum: { amountPaidToday: true } }),
     prisma.patient.count({ where: { status: 'Active' } }),
@@ -59,9 +60,12 @@ export default async function DashboardPage() {
       select: { amountPaidToday: true, paymentDate: true },
     }),
     prisma.event.findMany({
-      where: { date: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }, // show from 24h ago onwards so events don't disappear mid-day
       orderBy: { date: 'asc' },
-      take: 5,
+    }),
+    prisma.visit.findMany({
+      where: { status: 'Scheduled' },
+      orderBy: { date: 'asc' },
+      include: { patient: { select: { name: true, patientId: true } } },
     }),
   ])
 
@@ -69,6 +73,26 @@ export default async function DashboardPage() {
   const totalOutstandingDues = totalOutstandingDuesResult._sum.remainingDue || 0
   const todaysCompletedSessions = todaysVisitsData.filter(v => v.status === 'Completed').length
   const absentPatients = todaysVisitsData.filter(v => !v.patient.presentStatus).length
+
+  // Merge general events + scheduled patient visits into one unified upcoming list
+  const upcomingEvents = [
+    ...rawEvents.map(e => ({
+      id: e.id,
+      title: e.title,
+      date: e.date,
+      type: e.type,
+      kind: 'event' as const,
+    })),
+    ...scheduledVisits.map(v => ({
+      id: v.id,
+      title: v.patient?.name ? `Visit: ${v.patient.name}` : 'Patient Visit',
+      date: v.date,
+      type: v.type || 'Clinic Visit',
+      kind: 'visit' as const,
+    })),
+  ]
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 5)
 
   const daysMap: Record<string, { revenue: number; visits: number }> = {}
   for (let i = 0; i < 7; i++) {
