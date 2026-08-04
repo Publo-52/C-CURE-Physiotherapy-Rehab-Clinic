@@ -16,6 +16,7 @@ interface Profile {
   practitionerName: string
   clinicName: string
   phone: string
+  email: string
   address: string
   about?: string | null
   workingHours: string
@@ -34,6 +35,7 @@ export default function SettingsForm({ profile }: SettingsFormProps) {
   const [practitionerName, setPractitionerName] = useState(profile.practitionerName)
   const [clinicName, setClinicName] = useState(profile.clinicName)
   const [phone, setPhone] = useState(profile.phone)
+  const [email, setEmail] = useState(profile.email || 'sanatan.manna28072015@gmail.com')
   const [address, setAddress] = useState(profile.address)
   const [about, setAbout] = useState(profile.about || '')
   const [workingHours, setWorkingHours] = useState(profile.workingHours)
@@ -112,6 +114,19 @@ export default function SettingsForm({ profile }: SettingsFormProps) {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="7942688985"
+                    required
+                    className="font-semibold"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="email">Email Address *</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="sanatan.manna28072015@gmail.com"
                     required
                     className="font-semibold"
                   />

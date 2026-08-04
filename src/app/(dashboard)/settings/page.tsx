@@ -8,6 +8,7 @@ export default async function SettingsPage() {
     practitionerName: 'Sanatan Manna',
     clinicName: 'C-CURE Physiotherapy & Rehab Clinic',
     phone: '7942688985',
+    email: 'sanatan.manna28072015@gmail.com',
     address: 'Moyna Hospital, More Moyna, Tamluk, Moyna, Midnapore-721629, West Bengal',
     about: '',
     workingHours: 'Open 24 Hours — Monday to Sunday',

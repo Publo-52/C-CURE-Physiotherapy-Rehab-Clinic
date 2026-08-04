@@ -200,6 +200,7 @@ model ClinicProfile {
   practitionerName String  @default("Sanatan Manna")
   clinicName      String   @default("C-CURE Physiotherapy & Rehab Clinic")
   phone           String   @default("7942688985")
+  email           String   @default("sanatan.manna28072015@gmail.com")
   address         String   @default("Moyna Hospital, More Moyna, Tamluk, Moyna, Midnapore-721629, West Bengal")
   about           String?  @db.Text
   workingHours    String   @default("Open 24 Hours — Monday to Sunday")

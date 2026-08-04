@@ -4,36 +4,34 @@ import prisma from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { formatDate } from '@/lib/utils'
 import { InvoiceActions } from './invoice-actions'
+import { getClinicProfile } from '@/app/actions/profile'
 
 interface Props {
   params: Promise<{ id: string }>
 }
 
-// ─── Clinic / Doctor constants ───────────────────────────────────────────────
-const CLINIC = {
-  name: 'C-CURE Physiotherapy & Rehab Clinic',
-  tagline: 'Advanced Physiotherapy, Rehabilitation & Pain Management',
-  doctor: 'Dr. Sonatan Manna',
-  qualification: 'BPT, MPT (Orthopaedics & Sports)',
-  regNo: 'Reg. No.: WB-PT-XXXX',
-  phone: '+91 XXXXX XXXXX',
-  email: 'drsonate@ccurephysio.com',
-  address: 'Insert Clinic Address, City, State — PIN',
-  timings: 'Mon – Sat: 9:00 AM – 7:00 PM',
-}
-
 export default async function PatientInvoicePage({ params }: Props) {
   const { id } = await params
 
-  const patient = await prisma.patient.findUnique({
-    where: { id },
-    include: {
-      payments: { orderBy: { paymentDate: 'desc' } },
-      visits: { orderBy: { date: 'desc' }, take: 1 },
-    },
-  })
+  const [patient, profile] = await Promise.all([
+    prisma.patient.findUnique({
+      where: { id },
+      include: {
+        payments: { orderBy: { paymentDate: 'desc' } },
+        visits: { orderBy: { date: 'desc' }, take: 1 },
+      },
+    }),
+    getClinicProfile()
+  ])
 
   if (!patient) return notFound()
+
+  const clinicName = profile?.clinicName || 'C-CURE Physiotherapy & Rehab Clinic'
+  const practitionerName = profile?.practitionerName || 'Sanatan Manna'
+  const phone = profile?.phone || '7942688985'
+  const email = profile?.email || 'sanatan.manna28072015@gmail.com'
+  const address = profile?.address || 'Moyna, Midnapore, West Bengal'
+  const workingHours = profile?.workingHours || 'Open 24 Hours'
 
   // ─── Financial aggregates ─────────────────────────────────────────────────
   const totalBilled = patient.payments.reduce((s, p) => s + p.totalBill, 0)
@@ -67,22 +65,25 @@ export default async function PatientInvoicePage({ params }: Props) {
         <div className="invoice-document bg-white dark:bg-card border rounded-2xl shadow-lg overflow-hidden print:shadow-none print:border-0">
 
           {/* ── Header / Letterhead ───────────────────────────────── */}
-          <div className="bg-gradient-to-r from-sky-600 to-indigo-600 text-white px-8 py-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-              <div>
-                <div className="text-2xl font-bold tracking-tight">{CLINIC.name}</div>
-                <div className="text-sky-100 text-sm mt-0.5">{CLINIC.tagline}</div>
-                <div className="mt-3 text-sm text-sky-50 space-y-0.5">
-                  <div className="font-semibold text-base text-white">{CLINIC.doctor}</div>
-                  <div>{CLINIC.qualification}</div>
-                  <div>{CLINIC.regNo}</div>
+          <div className="bg-gradient-to-r from-sky-600 to-indigo-600 text-white px-8 py-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-4">
+                <div className="bg-white p-1.5 rounded-xl shrink-0 shadow-sm">
+                  <img src="/logo.jpg" alt="C-CURE Logo" className="h-16 w-auto object-contain" />
+                </div>
+                <div>
+                  <div className="text-xl font-bold tracking-tight">{clinicName}</div>
+                  <div className="text-sky-100 text-xs mt-0.5">Advanced Physiotherapy &amp; Rehab Clinic</div>
+                  <div className="mt-2 text-xs text-sky-50">
+                    <span className="font-semibold text-sm text-white">{practitionerName}</span> (Physiotherapist)
+                  </div>
                 </div>
               </div>
-              <div className="text-right text-sm text-sky-100 space-y-0.5 shrink-0">
-                <div>📞 {CLINIC.phone}</div>
-                <div>✉️ {CLINIC.email}</div>
-                <div>🕐 {CLINIC.timings}</div>
-                <div className="text-xs mt-2 max-w-[220px] text-sky-200">{CLINIC.address}</div>
+              <div className="text-right text-xs text-sky-100 space-y-0.5 shrink-0 self-end sm:self-center">
+                <div>📞 {phone}</div>
+                <div>✉️ {email}</div>
+                <div>🕐 {workingHours}</div>
+                <div className="text-xs mt-1.5 max-w-[240px] text-sky-200 leading-snug">{address}</div>
               </div>
             </div>
           </div>
@@ -201,19 +202,19 @@ export default async function PatientInvoicePage({ params }: Props) {
                 <p className="text-base font-semibold text-foreground">Terms & Notes</p>
                 <p>• Payments once made are non-refundable unless otherwise agreed.</p>
                 <p>• This invoice is computer-generated and is valid without signature.</p>
-                <p>• For queries, contact us at {CLINIC.phone}.</p>
+                <p>• For queries, contact us at {phone}.</p>
               </div>
               <div className="text-right shrink-0">
                 <div className="h-12 w-40 border-b-2 border-dashed border-muted-foreground/40 mb-1" />
-                <p className="font-semibold text-sm">{CLINIC.doctor}</p>
-                <p className="text-xs text-muted-foreground">{CLINIC.qualification}</p>
-                <p className="text-xs text-muted-foreground">{CLINIC.name}</p>
+                <p className="font-semibold text-sm">{practitionerName}</p>
+                <p className="text-xs text-muted-foreground">Physiotherapist</p>
+                <p className="text-xs text-muted-foreground">{clinicName}</p>
               </div>
             </div>
 
             {/* ── Thank you strip ───────────────────────────────── */}
             <div className="text-center py-4 rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-sky-900/20 dark:to-indigo-900/20 border">
-              <p className="text-sm font-medium text-foreground">🙏 Thank you for choosing {CLINIC.name}.</p>
+              <p className="text-sm font-medium text-foreground">🙏 Thank you for choosing {clinicName}.</p>
               <p className="text-xs text-muted-foreground mt-1">Wishing you a speedy recovery and good health always!</p>
             </div>
 

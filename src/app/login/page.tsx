@@ -42,19 +42,13 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-xl border-t-4 border-t-primary">
         <CardHeader className="space-y-4 text-center pb-6">
           <div className="flex justify-center">
-            <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-sm">
-              <Image src="/doctor-sonatan.png" alt="Dr. Sonatan Manna" fill className="object-cover" />
+            <div className="bg-white border rounded-2xl p-2.5 shadow-sm">
+              <img src="/logo.jpg" alt="C-CURE Logo" className="h-28 w-auto object-contain" />
             </div>
           </div>
           <div>
-            <CardTitle className="text-xl font-extrabold text-primary uppercase tracking-wider mb-1">
-              C-CURE Physiotherapy
-            </CardTitle>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-              & Rehab Clinic
-            </p>
             <CardDescription className="text-sm">
-              Dr. Sonatan Manna's Management Dashboard
+              Management Dashboard Login
             </CardDescription>
           </div>
         </CardHeader>

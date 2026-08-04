@@ -14,6 +14,7 @@ import {
   MapPin,
   Clock,
   Stethoscope,
+  Mail,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
@@ -32,6 +33,7 @@ interface SidebarProps {
     practitionerName: string
     clinicName: string
     phone: string
+    email: string
     address: string
     workingHours: string
   } | null
@@ -52,27 +54,23 @@ export function Sidebar({ profile }: SidebarProps) {
   const name = profile?.practitionerName || 'Sanatan Manna'
   const clinicName = profile?.clinicName || 'C-CURE Physiotherapy & Rehab Clinic'
   const phone = profile?.phone || '7942688985'
+  const email = profile?.email || 'sanatan.manna28072015@gmail.com'
   const address = profile?.address || 'Moyna, Midnapore, West Bengal'
   const workingHours = profile?.workingHours || 'Open 24 Hours'
-
-  // Generate initials from name
-  const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
 
   return (
     <div className="hidden md:flex h-full w-64 flex-col bg-card border-r shadow-sm">
       
       {/* === Profile Section === */}
-      <div className="flex flex-col border-b bg-gradient-to-b from-primary/10 to-primary/5 px-4 pt-5 pb-4 space-y-3">
+      <div className="flex flex-col border-b bg-gradient-to-b from-primary/10 to-primary/5 px-4 pt-4 pb-4 space-y-3">
 
-        {/* Clinic Name */}
-        <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center flex-shrink-0 shadow-md shadow-primary/30">
-            <span className="text-primary-foreground text-xs font-black tracking-wider">CC</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-black text-primary uppercase tracking-wider leading-tight">C-CURE</p>
-            <p className="text-[9px] text-muted-foreground leading-tight font-semibold">Physiotherapy &amp; Rehab Clinic</p>
-          </div>
+        {/* Clinic Logo Header */}
+        <div className="flex justify-center bg-white border border-border/40 rounded-2xl p-2.5 shadow-sm">
+          <img
+            src="/logo.jpg"
+            alt="C-CURE Logo"
+            className="h-16 w-auto object-contain"
+          />
         </div>
 
         {/* Practitioner Profile Card */}
@@ -80,8 +78,12 @@ export function Sidebar({ profile }: SidebarProps) {
           
           {/* Avatar + Name */}
           <div className="flex items-center gap-2.5">
-            <div className="h-11 w-11 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0 shadow-md ring-2 ring-primary/20">
-              <span className="text-primary-foreground text-sm font-black">{initials}</span>
+            <div className="h-11 w-11 rounded-full overflow-hidden flex-shrink-0 shadow-md ring-2 ring-primary/20 bg-muted">
+              <img
+                src="/doctor-sonatan.png"
+                alt={name}
+                className="object-cover w-full h-full"
+              />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-extrabold leading-tight truncate text-foreground">{name}</p>
@@ -100,6 +102,10 @@ export function Sidebar({ profile }: SidebarProps) {
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Phone className="h-3 w-3 flex-shrink-0 text-primary/70" />
               <span className="text-[10px] font-semibold truncate">{phone}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Mail className="h-3 w-3 flex-shrink-0 text-primary/70" />
+              <span className="text-[9px] font-semibold truncate leading-tight">{email}</span>
             </div>
             <div className="flex items-start gap-1.5 text-muted-foreground">
               <MapPin className="h-3 w-3 flex-shrink-0 text-primary/70 mt-0.5" />
