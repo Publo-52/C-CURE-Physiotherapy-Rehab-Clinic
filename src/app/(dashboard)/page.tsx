@@ -7,6 +7,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import DashboardChart from "./dashboard-chart"
 import { VisitQueue } from "./visit-queue"
+import { Badge } from "@/components/ui/badge"
 
 export default async function DashboardPage() {
   const todayStart = new Date()
@@ -18,7 +19,7 @@ export default async function DashboardPage() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
   sevenDaysAgo.setHours(0, 0, 0, 0)
 
-  // Run all independent queries in parallel — 10 concurrent connections to Supabase pooler
+  // Run all independent queries in parallel — 11 concurrent connections to Supabase pooler
   const [
     totalRevenueResult,
     activePatients,
@@ -30,6 +31,7 @@ export default async function DashboardPage() {
     recentPatients,
     totalOutstandingDuesResult,
     pastPayments,
+    upcomingEvents,
   ] = await Promise.all([
     prisma.payment.aggregate({ _sum: { amountPaidToday: true } }),
     prisma.patient.count({ where: { status: 'Active' } }),
@@ -55,6 +57,11 @@ export default async function DashboardPage() {
     prisma.payment.findMany({
       where: { paymentDate: { gte: sevenDaysAgo } },
       select: { amountPaidToday: true, paymentDate: true },
+    }),
+    prisma.event.findMany({
+      where: { date: { gte: todayStart } },
+      orderBy: { date: 'asc' },
+      take: 5,
     }),
   ])
 
@@ -211,6 +218,40 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <VisitQueue initialPatients={queuePatients} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Upcoming Schedule &amp; Meetings</CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">Next 5 scheduled meetings, tasks, or reminders</p>
+              </div>
+              <Link href="/calendar" className="text-xs text-primary hover:underline flex items-center gap-1">
+                Open Scheduler <ArrowRight className="h-3 w-3" />
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {upcomingEvents.length === 0 ? (
+                  <p className="text-xs text-muted-foreground py-4 text-center">No upcoming meetings or tasks scheduled.</p>
+                ) : (
+                  upcomingEvents.map(event => (
+                    <div key={event.id} className="flex items-center justify-between p-2.5 rounded-xl border bg-muted/10">
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold truncate">{event.title}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">
+                          {new Date(event.date).toLocaleDateString([], { month: 'short', day: 'numeric' })} at{' '}
+                          {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="text-[9px] font-bold px-2 py-0.5 ml-2 flex-shrink-0">
+                        {event.type}
+                      </Badge>
+                    </div>
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
 
