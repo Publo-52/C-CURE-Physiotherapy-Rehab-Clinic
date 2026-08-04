@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
 import { logout } from "@/app/actions/auth"
+import Image from "next/image"
 
 export const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -66,10 +67,13 @@ export function Sidebar({ profile }: SidebarProps) {
 
         {/* Clinic Logo Header */}
         <div className="flex justify-center bg-card border border-border/40 rounded-2xl p-2.5 shadow-sm">
-          <img
+          <Image
             src="/logo.jpg"
             alt="C-CURE Logo"
+            width={160}
+            height={64}
             className="h-16 w-auto object-contain"
+            priority
           />
         </div>
 
@@ -78,11 +82,13 @@ export function Sidebar({ profile }: SidebarProps) {
           
           {/* Avatar + Name */}
           <div className="flex items-center gap-2.5">
-            <div className="h-11 w-11 rounded-full overflow-hidden flex-shrink-0 shadow-md ring-2 ring-primary/20 bg-muted">
-              <img
+            <div className="relative h-11 w-11 rounded-full overflow-hidden flex-shrink-0 shadow-md ring-2 ring-primary/20 bg-muted">
+              <Image
                 src="/doctor-sonatan.png"
                 alt={name}
-                className="object-cover w-full h-full"
+                fill
+                sizes="44px"
+                className="object-cover"
               />
             </div>
             <div className="min-w-0 flex-1">

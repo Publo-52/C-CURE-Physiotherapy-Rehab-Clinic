@@ -51,18 +51,27 @@ export function Header({ profile }: HeaderProps) {
             <div className="flex flex-col border-b bg-gradient-to-b from-primary/10 to-primary/5 px-4 pt-4 pb-4 space-y-3">
               {/* Logo */}
               <div className="flex justify-center bg-white border border-border/40 rounded-2xl p-2 shadow-sm">
-                <img
+                <Image
                   src="/logo.jpg"
                   alt="C-CURE Logo"
+                  width={140}
+                  height={56}
                   className="h-14 w-auto object-contain"
+                  priority
                 />
               </div>
 
               {/* Profile details */}
               <div className="bg-background/80 backdrop-blur-sm rounded-xl border border-border/50 p-2.5 space-y-1.5 shadow-sm">
                 <div className="flex items-center gap-2">
-                  <div className="h-9 w-9 rounded-full overflow-hidden flex-shrink-0 bg-muted">
-                    <img src="/doctor-sonatan.png" alt={name} className="object-cover w-full h-full" />
+                  <div className="relative h-9 w-9 rounded-full overflow-hidden flex-shrink-0 bg-muted">
+                    <Image
+                      src="/doctor-sonatan.png"
+                      alt={name}
+                      fill
+                      sizes="36px"
+                      className="object-cover"
+                    />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold truncate leading-tight">{name}</p>
@@ -109,7 +118,13 @@ export function Header({ profile }: HeaderProps) {
 
         {/* Mobile Navbar Logo */}
         <div className="flex items-center gap-2">
-          <img src="/logo.jpg" alt="Logo" className="h-7 w-auto object-contain bg-white p-0.5 rounded-lg border shadow-sm" />
+          <Image
+            src="/logo.jpg"
+            alt="Logo"
+            width={28}
+            height={28}
+            className="h-7 w-auto object-contain bg-white p-0.5 rounded-lg border shadow-sm"
+          />
         </div>
       </div>
       {/* Desktop center branding */}

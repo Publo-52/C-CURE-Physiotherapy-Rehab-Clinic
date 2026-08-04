@@ -43,7 +43,14 @@ export default function LoginPage() {
         <CardHeader className="space-y-4 text-center pb-6">
           <div className="flex justify-center">
             <div className="bg-card border border-border/40 rounded-2xl p-2.5 shadow-sm">
-              <img src="/logo.jpg" alt="C-CURE Logo" className="h-28 w-auto object-contain" />
+              <Image
+                src="/logo.jpg"
+                alt="C-CURE Logo"
+                width={224}
+                height={112}
+                className="h-28 w-auto object-contain"
+                priority
+              />
             </div>
           </div>
           <div>
