@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { login } from '@/app/actions/auth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -12,6 +13,7 @@ import Image from 'next/image'
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -24,8 +26,11 @@ export default function LoginPage() {
       if (result?.error) {
         toast.error(result.error)
         setLoading(false)
+      } else if (result?.success) {
+        // Session cookie is set — navigate to dashboard
+        router.push('/')
+        router.refresh()
       }
-      // If successful, the action will redirect, no need to set loading false
     } catch (error: any) {
       toast.error(error.message || 'An unexpected error occurred during login.')
       setLoading(false)

@@ -9,106 +9,59 @@ import DashboardChart from "./dashboard-chart"
 import { VisitQueue } from "./visit-queue"
 
 export default async function DashboardPage() {
-  // Fetch KPI data
-  const totalRevenueResult = await prisma.payment.aggregate({
-    _sum: { amountPaidToday: true }
-  })
-  const totalRevenue = totalRevenueResult._sum.amountPaidToday || 0
-
-  const activePatients = await prisma.patient.count({
-    where: { status: 'Active' }
-  })
-
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
   const todayEnd = new Date(todayStart)
   todayEnd.setDate(todayEnd.getDate() + 1)
 
-  const todaysVisits = await prisma.visit.count({
-    where: { date: { gte: todayStart, lt: todayEnd } }
-  })
-
-  const todaysRegistered = await prisma.patient.count({
-    where: { createdAt: { gte: todayStart, lt: todayEnd } }
-  })
-
-  const presentPatients = await prisma.patient.count({
-    where: { presentStatus: true }
-  })
-
-  const queuePatients = await prisma.patient.findMany({
-    where: { presentStatus: true },
-    select: {
-      id: true,
-      patientId: true,
-      name: true,
-      phone: true,
-      disease: true
-    },
-    orderBy: { name: 'asc' }
-  })
-
-  const todaysVisitsData = await prisma.visit.findMany({
-    where: { date: { gte: todayStart, lt: todayEnd } },
-    select: { status: true, patient: { select: { presentStatus: true } } }
-  })
-  
-  const todaysCompletedSessions = todaysVisitsData.filter(v => v.status === 'Completed').length
-  
-  // Scheduled today but not present
-  const absentPatients = todaysVisitsData.filter(v => !v.patient.presentStatus).length
-
-  // Get recent 5 patients for the list
-  const recentPatients = await prisma.patient.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 5,
-    select: {
-      id: true,
-      patientId: true,
-      name: true,
-      phone: true,
-      disease: true,
-      status: true
-    }
-  })
-
-  // Outstanding dues
-  const patientsForDues = await prisma.patient.findMany({
-    select: {
-      payments: {
-        orderBy: { createdAt: 'desc' },
-        take: 1,
-        select: {
-          remainingDue: true
-        }
-      }
-    }
-  })
-  
-  const totalOutstandingDues = patientsForDues.reduce((acc, patient) => {
-    if (patient.payments.length > 0) {
-      const latestPayment = patient.payments[0]
-      if (latestPayment.remainingDue > 0) {
-        return acc + latestPayment.remainingDue
-      }
-    }
-    return acc
-  }, 0)
-
-  // Aggregate past 7 days payments for chart
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
   sevenDaysAgo.setHours(0, 0, 0, 0)
 
-  const pastPayments = await prisma.payment.findMany({
-    where: {
-      paymentDate: { gte: sevenDaysAgo }
-    },
-    select: {
-      amountPaidToday: true,
-      paymentDate: true
-    }
-  })
+  // Run all independent queries in parallel — 10 concurrent connections to Supabase pooler
+  const [
+    totalRevenueResult,
+    activePatients,
+    todaysVisits,
+    todaysRegistered,
+    presentPatients,
+    queuePatients,
+    todaysVisitsData,
+    recentPatients,
+    totalOutstandingDuesResult,
+    pastPayments,
+  ] = await Promise.all([
+    prisma.payment.aggregate({ _sum: { amountPaidToday: true } }),
+    prisma.patient.count({ where: { status: 'Active' } }),
+    prisma.visit.count({ where: { date: { gte: todayStart, lt: todayEnd } } }),
+    prisma.patient.count({ where: { createdAt: { gte: todayStart, lt: todayEnd } } }),
+    prisma.patient.count({ where: { presentStatus: true } }),
+    prisma.patient.findMany({
+      where: { presentStatus: true },
+      select: { id: true, patientId: true, name: true, phone: true, disease: true },
+      orderBy: { name: 'asc' },
+    }),
+    prisma.visit.findMany({
+      where: { date: { gte: todayStart, lt: todayEnd } },
+      select: { status: true, patient: { select: { presentStatus: true } } },
+    }),
+    prisma.patient.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: { id: true, patientId: true, name: true, phone: true, disease: true, status: true },
+    }),
+    // Direct aggregate SUM instead of fetching all patients
+    prisma.payment.aggregate({ _sum: { remainingDue: true } }),
+    prisma.payment.findMany({
+      where: { paymentDate: { gte: sevenDaysAgo } },
+      select: { amountPaidToday: true, paymentDate: true },
+    }),
+  ])
+
+  const totalRevenue = totalRevenueResult._sum.amountPaidToday || 0
+  const totalOutstandingDues = totalOutstandingDuesResult._sum.remainingDue || 0
+  const todaysCompletedSessions = todaysVisitsData.filter(v => v.status === 'Completed').length
+  const absentPatients = todaysVisitsData.filter(v => !v.patient.presentStatus).length
 
   const daysMap: Record<string, { revenue: number; visits: number }> = {}
   for (let i = 0; i < 7; i++) {
@@ -128,7 +81,7 @@ export default async function DashboardPage() {
   const chartData = Object.keys(daysMap).map(day => ({
     day,
     revenue: daysMap[day].revenue,
-    visits: daysMap[day].visits
+    visits: daysMap[day].visits,
   }))
 
   return (

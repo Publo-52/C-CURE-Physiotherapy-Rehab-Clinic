@@ -1,30 +1,38 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { verifySession } from '@/lib/session'
+import { decrypt } from '@/lib/session'
 
-const protectedRoutes = ['/']
+const protectedPrefixes = ['/', '/patients', '/payments', '/calendar', '/settings']
 const publicRoutes = ['/login']
 
 export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname
-  
-  // Basic path check
-  const isProtectedRoute = protectedRoutes.includes(path) || path.startsWith('/dashboard') || path.startsWith('/patients')
+
+  const isProtectedRoute =
+    protectedPrefixes.some((prefix) =>
+      prefix === '/' ? path === '/' : path === prefix || path.startsWith(prefix + '/')
+    )
   const isPublicRoute = publicRoutes.includes(path)
-  
-  // Exclude static files, API routes (except if we want to protect them), and next internals
-  if (path.startsWith('/_next') || path.match(/\.(.*)$/)) {
-    return NextResponse.next()
+
+  // Read the session cookie directly from the request (runtime-safe)
+  const sessionCookie = req.cookies.get('session')?.value
+
+  let session = null
+  if (sessionCookie) {
+    try {
+      session = await decrypt(sessionCookie)
+    } catch {
+      // Invalid or expired JWT — treat as unauthenticated
+      session = null
+    }
   }
 
-  const session = await verifySession()
-
-  // Redirect to login if accessing a protected route without a session
-  if (!session && !isPublicRoute) {
+  // Redirect unauthenticated users away from protected routes
+  if (!session && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', req.nextUrl))
   }
 
-  // Redirect to dashboard if logged in and accessing login page
+  // Redirect already-logged-in users away from the login page
   if (session && isPublicRoute) {
     return NextResponse.redirect(new URL('/', req.nextUrl))
   }

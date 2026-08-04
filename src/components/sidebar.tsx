@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { useState } from "react"
 import { 
   LayoutDashboard, 
   Users, 
@@ -25,6 +26,15 @@ export const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const [loggingOut, setLoggingOut] = useState(false)
+
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    await logout()
+    router.push('/login')
+    router.refresh()
+  }
 
   return (
     <div className="hidden md:flex h-full w-64 flex-col bg-card border-r shadow-sm">
@@ -86,12 +96,15 @@ export function Sidebar() {
         </nav>
       </div>
       <div className="border-t p-4">
-        <form action={logout}>
-          <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
-            <LogOut className="mr-3 h-5 w-5" />
-            Logout
-          </Button>
-        </form>
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-muted-foreground hover:text-foreground"
+          onClick={handleLogout}
+          disabled={loggingOut}
+        >
+          <LogOut className="mr-3 h-5 w-5" />
+          {loggingOut ? 'Logging out...' : 'Logout'}
+        </Button>
       </div>
     </div>
   )
