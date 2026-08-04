@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
 import { Moon, Sun, Menu } from "lucide-react"
 import { Button } from "./ui/button"
@@ -26,6 +26,11 @@ export function Header({ profile }: HeaderProps) {
   const { theme, setTheme } = useTheme()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const name = profile?.practitionerName || 'Sanatan Manna'
   const clinicName = profile?.clinicName || 'C-CURE Physiotherapy & Rehab Clinic'
@@ -132,16 +137,37 @@ export function Header({ profile }: HeaderProps) {
         <span className="text-sm font-semibold gradient-text">C-CURE Physiotherapy &amp; Rehab Clinic</span>
       </div>
       <div className="flex items-center space-x-4 ml-auto">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="rounded-full"
-        >
-          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
+        {mounted && (
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="group relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-zinc-200 dark:bg-zinc-700 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            aria-label="Toggle theme"
+          >
+            <span
+              className={cn(
+                "pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition-transform duration-200 ease-in-out",
+                theme === "dark" ? "translate-x-5" : "translate-x-0"
+              )}
+            >
+              <span
+                className={cn(
+                  "absolute inset-0 flex h-full w-full items-center justify-center transition-opacity duration-200",
+                  theme === "dark" ? "opacity-0 ease-out" : "opacity-100 ease-in"
+                )}
+              >
+                <Sun className="h-3.5 w-3.5 text-amber-500" />
+              </span>
+              <span
+                className={cn(
+                  "absolute inset-0 flex h-full w-full items-center justify-center transition-opacity duration-200",
+                  theme === "dark" ? "opacity-100 ease-in" : "opacity-0 ease-out"
+                )}
+              >
+                <Moon className="h-3 w-3 text-indigo-500" />
+              </span>
+            </span>
+          </button>
+        )}
       </div>
     </header>
   )
