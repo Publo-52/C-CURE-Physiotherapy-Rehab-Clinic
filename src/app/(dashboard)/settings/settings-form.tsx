@@ -1,42 +1,63 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Settings as SettingsIcon, KeyRound, Check } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Settings as SettingsIcon, KeyRound, User, Building2, Phone, MapPin, Clock, IndianRupee, FileText } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { Textarea } from "@/components/ui/textarea"
 import { toast } from 'react-hot-toast'
 import { updateAdminPassword } from '@/app/actions/settings'
+import { updateClinicProfile } from '@/app/actions/profile'
 
-export default function SettingsForm() {
+interface Profile {
+  practitionerName: string
+  clinicName: string
+  phone: string
+  address: string
+  about?: string | null
+  workingHours: string
+  defaultFee: number
+}
+
+interface SettingsFormProps {
+  profile: Profile
+}
+
+export default function SettingsForm({ profile }: SettingsFormProps) {
   const [passwordLoading, setPasswordLoading] = useState(false)
-  const [practiceLoading, setPracticeLoading] = useState(false)
+  const [profileLoading, setProfileLoading] = useState(false)
 
-  // Practice state
-  const [physioName, setPhysioName] = useState('Dr. Sonatan Manna')
-  const [clinicName, setClinicName] = useState('C-CURE PHYSIOTHERAPY & REHAB CLINIC')
-  const [phone, setPhone] = useState('+91 9876543210')
-  const [defaultFee, setDefaultFee] = useState('500')
+  // Profile state — seeded with live DB values
+  const [practitionerName, setPractitionerName] = useState(profile.practitionerName)
+  const [clinicName, setClinicName] = useState(profile.clinicName)
+  const [phone, setPhone] = useState(profile.phone)
+  const [address, setAddress] = useState(profile.address)
+  const [about, setAbout] = useState(profile.about || '')
+  const [workingHours, setWorkingHours] = useState(profile.workingHours)
+  const [defaultFee, setDefaultFee] = useState(String(profile.defaultFee))
 
-  const handleSavePractice = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setPracticeLoading(true)
-    setTimeout(() => {
-      setPracticeLoading(false)
-      toast.success('Practice settings updated successfully!')
-    }, 500)
+    setProfileLoading(true)
+    const formData = new FormData(e.currentTarget)
+    const result = await updateClinicProfile(formData)
+    setProfileLoading(false)
+    if (result.error) {
+      toast.error(result.error)
+    } else {
+      toast.success('Profile updated successfully!')
+    }
   }
 
   const handlePasswordUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setPasswordLoading(true)
     const formData = new FormData(e.currentTarget)
-
     const result = await updateAdminPassword(formData)
     setPasswordLoading(false)
-
     if (result.error) {
       toast.error(result.error)
     } else if (result.success) {
@@ -47,68 +68,161 @@ export default function SettingsForm() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <Card>
+
+      {/* === Practitioner & Clinic Profile === */}
+      <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <SettingsIcon className="h-5 w-5 text-primary" />
-            Practice & Clinic Details
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <User className="h-5 w-5 text-primary" />
+            Practitioner &amp; Clinic Profile
           </CardTitle>
+          <CardDescription>
+            These details appear in the sidebar, invoices, and patient-facing communications.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSavePractice} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="physioName">Physiotherapist Name</Label>
-                <Input 
-                  id="physioName" 
-                  value={physioName} 
-                  onChange={(e) => setPhysioName(e.target.value)} 
-                  placeholder="Dr. Your Name" 
-                />
+          <form onSubmit={handleSaveProfile} className="space-y-5">
+
+            {/* Practitioner */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+                <User className="h-3.5 w-3.5" /> Practitioner Details
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="practitionerName">Full Name *</Label>
+                  <Input
+                    id="practitionerName"
+                    name="practitionerName"
+                    value={practitionerName}
+                    onChange={(e) => setPractitionerName(e.target.value)}
+                    placeholder="Sanatan Manna"
+                    required
+                    className="font-semibold"
+                  />
+                  <p className="text-[10px] text-muted-foreground">Do not include titles like Dr. unless applicable.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">
+                    <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> Contact Phone *</span>
+                  </Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="7942688985"
+                    required
+                    className="font-semibold"
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="clinicName">Clinic Name</Label>
-                <Input 
-                  id="clinicName" 
-                  value={clinicName} 
-                  onChange={(e) => setClinicName(e.target.value)} 
-                  placeholder="Your Clinic Name" 
-                />
+            </div>
+
+            <Separator />
+
+            {/* Clinic Details */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+                <Building2 className="h-3.5 w-3.5" /> Clinic Details
+              </p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="clinicName">Clinic Name *</Label>
+                  <Input
+                    id="clinicName"
+                    name="clinicName"
+                    value={clinicName}
+                    onChange={(e) => setClinicName(e.target.value)}
+                    placeholder="C-CURE Physiotherapy & Rehab Clinic"
+                    required
+                    className="font-semibold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">
+                    <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> Clinic Address</span>
+                  </Label>
+                  <Textarea
+                    id="address"
+                    name="address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Moyna Hospital, More Moyna, Tamluk, Moyna, Midnapore-721629, West Bengal"
+                    rows={2}
+                    className="font-semibold resize-none"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="workingHours">
+                      <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Working Hours</span>
+                    </Label>
+                    <Input
+                      id="workingHours"
+                      name="workingHours"
+                      value={workingHours}
+                      onChange={(e) => setWorkingHours(e.target.value)}
+                      placeholder="Open 24 Hours — Monday to Sunday"
+                      className="font-semibold"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="defaultFee">
+                      <span className="flex items-center gap-1"><IndianRupee className="h-3.5 w-3.5" /> Default Consultation Fee (₹)</span>
+                    </Label>
+                    <Input
+                      id="defaultFee"
+                      name="defaultFee"
+                      type="number"
+                      value={defaultFee}
+                      onChange={(e) => setDefaultFee(e.target.value)}
+                      placeholder="500"
+                      className="font-semibold"
+                    />
+                  </div>
+                </div>
               </div>
+            </div>
+
+            <Separator />
+
+            {/* About / Bio */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5" /> About the Clinic
+              </p>
               <div className="space-y-2">
-                <Label htmlFor="phone">Contact Phone</Label>
-                <Input 
-                  id="phone" 
-                  value={phone} 
-                  onChange={(e) => setPhone(e.target.value)} 
-                  placeholder="+91 9876543210" 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="defaultFee">Default Consultation Fee (₹)</Label>
-                <Input 
-                  id="defaultFee" 
-                  type="number" 
-                  value={defaultFee} 
-                  onChange={(e) => setDefaultFee(e.target.value)} 
-                  placeholder="500" 
+                <Label htmlFor="about">Clinic Description &amp; History</Label>
+                <Textarea
+                  id="about"
+                  name="about"
+                  value={about}
+                  onChange={(e) => setAbout(e.target.value)}
+                  placeholder="Write a brief description of your clinic..."
+                  rows={5}
+                  className="font-semibold"
                 />
               </div>
             </div>
-            <Separator className="my-2" />
-            <Button type="submit" disabled={practiceLoading}>
-              {practiceLoading ? 'Saving...' : 'Save Settings'}
+
+            <Button type="submit" disabled={profileLoading} className="font-bold">
+              {profileLoading ? 'Saving Profile...' : 'Save Profile'}
             </Button>
           </form>
         </CardContent>
       </Card>
 
-      <Card>
+      {/* === Change Password === */}
+      <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
             <KeyRound className="h-5 w-5 text-primary" />
             Change Admin Password
           </CardTitle>
+          <CardDescription>
+            Update your admin login password. Choose a strong password of at least 6 characters.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handlePasswordUpdate} className="space-y-4">
@@ -124,7 +238,7 @@ export default function SettingsForm() {
               <Label htmlFor="confirmPassword">Confirm New Password *</Label>
               <Input id="confirmPassword" name="confirmPassword" type="password" required minLength={6} />
             </div>
-            <Button type="submit" disabled={passwordLoading}>
+            <Button type="submit" disabled={passwordLoading} className="font-bold">
               {passwordLoading ? 'Updating Password...' : 'Update Password'}
             </Button>
           </form>

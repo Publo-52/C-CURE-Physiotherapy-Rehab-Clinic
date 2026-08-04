@@ -195,3 +195,15 @@ model Event {
   updatedAt   DateTime @updatedAt
 }
 
+model ClinicProfile {
+  id              String   @id @default(uuid())
+  practitionerName String  @default("Sanatan Manna")
+  clinicName      String   @default("C-CURE Physiotherapy & Rehab Clinic")
+  phone           String   @default("7942688985")
+  address         String   @default("Moyna Hospital, More Moyna, Tamluk, Moyna, Midnapore-721629, West Bengal")
+  about           String?  @db.Text
+  workingHours    String   @default("Open 24 Hours — Monday to Sunday")
+  defaultFee      Int      @default(500)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

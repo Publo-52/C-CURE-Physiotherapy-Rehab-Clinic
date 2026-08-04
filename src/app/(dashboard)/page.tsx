@@ -59,7 +59,7 @@ export default async function DashboardPage() {
       select: { amountPaidToday: true, paymentDate: true },
     }),
     prisma.event.findMany({
-      where: { date: { gte: todayStart } },
+      where: { date: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }, // show from 24h ago onwards so events don't disappear mid-day
       orderBy: { date: 'asc' },
       take: 5,
     }),
