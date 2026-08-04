@@ -199,6 +199,56 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
+      {/* Row 1: Visit Queue + Upcoming Schedule */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="lg:col-span-4">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Today's Visit Queue</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Active patients scheduled for visits today</p>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <VisitQueue initialPatients={queuePatients} />
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-3">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Upcoming Schedule &amp; Meetings</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Next 5 scheduled meetings, tasks, or reminders</p>
+            </div>
+            <Link href="/calendar" className="text-xs text-primary hover:underline flex items-center gap-1">
+              Open Scheduler <ArrowRight className="h-3 w-3" />
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {upcomingEvents.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-4 text-center">No upcoming meetings or tasks scheduled.</p>
+              ) : (
+                upcomingEvents.map(event => (
+                  <div key={event.id} className="flex items-center justify-between p-2.5 rounded-xl border bg-muted/10">
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold truncate">{event.title}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">
+                        {new Date(event.date).toLocaleDateString([], { month: 'short', day: 'numeric' })} at{' '}
+                        {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="text-[9px] font-bold px-2 py-0.5 ml-2 flex-shrink-0">
+                      {event.type}
+                    </Badge>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Row 2: 7-Day Revenue Trend + Recent Patients */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="lg:col-span-4">
           <CardHeader>
@@ -208,77 +258,30 @@ export default async function DashboardPage() {
             <DashboardChart data={chartData} />
           </CardContent>
         </Card>
-        <div className="lg:col-span-3 space-y-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Today's Visit Queue</CardTitle>
-                <p className="text-xs text-muted-foreground mt-1">Active patients scheduled for visits today</p>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <VisitQueue initialPatients={queuePatients} />
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Upcoming Schedule &amp; Meetings</CardTitle>
-                <p className="text-xs text-muted-foreground mt-1">Next 5 scheduled meetings, tasks, or reminders</p>
-              </div>
-              <Link href="/calendar" className="text-xs text-primary hover:underline flex items-center gap-1">
-                Open Scheduler <ArrowRight className="h-3 w-3" />
-              </Link>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {upcomingEvents.length === 0 ? (
-                  <p className="text-xs text-muted-foreground py-4 text-center">No upcoming meetings or tasks scheduled.</p>
-                ) : (
-                  upcomingEvents.map(event => (
-                    <div key={event.id} className="flex items-center justify-between p-2.5 rounded-xl border bg-muted/10">
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold truncate">{event.title}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">
-                          {new Date(event.date).toLocaleDateString([], { month: 'short', day: 'numeric' })} at{' '}
-                          {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      </div>
-                      <Badge variant="outline" className="text-[9px] font-bold px-2 py-0.5 ml-2 flex-shrink-0">
-                        {event.type}
-                      </Badge>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Recent Patients</CardTitle>
-              <Link href="/patients" className="text-xs text-primary hover:underline flex items-center gap-1">
-                View All <ArrowRight className="h-3 w-3" />
-              </Link>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentPatients.map(patient => (
-                  <Link key={patient.id} href={`/patients/${patient.id}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                    <div>
-                      <p className="text-sm font-medium leading-none">{patient.name}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {patient.phone} • {patient.disease || 'General'}
-                      </p>
-                    </div>
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-mono">{patient.patientId}</span>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card className="lg:col-span-3">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Recent Patients</CardTitle>
+            <Link href="/patients" className="text-xs text-primary hover:underline flex items-center gap-1">
+              View All <ArrowRight className="h-3 w-3" />
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentPatients.map(patient => (
+                <Link key={patient.id} href={`/patients/${patient.id}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div>
+                    <p className="text-sm font-medium leading-none">{patient.name}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {patient.phone} • {patient.disease || 'General'}
+                    </p>
+                  </div>
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-mono">{patient.patientId}</span>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
