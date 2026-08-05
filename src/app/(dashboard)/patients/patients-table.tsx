@@ -206,23 +206,6 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
                     )}
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      title="Download PDF Invoice"
-                      onClick={async () => {
-                        toast.loading(`Generating PDF for ${patient.name}...`, { id: `pdf-${patient.id}` })
-                        try {
-                          await downloadPatientInvoicePDF(patient)
-                          toast.success('PDF downloaded!', { id: `pdf-${patient.id}` })
-                        } catch (err) {
-                          console.error(err)
-                          toast.error('Failed to download PDF', { id: `pdf-${patient.id}` })
-                        }
-                      }}
-                    >
-                      <Download className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                    </Button>
                     <Link href={`/patients/${patient.id}`}>
                       <Button variant="ghost" size="icon-sm" title="View">
                         <Eye className="h-4 w-4 text-muted-foreground" />
@@ -323,23 +306,6 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          title="Download Patient Invoice PDF"
-                          onClick={async () => {
-                            toast.loading(`Generating PDF for ${patient.name}...`, { id: `pdf-${patient.id}` })
-                            try {
-                              await downloadPatientInvoicePDF(patient)
-                              toast.success('PDF downloaded!', { id: `pdf-${patient.id}` })
-                            } catch (err) {
-                              console.error(err)
-                              toast.error('Failed to download PDF', { id: `pdf-${patient.id}` })
-                            }
-                          }}
-                        >
-                          <Download className="h-4 w-4 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700" />
-                        </Button>
                         <Link href={`/patients/${patient.id}`}>
                           <Button variant="ghost" size="icon-sm" title="View Patient Profile">
                             <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
