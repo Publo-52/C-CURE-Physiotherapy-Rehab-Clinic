@@ -135,104 +135,119 @@ Thank you for visiting us! 🙏`
             .sig-title { font-size: 11px; color: #64748b; }
             @media print {
               body { padding: 0; background: #fff; }
-              .container { border: none; box-shadow: none; max-width: 100%; }
+              .container { border: none; box-shadow: none; max-w-100%; }
+              .no-print { display: none !important; }
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
             }
           </style>
         </head>
         <body>
-          <div class="container">
-            <div class="header">
-              <div class="brand">
-                <h1>C-CURE PHYSIOTHERAPY & REHAB CLINIC</h1>
-                <p>Sanatan Manna (Physiotherapist)</p>
-              </div>
-              <div class="contact-info">
-                <p>📞 7942688985</p>
-                <p>✉️ sanatan.manna28072015@gmail.com</p>
-                <p>📍 Moyna, Midnapore, West Bengal</p>
-              </div>
+          <div class="no-print" style="background: #0f172a; color: #ffffff; padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; font-family: 'Inter', system-ui, sans-serif; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-weight: 700; font-size: 14px; color: #38bdf8;">📄 ${payment.patient.name}</span>
+              <span style="font-size: 12px; color: #94a3b8;">(${payment.invoiceNumber})</span>
             </div>
-
-            <div class="meta-bar">
-              <div class="meta-item">
-                <span>Invoice Number</span>
-                <strong>${payment.invoiceNumber}</strong>
-              </div>
-              <div class="meta-item">
-                <span>Date Issued</span>
-                <strong style="font-family: inherit;">${dateStr}</strong>
-              </div>
-              <div class="meta-item">
-                <span>Payment Mode</span>
-                <strong style="font-family: inherit;">${payment.paymentMode}</strong>
-              </div>
-              <div>
-                <span class="status-badge">${payment.status}</span>
-              </div>
+            <div style="display: flex; items-center; gap: 10px;">
+              <button onclick="window.print()" style="background: #0284c7; color: #ffffff; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; display: flex; items-center; gap: 6px; box-shadow: 0 2px 6px rgba(2,132,199,0.4);">
+                📥 Save / Download as PDF
+              </button>
             </div>
+          </div>
 
-            <div class="content">
-              <div class="grid">
-                <div class="info-card">
-                  <div class="section-title">Patient Information</div>
-                  <p><strong>Name:</strong> ${payment.patient.name}</p>
-                  <p><strong>Patient ID:</strong> <span style="font-family: monospace; font-weight: 600;">${payment.patient.patientId}</span></p>
+          <div style="padding-top: 20px;">
+            <div class="container">
+              <div class="header">
+                <div class="brand">
+                  <h1>C-CURE PHYSIOTHERAPY & REHAB CLINIC</h1>
+                  <p>Sanatan Manna (Physiotherapist)</p>
                 </div>
-                <div class="info-card">
-                  <div class="section-title">Clinic Practitioner</div>
-                  <p><strong>Practitioner:</strong> Sanatan Manna</p>
-                  <p><strong>Designation:</strong> Physiotherapist</p>
+                <div class="contact-info">
+                  <p>📞 7942688985</p>
+                  <p>✉️ sanatan.manna28072015@gmail.com</p>
+                  <p>📍 Moyna, Midnapore, West Bengal</p>
                 </div>
               </div>
 
-              <div class="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Description</th>
-                      <th style="text-align: right;">Total Bill</th>
-                      <th style="text-align: right;">Paid Today</th>
-                      <th style="text-align: right;">Current Due</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Physiotherapy Treatment / Consultation Fee</td>
-                      <td style="text-align: right; font-weight: 600;">₹${payment.totalBill.toLocaleString('en-IN')}</td>
-                      <td style="text-align: right; font-weight: 700; color: #16a34a;">₹${payment.amountPaidToday.toLocaleString('en-IN')}</td>
-                      <td style="text-align: right; font-weight: 700; color: ${payment.remainingDue > 0 ? '#dc2626' : '#16a34a'};">₹${payment.remainingDue.toLocaleString('en-IN')}</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="meta-bar">
+                <div class="meta-item">
+                  <span>Invoice Number</span>
+                  <strong>${payment.invoiceNumber}</strong>
+                </div>
+                <div class="meta-item">
+                  <span>Date Issued</span>
+                  <strong style="font-family: inherit;">${dateStr}</strong>
+                </div>
+                <div class="meta-item">
+                  <span>Payment Mode</span>
+                  <strong style="font-family: inherit;">${payment.paymentMode}</strong>
+                </div>
+                <div>
+                  <span class="status-badge">${payment.status}</span>
+                </div>
               </div>
 
-              <div class="summary-box">
-                <div class="summary-row">
-                  <span>Total Bill Amount:</span>
-                  <span style="font-weight: 600; width: 90px;">₹${payment.totalBill.toLocaleString('en-IN')}</span>
-                </div>
-                <div class="summary-total">
-                  <span>Amount Paid Today:</span>
-                  <span style="width: 100px;">₹${payment.amountPaidToday.toLocaleString('en-IN')}</span>
-                </div>
-                ${payment.remainingDue > 0 ? `
-                  <div style="color: #dc2626; font-size: 13px; font-weight: 700; margin-top: 8px;">
-                    Remaining Balance Due: ₹${payment.remainingDue.toLocaleString('en-IN')}
+              <div class="content">
+                <div class="grid">
+                  <div class="info-card">
+                    <div class="section-title">Patient Information</div>
+                    <p><strong>Name:</strong> ${payment.patient.name}</p>
+                    <p><strong>Patient ID:</strong> <span style="font-family: monospace; font-weight: 600;">${payment.patient.patientId}</span></p>
                   </div>
-                ` : ''}
-              </div>
-
-              <div class="footer">
-                <div class="notice">
-                  <p>• Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.</p>
-                  <p>• This is an official computer-generated receipt.</p>
+                  <div class="info-card">
+                    <div class="section-title">Clinic Practitioner</div>
+                    <p><strong>Practitioner:</strong> Sanatan Manna</p>
+                    <p><strong>Designation:</strong> Physiotherapist</p>
+                  </div>
                 </div>
-                <div class="signature">
-                  <div class="sig-line"></div>
-                  <div class="sig-name">Sanatan Manna</div>
-                  <div class="sig-title">Physiotherapist</div>
+
+                <div class="table-container">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Description</th>
+                        <th style="text-align: right;">Total Bill</th>
+                        <th style="text-align: right;">Paid Today</th>
+                        <th style="text-align: right;">Current Due</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Physiotherapy Treatment / Consultation Fee</td>
+                        <td style="text-align: right; font-weight: 600;">₹${payment.totalBill.toLocaleString('en-IN')}</td>
+                        <td style="text-align: right; font-weight: 700; color: #16a34a;">₹${payment.amountPaidToday.toLocaleString('en-IN')}</td>
+                        <td style="text-align: right; font-weight: 700; color: ${payment.remainingDue > 0 ? '#dc2626' : '#16a34a'};">₹${payment.remainingDue.toLocaleString('en-IN')}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="summary-box">
+                  <div class="summary-row">
+                    <span>Total Bill Amount:</span>
+                    <span style="font-weight: 600; width: 90px;">₹${payment.totalBill.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div class="summary-total">
+                    <span>Amount Paid Today:</span>
+                    <span style="width: 100px;">₹${payment.amountPaidToday.toLocaleString('en-IN')}</span>
+                  </div>
+                  ${payment.remainingDue > 0 ? `
+                    <div style="color: #dc2626; font-size: 13px; font-weight: 700; margin-top: 8px;">
+                      Remaining Balance Due: ₹${payment.remainingDue.toLocaleString('en-IN')}
+                    </div>
+                  ` : ''}
+                </div>
+
+                <div class="footer">
+                  <div class="notice">
+                    <p>• Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.</p>
+                    <p>• This is an official computer-generated receipt.</p>
+                  </div>
+                  <div class="signature">
+                    <div class="sig-line"></div>
+                    <div class="sig-name">Sanatan Manna</div>
+                    <div class="sig-title">Physiotherapist</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -240,15 +255,11 @@ Thank you for visiting us! 🙏`
         </body>
       </html>
     `
-    const printWindow = window.open('', '_blank', 'width=800,height=900')
+    const printWindow = window.open('', '_blank')
     if (printWindow) {
       printWindow.document.write(printContent)
       printWindow.document.close()
       printWindow.focus()
-      setTimeout(() => {
-        printWindow.print()
-        printWindow.close()
-      }, 250)
     }
     setOpen(false)
   }
