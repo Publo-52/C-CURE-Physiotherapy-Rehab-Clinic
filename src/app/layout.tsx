@@ -19,6 +19,19 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "C-CURE Physiotherapy & Rehab Clinic",
   description: "C-CURE Physiotherapy & Rehab Clinic - Patient Management System",
+  keywords: ["Physiotherapy", "Rehab", "Clinic", "Patient Management", "Healthcare", "C-CURE"],
+  authors: [{ name: "Sanatan Manna" }],
+  openGraph: {
+    title: "C-CURE Physiotherapy & Rehab Clinic",
+    description: "Advanced Physiotherapy & Rehab Clinic Patient Management System",
+    type: "website",
+    locale: "en_IN",
+    siteName: "C-CURE Physiotherapy",
+  },
+  icons: {
+    icon: "/logo.jpg",
+    apple: "/logo.jpg",
+  },
 };
 
 export default function RootLayout({
