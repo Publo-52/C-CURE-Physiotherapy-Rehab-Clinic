@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Edit, User, Phone, Activity, MapPin, CalendarDays, IndianRupee, Mail, AlertCircle, FileText } from "lucide-react"
+import { PatientInvoiceButton } from "./patient-invoice-button"
+import { getClinicProfile } from "@/app/actions/profile"
 import { DeletePatientButton } from "./delete-button"
 import { formatDate } from "@/lib/utils"
 
@@ -18,18 +20,21 @@ interface Props {
 export default async function PatientProfilePage({ params }: Props) {
   const { id } = await params
   
-  const patient = await prisma.patient.findUnique({
-    where: { id },
-    include: {
-      visits: {
-        orderBy: { date: 'desc' },
-      },
-      payments: {
-        orderBy: { paymentDate: 'desc' },
-      },
-      treatmentPlans: true
-    }
-  })
+  const [patient, profile] = await Promise.all([
+    prisma.patient.findUnique({
+      where: { id },
+      include: {
+        visits: {
+          orderBy: { date: 'desc' },
+        },
+        payments: {
+          orderBy: { paymentDate: 'desc' },
+        },
+        treatmentPlans: true
+      }
+    }),
+    getClinicProfile()
+  ])
 
   if (!patient) return notFound()
 
@@ -68,11 +73,7 @@ export default async function PatientProfilePage({ params }: Props) {
               <IndianRupee className="h-4 w-4 mr-1.5" /> Record Payment
             </Button>
           </Link>
-          <Link href={`/patients/${patient.id}/invoice`}>
-            <Button variant="outline" size="sm" className="border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10">
-              <FileText className="h-4 w-4 mr-1.5" /> Generate Invoice
-            </Button>
-          </Link>
+          <PatientInvoiceButton patient={patient} profile={profile} visitsCount={patient.visits.length} />
           <Link href={`/patients/${patient.id}/edit`}>
             <Button variant="outline" size="sm">
               <Edit className="h-4 w-4 mr-1.5" /> Edit

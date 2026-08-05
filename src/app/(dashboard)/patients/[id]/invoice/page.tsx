@@ -59,7 +59,7 @@ export default async function PatientInvoicePage({ params }: Props) {
       <div className="invoice-page invoice-print-root max-w-4xl mx-auto px-4 py-6">
 
         {/* ─── Action bar (hidden on print) ──────────────────────────── */}
-        <InvoiceActions patientId={patient.id} patientName={patient.name} />
+        <InvoiceActions patient={patient} profile={profile} visitsCount={visitCount} />
 
         {/* ─── INVOICE DOCUMENT ─────────────────────────────────────── */}
         <div className="invoice-document bg-white dark:bg-card border rounded-2xl shadow-lg overflow-hidden print:shadow-none print:border-0">
