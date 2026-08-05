@@ -11,7 +11,7 @@ import {
   TableRow 
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Search, User, Edit, Trash2, Eye, CheckCircle2, XCircle } from "lucide-react"
+import { Search, User, Edit, Trash2, Eye, CheckCircle2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { deletePatient, togglePresentStatus } from '@/app/actions/patients'
@@ -85,7 +85,6 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
     const nextStatus = !currentStatus
     const originalDone = optimisticDone[id]
     
-    // Optimistic update
     setOptimisticPresent(prev => ({ ...prev, [id]: nextStatus }))
     setOptimisticDone(prev => ({ ...prev, [id]: false }))
     
@@ -98,7 +97,6 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
       const res = await togglePresentStatus(id, nextStatus)
       if (res.error) {
         toast.error(res.error)
-        // Revert optimistic update
         setOptimisticPresent(prev => ({ ...prev, [id]: currentStatus }))
         setOptimisticDone(prev => ({ ...prev, [id]: originalDone }))
       } else {
@@ -110,7 +108,7 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
   return (
     <div className="space-y-4">
       {/* Search & Filter Header */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -122,12 +120,12 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
           />
         </div>
 
-        <div className="flex gap-1 bg-muted p-1 rounded-lg self-start sm:self-auto text-xs">
+        <div className="flex gap-1 bg-muted p-1 rounded-lg self-start sm:self-auto text-xs overflow-x-auto">
           {['All', 'Active', 'Completed', 'Inactive'].map((status) => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-md font-medium transition-all whitespace-nowrap ${
                 statusFilter === status 
                   ? 'bg-background text-foreground shadow-xs' 
                   : 'text-muted-foreground hover:text-foreground'
@@ -139,8 +137,103 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
         </div>
       </div>
 
-      {/* Table Container */}
-      <div className="rounded-md border bg-card overflow-x-auto">
+      {/* ── Mobile Card View (< md) ── */}
+      <div className="block md:hidden space-y-2">
+        {filteredPatients.length === 0 ? (
+          <div className="text-center py-10 text-muted-foreground text-sm">
+            {searchTerm ? 'No patients matching your search.' : 'No patients found.'}
+          </div>
+        ) : (
+          filteredPatients.map((patient) => {
+            const isPresent = optimisticPresent[patient.id]
+            const isDone = optimisticDone[patient.id]
+            return (
+              <div key={patient.id} className="rounded-xl border bg-card p-4 space-y-3 shadow-sm">
+                {/* Top Row: avatar + name + badge */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <User className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm truncate">{patient.name}</p>
+                      <p className="text-xs font-mono text-muted-foreground">{patient.patientId}</p>
+                    </div>
+                  </div>
+                  <Badge variant={patient.status === 'Active' ? 'default' : patient.status === 'Completed' ? 'outline' : 'secondary'} className="flex-shrink-0">
+                    {patient.status}
+                  </Badge>
+                </div>
+
+                {/* Info Row */}
+                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  <div>
+                    <span className="font-semibold text-foreground block">Phone</span>
+                    {patient.phone}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-foreground block">Registered</span>
+                    {formatDate(patient.registrationDate)}
+                  </div>
+                  <div className="col-span-2">
+                    <span className="font-semibold text-foreground block">Condition</span>
+                    {patient.disease || '—'}
+                  </div>
+                </div>
+
+                {/* Footer: Visit toggle + Actions */}
+                <div className="flex items-center justify-between pt-1 border-t border-border">
+                  <div className="flex items-center gap-2">
+                    {isDone ? (
+                      <button
+                        onClick={() => handleTogglePresent(patient.id, patient.name, true)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-600 border border-green-500/30 hover:bg-green-500/20 cursor-pointer transition-colors"
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Done
+                      </button>
+                    ) : (
+                      <label className="flex items-center gap-1.5 cursor-pointer text-xs text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={isPresent}
+                          disabled={isPending}
+                          onChange={() => handleTogglePresent(patient.id, patient.name, isPresent)}
+                          className="h-4 w-4 rounded-md border-input bg-background text-primary accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                        />
+                        Visit today
+                      </label>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Link href={`/patients/${patient.id}`}>
+                      <Button variant="ghost" size="icon-sm" title="View">
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </Link>
+                    <Link href={`/patients/${patient.id}/edit`}>
+                      <Button variant="ghost" size="icon-sm" title="Edit">
+                        <Edit className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-destructive/80 hover:text-destructive hover:bg-destructive/10"
+                      disabled={deletingId === patient.id}
+                      onClick={() => handleDelete(patient.id, patient.name)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
+
+      {/* ── Desktop Table View (≥ md) ── */}
+      <div className="hidden md:block rounded-md border bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -188,7 +281,6 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
                     <TableCell className="text-muted-foreground text-xs">
                       {formatDate(patient.registrationDate)}
                     </TableCell>
-                    {/* To Visit Checkbox Column */}
                     <TableCell className="text-center">
                       <div className="flex justify-center">
                         {isDone ? (

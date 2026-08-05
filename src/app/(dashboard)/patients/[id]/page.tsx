@@ -267,7 +267,7 @@ export default async function PatientProfilePage({ params }: Props) {
           </TabsContent>
 
           <TabsContent value="visits" className="m-0 space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <h2 className="text-lg font-semibold">Visit History</h2>
               <Link href={`/patients/${patient.id}/visits/new`}>
                 <Button size="sm"><CalendarDays className="h-4 w-4 mr-1.5" /> Record Visit</Button>
@@ -278,39 +278,63 @@ export default async function PatientProfilePage({ params }: Props) {
                 {patient.visits.length === 0 ? (
                   <p className="text-muted-foreground text-sm text-center py-8">No visit history found.</p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b bg-muted/40">
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Visit #</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Date</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Type</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Pain Scale</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Treatment</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Notes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {patient.visits.map((visit) => (
-                          <tr key={visit.id} className="border-b last:border-0 hover:bg-muted/20">
-                            <td className="py-3 px-4 font-medium">Visit #{visit.visitNumber}</td>
-                            <td className="py-3 px-4">{formatDate(visit.date)}</td>
-                            <td className="py-3 px-4"><Badge variant="outline">{visit.type}</Badge></td>
-                            <td className="py-3 px-4">{visit.painBefore ?? 'N/A'} &rarr; {visit.painAfter ?? 'N/A'}</td>
-                            <td className="py-3 px-4 max-w-xs truncate">{visit.treatmentGiven || '—'}</td>
-                            <td className="py-3 px-4 max-w-xs truncate text-muted-foreground">{visit.notes || '—'}</td>
+                  <>
+                    {/* Mobile card view */}
+                    <div className="block md:hidden divide-y divide-border">
+                      {patient.visits.map((visit) => (
+                        <div key={visit.id} className="p-4 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="font-semibold text-sm">Visit #{visit.visitNumber}</p>
+                              <p className="text-xs text-muted-foreground">{formatDate(visit.date)}</p>
+                            </div>
+                            <Badge variant="outline">{visit.type}</Badge>
+                          </div>
+                          {visit.treatmentGiven && (
+                            <p className="text-xs text-muted-foreground line-clamp-2">{visit.treatmentGiven}</p>
+                          )}
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>Pain: {visit.painBefore ?? 'N/A'} → {visit.painAfter ?? 'N/A'}</span>
+                          </div>
+                          {visit.notes && <p className="text-xs text-muted-foreground line-clamp-1">{visit.notes}</p>}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Desktop table */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b bg-muted/40">
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Visit #</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Date</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Type</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Pain Scale</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Treatment</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Notes</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {patient.visits.map((visit) => (
+                            <tr key={visit.id} className="border-b last:border-0 hover:bg-muted/20">
+                              <td className="py-3 px-4 font-medium">Visit #{visit.visitNumber}</td>
+                              <td className="py-3 px-4">{formatDate(visit.date)}</td>
+                              <td className="py-3 px-4"><Badge variant="outline">{visit.type}</Badge></td>
+                              <td className="py-3 px-4">{visit.painBefore ?? 'N/A'} &rarr; {visit.painAfter ?? 'N/A'}</td>
+                              <td className="py-3 px-4 max-w-xs truncate">{visit.treatmentGiven || '—'}</td>
+                              <td className="py-3 px-4 max-w-xs truncate text-muted-foreground">{visit.notes || '—'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="payments" className="m-0 space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <h2 className="text-lg font-semibold">Financial & Ledger History</h2>
               <Link href={`/patients/${patient.id}/payments/new`}>
                 <Button size="sm"><IndianRupee className="h-4 w-4 mr-1.5" /> Record Payment</Button>
@@ -321,36 +345,67 @@ export default async function PatientProfilePage({ params }: Props) {
                 {patient.payments.length === 0 ? (
                   <p className="text-muted-foreground text-sm text-center py-8">No payment records found.</p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b bg-muted/40">
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Invoice</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Date</th>
-                          <th className="text-right py-3 px-4 font-medium text-muted-foreground">Total Bill</th>
-                          <th className="text-right py-3 px-4 font-medium text-muted-foreground">Paid</th>
-                          <th className="text-right py-3 px-4 font-medium text-muted-foreground">Due</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Mode</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {patient.payments.map((p) => (
-                          <tr key={p.id} className="border-b last:border-0 hover:bg-muted/20">
-                            <td className="py-3 px-4 font-mono font-medium">{p.invoiceNumber}</td>
-                            <td className="py-3 px-4">{formatDate(p.paymentDate)}</td>
-                            <td className="py-3 px-4 text-right font-medium">₹{p.totalBill}</td>
-                            <td className="py-3 px-4 text-right text-green-600 font-medium">₹{p.amountPaidToday}</td>
-                            <td className={`py-3 px-4 text-right font-medium ${p.remainingDue > 0 ? 'text-destructive' : ''}`}>₹{p.remainingDue}</td>
-                            <td className="py-3 px-4">{p.paymentMode}</td>
-                            <td className="py-3 px-4">
-                              <Badge variant={p.status === 'Paid' ? 'default' : 'destructive'}>{p.status}</Badge>
-                            </td>
+                  <>
+                    {/* Mobile card view */}
+                    <div className="block md:hidden divide-y divide-border">
+                      {patient.payments.map((p) => (
+                        <div key={p.id} className="p-4 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="font-mono text-xs font-semibold text-primary">{p.invoiceNumber}</p>
+                            <Badge variant={p.status === 'Paid' ? 'default' : 'destructive'} className="text-[10px]">{p.status}</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{formatDate(p.paymentDate)}</p>
+                          <div className="grid grid-cols-3 gap-2 text-center">
+                            <div className="bg-muted/40 rounded-lg p-1.5">
+                              <p className="text-[10px] text-muted-foreground">Bill</p>
+                              <p className="text-xs font-semibold">₹{p.totalBill}</p>
+                            </div>
+                            <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-1.5">
+                              <p className="text-[10px] text-emerald-600 dark:text-emerald-400">Paid</p>
+                              <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">₹{p.amountPaidToday}</p>
+                            </div>
+                            <div className={`rounded-lg p-1.5 ${p.remainingDue > 0 ? 'bg-rose-50 dark:bg-rose-900/20' : 'bg-muted/40'}`}>
+                              <p className={`text-[10px] ${p.remainingDue > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>Due</p>
+                              <p className={`text-xs font-semibold ${p.remainingDue > 0 ? 'text-destructive' : ''}`}>₹{p.remainingDue}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Desktop table */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b bg-muted/40">
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Invoice</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Date</th>
+                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Total Bill</th>
+                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Paid</th>
+                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Due</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Mode</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {patient.payments.map((p) => (
+                            <tr key={p.id} className="border-b last:border-0 hover:bg-muted/20">
+                              <td className="py-3 px-4 font-mono font-medium">{p.invoiceNumber}</td>
+                              <td className="py-3 px-4">{formatDate(p.paymentDate)}</td>
+                              <td className="py-3 px-4 text-right font-medium">₹{p.totalBill}</td>
+                              <td className="py-3 px-4 text-right text-green-600 font-medium">₹{p.amountPaidToday}</td>
+                              <td className={`py-3 px-4 text-right font-medium ${p.remainingDue > 0 ? 'text-destructive' : ''}`}>₹{p.remainingDue}</td>
+                              <td className="py-3 px-4">{p.paymentMode}</td>
+                              <td className="py-3 px-4">
+                                <Badge variant={p.status === 'Paid' ? 'default' : 'destructive'} className="mt-1 text-[10px]">
+                                  {p.status}
+                                </Badge>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -360,4 +415,3 @@ export default async function PatientProfilePage({ params }: Props) {
     </div>
   )
 }
-
