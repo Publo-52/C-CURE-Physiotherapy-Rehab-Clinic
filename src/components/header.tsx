@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
-import { Moon, Sun, LogOut, Stethoscope } from "lucide-react"
-import { Button } from "./ui/button"
+import { Moon, Sun, Stethoscope } from "lucide-react"
 import Image from "next/image"
-import { logout } from "@/app/actions/auth"
-import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 interface HeaderProps {
@@ -20,16 +17,7 @@ interface HeaderProps {
 
 export function Header({ profile }: HeaderProps) {
   const { theme, setTheme } = useTheme()
-  const router = useRouter()
-  const [loggingOut, setLoggingOut] = useState(false)
   const [mounted, setMounted] = useState(false)
-
-  const handleLogout = async () => {
-    setLoggingOut(true)
-    await logout()
-    router.push('/login')
-    router.refresh()
-  }
 
   useEffect(() => {
     setMounted(true)
@@ -96,18 +84,6 @@ export function Header({ profile }: HeaderProps) {
             </span>
           </button>
         )}
-
-        {/* Logout — only desktop */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="hidden md:flex text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400 transition-all rounded-xl font-semibold gap-1.5"
-          onClick={handleLogout}
-          disabled={loggingOut}
-        >
-          <LogOut className="h-4 w-4" />
-          {loggingOut ? 'Logging out...' : 'Logout'}
-        </Button>
       </div>
     </header>
   )
