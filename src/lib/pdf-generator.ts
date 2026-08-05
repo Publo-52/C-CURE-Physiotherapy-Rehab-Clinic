@@ -1,5 +1,16 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 
+export function sanitizeText(str: any): string {
+  if (str === null || str === undefined) return ''
+  return String(str)
+    .replace(/•/g, '-')
+    .replace(/₹/g, 'Rs. ')
+    .replace(/—/g, '-')
+    .replace(/–/g, '-')
+    .replace(/…/g, '...')
+    .replace(/[^\x00-\x7F]/g, '')
+}
+
 export async function downloadPatientInvoicePDF(patient: any, profile?: any, visitsCount = 0) {
   const pdfDoc = await PDFDocument.create()
   const page = pdfDoc.addPage([595.28, 841.89]) // A4 size
@@ -32,7 +43,7 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
     color: primaryBlue,
   })
 
-  page.drawText(clinicName.toUpperCase(), {
+  page.drawText(sanitizeText(clinicName.toUpperCase()), {
     x: 55,
     y: y - 28,
     size: 14,
@@ -40,7 +51,7 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
     color: rgb(1, 1, 1),
   })
 
-  page.drawText(`${practitionerName} (Physiotherapist)`, {
+  page.drawText(sanitizeText(`${practitionerName} (Physiotherapist)`), {
     x: 55,
     y: y - 46,
     size: 10,
@@ -48,21 +59,21 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
     color: rgb(0.73, 0.9, 0.99),
   })
 
-  page.drawText(`Ph: ${phone}`, {
+  page.drawText(sanitizeText(`Ph: ${phone}`), {
     x: width - 180,
     y: y - 26,
     size: 9,
     font: helvetica,
     color: rgb(0.88, 0.95, 1),
   })
-  page.drawText(`Email: ${email}`, {
+  page.drawText(sanitizeText(`Email: ${email}`), {
     x: width - 180,
     y: y - 40,
     size: 8,
     font: helvetica,
     color: rgb(0.88, 0.95, 1),
   })
-  page.drawText(address.length > 32 ? address.substring(0, 32) + '...' : address, {
+  page.drawText(sanitizeText(address.length > 32 ? address.substring(0, 32) + '...' : address), {
     x: width - 180,
     y: y - 54,
     size: 8,
@@ -73,7 +84,7 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
   y -= 75
 
   // 2. Invoice Meta Bar
-  const invoiceNo = `INV-${patient.patientId}-${new Date().getFullYear()}`
+  const invoiceNo = `INV-${patient.patientId || '001'}-${new Date().getFullYear()}`
   const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 
   page.drawRectangle({
@@ -87,10 +98,10 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
   })
 
   page.drawText('INVOICE NUMBER', { x: 55, y: y - 16, size: 7, font: helveticaBold, color: textMuted })
-  page.drawText(invoiceNo, { x: 55, y: y - 30, size: 10, font: helveticaBold, color: darkSlate })
+  page.drawText(sanitizeText(invoiceNo), { x: 55, y: y - 30, size: 10, font: helveticaBold, color: darkSlate })
 
   page.drawText('DATE ISSUED', { x: width - 160, y: y - 16, size: 7, font: helveticaBold, color: textMuted })
-  page.drawText(dateStr, { x: width - 160, y: y - 30, size: 10, font: helveticaBold, color: darkSlate })
+  page.drawText(sanitizeText(dateStr), { x: width - 160, y: y - 30, size: 10, font: helveticaBold, color: darkSlate })
 
   y -= 55
 
@@ -109,11 +120,11 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
   })
 
   page.drawText('PATIENT DETAILS', { x: 50, y: y - 16, size: 8, font: helveticaBold, color: primaryBlue })
-  page.drawText(`Name: ${patient.name}`, { x: 50, y: y - 34, size: 9, font: helvetica, color: darkSlate })
-  page.drawText(`Patient ID: ${patient.patientId}`, { x: 50, y: y - 48, size: 9, font: helvetica, color: darkSlate })
-  page.drawText(`Phone: ${patient.phone || 'N/A'}`, { x: 50, y: y - 62, size: 9, font: helvetica, color: darkSlate })
-  page.drawText(`Age/Gender: ${patient.age ? `${patient.age} Yrs` : ''} ${patient.gender || ''}`, { x: 50, y: y - 76, size: 9, font: helvetica, color: darkSlate })
-  page.drawText(`Status: ${patient.status}`, { x: 50, y: y - 90, size: 9, font: helveticaBold, color: primaryBlue })
+  page.drawText(sanitizeText(`Name: ${patient.name}`), { x: 50, y: y - 34, size: 9, font: helvetica, color: darkSlate })
+  page.drawText(sanitizeText(`Patient ID: ${patient.patientId}`), { x: 50, y: y - 48, size: 9, font: helvetica, color: darkSlate })
+  page.drawText(sanitizeText(`Phone: ${patient.phone || 'N/A'}`), { x: 50, y: y - 62, size: 9, font: helvetica, color: darkSlate })
+  page.drawText(sanitizeText(`Age/Gender: ${patient.age ? `${patient.age} Yrs` : ''} ${patient.gender || ''}`), { x: 50, y: y - 76, size: 9, font: helvetica, color: darkSlate })
+  page.drawText(sanitizeText(`Status: ${patient.status || 'Active'}`), { x: 50, y: y - 90, size: 9, font: helveticaBold, color: primaryBlue })
 
   // Health Summary Card
   page.drawRectangle({
@@ -127,17 +138,17 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
   })
 
   page.drawText('HEALTH SUMMARY', { x: 40 + cardW + 25, y: y - 16, size: 8, font: helveticaBold, color: primaryBlue })
-  page.drawText(`Condition: ${patient.disease || 'N/A'}`, { x: 40 + cardW + 25, y: y - 34, size: 9, font: helvetica, color: darkSlate })
-  page.drawText(`Complaint: ${patient.chiefComplaint ? patient.chiefComplaint.substring(0, 28) : 'N/A'}`, { x: 40 + cardW + 25, y: y - 48, size: 9, font: helvetica, color: darkSlate })
-  page.drawText(`Diagnosis: ${patient.diagnosis ? patient.diagnosis.substring(0, 28) : 'N/A'}`, { x: 40 + cardW + 25, y: y - 62, size: 9, font: helvetica, color: darkSlate })
-  page.drawText(`Total Visits: ${visitsCount}`, { x: 40 + cardW + 25, y: y - 76, size: 9, font: helveticaBold, color: darkSlate })
+  page.drawText(sanitizeText(`Condition: ${patient.disease || 'N/A'}`), { x: 40 + cardW + 25, y: y - 34, size: 9, font: helvetica, color: darkSlate })
+  page.drawText(sanitizeText(`Complaint: ${patient.chiefComplaint ? patient.chiefComplaint.substring(0, 28) : 'N/A'}`), { x: 40 + cardW + 25, y: y - 48, size: 9, font: helvetica, color: darkSlate })
+  page.drawText(sanitizeText(`Diagnosis: ${patient.diagnosis ? patient.diagnosis.substring(0, 28) : 'N/A'}`), { x: 40 + cardW + 25, y: y - 62, size: 9, font: helvetica, color: darkSlate })
+  page.drawText(sanitizeText(`Total Visits: ${visitsCount}`), { x: 40 + cardW + 25, y: y - 76, size: 9, font: helveticaBold, color: darkSlate })
 
   y -= 120
 
   // 4. Financial Summary
-  const totalBilled = patient.payments ? patient.payments.reduce((s: number, p: any) => s + p.totalBill, 0) : 0
-  const totalPaid   = patient.payments ? patient.payments.reduce((s: number, p: any) => s + p.amountPaidToday, 0) : 0
-  const totalDue    = patient.payments && patient.payments.length > 0 ? patient.payments[0].remainingDue : 0
+  const totalBilled = patient.payments ? patient.payments.reduce((s: number, p: any) => s + (p.totalBill || 0), 0) : 0
+  const totalPaid   = patient.payments ? patient.payments.reduce((s: number, p: any) => s + (p.amountPaidToday || 0), 0) : 0
+  const totalDue    = patient.payments && patient.payments.length > 0 ? (patient.payments[0].remainingDue || 0) : 0
 
   page.drawRectangle({
     x: 40,
@@ -149,9 +160,9 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
     borderWidth: 1,
   })
 
-  page.drawText(`Total Billed: Rs. ${totalBilled.toLocaleString('en-IN')}`, { x: 55, y: y - 30, size: 10, font: helveticaBold, color: darkSlate })
-  page.drawText(`Total Paid: Rs. ${totalPaid.toLocaleString('en-IN')}`, { x: 230, y: y - 30, size: 10, font: helveticaBold, color: greenText })
-  page.drawText(`Remaining Due: Rs. ${totalDue.toLocaleString('en-IN')}`, { x: 400, y: y - 30, size: 10, font: helveticaBold, color: totalDue > 0 ? redText : greenText })
+  page.drawText(sanitizeText(`Total Billed: Rs. ${totalBilled.toLocaleString('en-IN')}`), { x: 55, y: y - 30, size: 10, font: helveticaBold, color: darkSlate })
+  page.drawText(sanitizeText(`Total Paid: Rs. ${totalPaid.toLocaleString('en-IN')}`), { x: 230, y: y - 30, size: 10, font: helveticaBold, color: greenText })
+  page.drawText(sanitizeText(`Remaining Due: Rs. ${totalDue.toLocaleString('en-IN')}`), { x: 400, y: y - 30, size: 10, font: helveticaBold, color: totalDue > 0 ? redText : greenText })
 
   y -= 70
 
@@ -189,12 +200,12 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
 
     let currentY = y - tableHeaderH
     patient.payments.slice(0, 8).forEach((p: any) => {
-      page.drawText(p.invoiceNumber, { x: 50, y: currentY - 14, size: 8, font: helveticaBold, color: darkSlate })
-      page.drawText(new Date(p.paymentDate).toLocaleDateString('en-IN'), { x: 150, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
-      page.drawText(p.paymentMode, { x: 250, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
-      page.drawText(`Rs. ${p.totalBill}`, { x: 320, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
-      page.drawText(`Rs. ${p.amountPaidToday}`, { x: 390, y: currentY - 14, size: 8, font: helveticaBold, color: greenText })
-      page.drawText(`Rs. ${p.remainingDue}`, { x: 460, y: currentY - 14, size: 8, font: helveticaBold, color: p.remainingDue > 0 ? redText : greenText })
+      page.drawText(sanitizeText(p.invoiceNumber), { x: 50, y: currentY - 14, size: 8, font: helveticaBold, color: darkSlate })
+      page.drawText(sanitizeText(new Date(p.paymentDate).toLocaleDateString('en-IN')), { x: 150, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
+      page.drawText(sanitizeText(p.paymentMode), { x: 250, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
+      page.drawText(sanitizeText(`Rs. ${p.totalBill}`), { x: 320, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
+      page.drawText(sanitizeText(`Rs. ${p.amountPaidToday}`), { x: 390, y: currentY - 14, size: 8, font: helveticaBold, color: greenText })
+      page.drawText(sanitizeText(`Rs. ${p.remainingDue}`), { x: 460, y: currentY - 14, size: 8, font: helveticaBold, color: (p.remainingDue || 0) > 0 ? redText : greenText })
 
       currentY -= rowH
     })
@@ -210,8 +221,8 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
     color: rgb(0.89, 0.91, 0.94),
   })
 
-  page.drawText('• Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.', { x: 40, y: y - 18, size: 8, font: helvetica, color: textMuted })
-  page.drawText('• Official computer-generated patient invoice.', { x: 40, y: y - 30, size: 8, font: helvetica, color: textMuted })
+  page.drawText('- Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.', { x: 40, y: y - 18, size: 8, font: helvetica, color: textMuted })
+  page.drawText('- Official computer-generated patient invoice.', { x: 40, y: y - 30, size: 8, font: helvetica, color: textMuted })
 
   page.drawLine({
     start: { x: width - 180, y: y - 30 },
@@ -219,7 +230,7 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
     thickness: 1,
     color: rgb(0.58, 0.64, 0.72),
   })
-  page.drawText(practitionerName, { x: width - 145, y: y - 44, size: 10, font: helveticaBold, color: darkSlate })
+  page.drawText(sanitizeText(practitionerName), { x: width - 145, y: y - 44, size: 10, font: helveticaBold, color: darkSlate })
   page.drawText('Physiotherapist', { x: width - 140, y: y - 56, size: 8, font: helvetica, color: textMuted })
 
   const pdfBytes = await pdfDoc.save()
@@ -227,7 +238,8 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `Invoice_${patient.patientId}_${patient.name.replace(/\s+/g, '_')}.pdf`
+  const safeName = (patient.name || 'Patient').replace(/[^a-zA-Z0-9]/g, '_')
+  a.download = `Invoice_${patient.patientId || '001'}_${safeName}.pdf`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)

@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast'
 import { formatDate } from '@/lib/utils'
 
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { sanitizeText } from '@/lib/pdf-generator'
 
 interface PaymentItem {
   id: string
@@ -167,15 +168,15 @@ Thank you for visiting us! 🙏`
       })
 
       page.drawText('INVOICE NUMBER', { x: 55, y: y - 18, size: 7, font: helveticaBold, color: textMuted })
-      page.drawText(payment.invoiceNumber, { x: 55, y: y - 32, size: 10, font: helveticaBold, color: darkSlate })
+      page.drawText(sanitizeText(payment.invoiceNumber), { x: 55, y: y - 32, size: 10, font: helveticaBold, color: darkSlate })
 
       page.drawText('DATE ISSUED', { x: 200, y: y - 18, size: 7, font: helveticaBold, color: textMuted })
-      page.drawText(dateStr, { x: 200, y: y - 32, size: 10, font: helveticaFont, color: darkSlate })
+      page.drawText(sanitizeText(dateStr), { x: 200, y: y - 32, size: 10, font: helveticaFont, color: darkSlate })
 
       page.drawText('PAYMENT MODE', { x: 330, y: y - 18, size: 7, font: helveticaBold, color: textMuted })
-      page.drawText(payment.paymentMode, { x: 330, y: y - 32, size: 10, font: helveticaFont, color: darkSlate })
+      page.drawText(sanitizeText(payment.paymentMode), { x: 330, y: y - 32, size: 10, font: helveticaFont, color: darkSlate })
 
-      page.drawText(`STATUS: ${payment.status.toUpperCase()}`, {
+      page.drawText(sanitizeText(`STATUS: ${payment.status.toUpperCase()}`), {
         x: width - 170,
         y: y - 26,
         size: 9,
@@ -198,8 +199,8 @@ Thank you for visiting us! 🙏`
         borderWidth: 1,
       })
       page.drawText('PATIENT INFORMATION', { x: 50, y: y - 16, size: 8, font: helveticaBold, color: primaryBlue })
-      page.drawText(`Name: ${payment.patient.name}`, { x: 50, y: y - 34, size: 9, font: helveticaFont, color: darkSlate })
-      page.drawText(`Patient ID: ${payment.patient.patientId}`, { x: 50, y: y - 48, size: 9, font: helveticaFont, color: darkSlate })
+      page.drawText(sanitizeText(`Name: ${payment.patient.name}`), { x: 50, y: y - 34, size: 9, font: helveticaFont, color: darkSlate })
+      page.drawText(sanitizeText(`Patient ID: ${payment.patient.patientId}`), { x: 50, y: y - 48, size: 9, font: helveticaFont, color: darkSlate })
 
       // Practitioner Box
       page.drawRectangle({
@@ -239,9 +240,9 @@ Thank you for visiting us! 🙏`
       page.drawText('CURRENT DUE', { x: 460, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
 
       page.drawText('Physiotherapy Treatment / Consultation Fee', { x: 50, y: y - 45, size: 9, font: helveticaFont, color: darkSlate })
-      page.drawText(`Rs. ${payment.totalBill.toLocaleString('en-IN')}`, { x: 280, y: y - 45, size: 9, font: helveticaFont, color: darkSlate })
-      page.drawText(`Rs. ${payment.amountPaidToday.toLocaleString('en-IN')}`, { x: 370, y: y - 45, size: 9, font: helveticaBold, color: greenText })
-      page.drawText(`Rs. ${payment.remainingDue.toLocaleString('en-IN')}`, { x: 460, y: y - 45, size: 9, font: helveticaBold, color: payment.remainingDue > 0 ? redText : greenText })
+      page.drawText(sanitizeText(`Rs. ${payment.totalBill.toLocaleString('en-IN')}`), { x: 280, y: y - 45, size: 9, font: helveticaFont, color: darkSlate })
+      page.drawText(sanitizeText(`Rs. ${payment.amountPaidToday.toLocaleString('en-IN')}`), { x: 370, y: y - 45, size: 9, font: helveticaBold, color: greenText })
+      page.drawText(sanitizeText(`Rs. ${payment.remainingDue.toLocaleString('en-IN')}`), { x: 460, y: y - 45, size: 9, font: helveticaBold, color: payment.remainingDue > 0 ? redText : greenText })
 
       y -= 85
 
@@ -256,10 +257,10 @@ Thank you for visiting us! 🙏`
         borderWidth: 1,
       })
 
-      page.drawText(`Total Bill Amount:  Rs. ${payment.totalBill.toLocaleString('en-IN')}`, { x: width - 250, y: y - 18, size: 9, font: helveticaFont, color: greenText })
-      page.drawText(`Amount Paid Today:  Rs. ${payment.amountPaidToday.toLocaleString('en-IN')}`, { x: width - 250, y: y - 34, size: 11, font: helveticaBold, color: greenText })
+      page.drawText(sanitizeText(`Total Bill Amount:  Rs. ${payment.totalBill.toLocaleString('en-IN')}`), { x: width - 250, y: y - 18, size: 9, font: helveticaFont, color: greenText })
+      page.drawText(sanitizeText(`Amount Paid Today:  Rs. ${payment.amountPaidToday.toLocaleString('en-IN')}`), { x: width - 250, y: y - 34, size: 11, font: helveticaBold, color: greenText })
       if (payment.remainingDue > 0) {
-        page.drawText(`Remaining Balance Due:  Rs. ${payment.remainingDue.toLocaleString('en-IN')}`, { x: width - 250, y: y - 48, size: 9, font: helveticaBold, color: redText })
+        page.drawText(sanitizeText(`Remaining Balance Due:  Rs. ${payment.remainingDue.toLocaleString('en-IN')}`), { x: width - 250, y: y - 48, size: 9, font: helveticaBold, color: redText })
       }
 
       y -= 75
@@ -272,8 +273,8 @@ Thank you for visiting us! 🙏`
         color: rgb(0.89, 0.91, 0.94),
       })
 
-      page.drawText('• Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.', { x: 40, y: y - 18, size: 8, font: helveticaFont, color: textMuted })
-      page.drawText('• Official computer-generated payment receipt.', { x: 40, y: y - 30, size: 8, font: helveticaFont, color: textMuted })
+      page.drawText('- Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.', { x: 40, y: y - 18, size: 8, font: helveticaFont, color: textMuted })
+      page.drawText('- Official computer-generated payment receipt.', { x: 40, y: y - 30, size: 8, font: helveticaFont, color: textMuted })
 
       page.drawLine({
         start: { x: width - 180, y: y - 30 },
