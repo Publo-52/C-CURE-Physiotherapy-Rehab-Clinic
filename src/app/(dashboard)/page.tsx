@@ -214,7 +214,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── Row 2: Secondary KPI cards ───────────────────────── */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-4">
 
         <div className="card-hover rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5 flex items-center gap-3 shadow-sm">
           <div className="p-2.5 rounded-xl bg-primary/15 shrink-0">
@@ -262,7 +262,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── Row 3: Visit Queue + Upcoming Schedule ───────────── */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
         <Card className="lg:col-span-4 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <div>
@@ -323,7 +323,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── Row 4: Revenue Trend + Recent Patients ───────────── */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
         <Card className="lg:col-span-4 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-bold">7-Day Revenue Trend</CardTitle>

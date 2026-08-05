@@ -8,7 +8,6 @@ export const getClinicProfile = cache(async () => {
   try {
     let profile = await prisma.clinicProfile.findFirst()
     if (!profile) {
-      // Auto-create default profile on first access
       profile = await prisma.clinicProfile.create({
         data: {
           practitionerName: 'Sanatan Manna',
@@ -43,7 +42,6 @@ export async function updateClinicProfile(formData: FormData) {
       return { error: 'Name, Clinic Name, and Phone are required.' }
     }
 
-    // Upsert — create if not exists, update if exists
     const existing = await prisma.clinicProfile.findFirst()
     if (existing) {
       await prisma.clinicProfile.update({
