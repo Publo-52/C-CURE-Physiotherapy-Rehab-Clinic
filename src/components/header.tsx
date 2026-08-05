@@ -116,17 +116,6 @@ export function Header({ profile }: HeaderProps) {
           </SheetContent>
         </Sheet>
 
-        {/* Mobile Navbar Logo */}
-        <div className="flex items-center gap-2">
-          <Image
-            src="/logo.jpg"
-            alt="Logo"
-            width={48}
-            height={48}
-            className="h-12 w-auto object-contain bg-white p-1 rounded-lg border shadow-sm"
-            style={{ width: 'auto' }}
-          />
-        </div>
       </div>
       {/* Desktop center branding */}
       <div className="hidden md:flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
