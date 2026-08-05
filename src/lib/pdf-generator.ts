@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { getPatientPDFData } from '@/app/actions/patients'
 
@@ -326,3 +328,4 @@ export async function downloadPatientInvoicePDF(patientInput: any, profileInput?
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
+

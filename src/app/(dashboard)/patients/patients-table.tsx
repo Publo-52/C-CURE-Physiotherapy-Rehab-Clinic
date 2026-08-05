@@ -11,8 +11,7 @@ import {
   TableRow 
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Search, User, Edit, Trash2, Eye, CheckCircle2, Download } from "lucide-react"
-import { downloadPatientInvoicePDF } from '@/lib/pdf-generator'
+import { Search, User, Edit, Trash2, Eye, CheckCircle2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { deletePatient, togglePresentStatus } from '@/app/actions/patients'
@@ -42,17 +41,15 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
   const [statusFilter, setStatusFilter] = useState('All')
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
-  const [optimisticPresent, setOptimisticPresent] = useState<Record<string, boolean>>({})
-  const [optimisticDone, setOptimisticDone] = useState<Record<string, boolean>>({})
-
-  // Initialize optimistic state from props if not set
-  initialPatients.forEach(p => {
-    if (optimisticPresent[p.id] === undefined) {
-      optimisticPresent[p.id] = p.presentStatus
-    }
-    if (optimisticDone[p.id] === undefined) {
-      optimisticDone[p.id] = p.visitDoneToday
-    }
+  const [optimisticPresent, setOptimisticPresent] = useState<Record<string, boolean>>(() => {
+    const initialState: Record<string, boolean> = {}
+    initialPatients.forEach(p => initialState[p.id] = p.presentStatus)
+    return initialState
+  })
+  const [optimisticDone, setOptimisticDone] = useState<Record<string, boolean>>(() => {
+    const initialState: Record<string, boolean> = {}
+    initialPatients.forEach(p => initialState[p.id] = p.visitDoneToday)
+    return initialState
   })
 
   const filteredPatients = initialPatients.filter((patient) => {

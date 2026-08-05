@@ -19,24 +19,19 @@ export default async function DashboardPage() {
   sevenDaysAgo.setHours(0, 0, 0, 0)
 
   const [
-    totalRevenueResult,
+    paymentAggregates,
     activePatients,
-    todaysVisits,
     todaysRegistered,
-    presentPatients,
     queuePatients,
     todaysVisitsData,
     recentPatients,
-    totalOutstandingDuesResult,
     pastPayments,
     rawEvents,
     scheduledVisits,
   ] = await Promise.all([
-    prisma.payment.aggregate({ _sum: { amountPaidToday: true } }),
+    prisma.payment.aggregate({ _sum: { amountPaidToday: true, remainingDue: true } }),
     prisma.patient.count({ where: { status: 'Active' } }),
-    prisma.visit.count({ where: { date: { gte: todayStart, lt: todayEnd } } }),
     prisma.patient.count({ where: { createdAt: { gte: todayStart, lt: todayEnd } } }),
-    prisma.patient.count({ where: { presentStatus: true } }),
     prisma.patient.findMany({
       where: { presentStatus: true },
       select: { id: true, patientId: true, name: true, phone: true, disease: true },
@@ -51,21 +46,27 @@ export default async function DashboardPage() {
       take: 5,
       select: { id: true, patientId: true, name: true, phone: true, disease: true, status: true },
     }),
-    prisma.payment.aggregate({ _sum: { remainingDue: true } }),
     prisma.payment.findMany({
       where: { paymentDate: { gte: sevenDaysAgo } },
       select: { amountPaidToday: true, paymentDate: true },
     }),
-    prisma.event.findMany({ orderBy: { date: 'asc' } }),
-    prisma.visit.findMany({
-      where: { status: 'Scheduled' },
+    prisma.event.findMany({ 
+      where: { date: { gte: todayStart } },
       orderBy: { date: 'asc' },
+      take: 20
+    }),
+    prisma.visit.findMany({
+      where: { status: 'Scheduled', date: { gte: todayStart } },
+      orderBy: { date: 'asc' },
+      take: 20,
       include: { patient: { select: { name: true, patientId: true } } },
     }),
   ])
 
-  const totalRevenue = totalRevenueResult._sum.amountPaidToday || 0
-  const totalOutstandingDues = totalOutstandingDuesResult._sum.remainingDue || 0
+  const todaysVisits = todaysVisitsData.length
+  const presentPatients = queuePatients.length
+  const totalRevenue = paymentAggregates._sum.amountPaidToday || 0
+  const totalOutstandingDues = paymentAggregates._sum.remainingDue || 0
   const todaysCompletedSessions = todaysVisitsData.filter(v => v.status === 'Completed').length
   const absentPatients = todaysVisitsData.filter(v => !v.patient.presentStatus).length
 

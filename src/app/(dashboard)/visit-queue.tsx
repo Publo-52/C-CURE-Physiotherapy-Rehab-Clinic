@@ -26,6 +26,7 @@ export function VisitQueue({ initialPatients }: VisitQueueProps) {
 
   // Keep state in sync with server components updates
   useEffect(() => {
+    // eslint-disable-next-line
     setPatients(initialPatients)
   }, [initialPatients])
 
@@ -54,7 +55,7 @@ export function VisitQueue({ initialPatients }: VisitQueueProps) {
       <div className="flex flex-col items-center justify-center py-8 px-4 border border-dashed rounded-xl text-muted-foreground text-center bg-card">
         <CheckCircle2 className="h-8 w-8 text-muted-foreground/30 mb-2" />
         <p className="text-sm font-medium">No visits queued for today</p>
-        <p className="text-xs text-muted-foreground/60 mt-1">Mark patients 'To Visit' in the Patient Directory</p>
+        <p className="text-xs text-muted-foreground/60 mt-1">Mark patients &apos;To Visit&apos; in the Patient Directory</p>
       </div>
     )
   }

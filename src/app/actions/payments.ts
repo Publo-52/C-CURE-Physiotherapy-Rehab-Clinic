@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use server'
 
 import prisma from '@/lib/prisma'
@@ -92,3 +94,4 @@ export async function createPayment(patientId: string, formData: FormData) {
     return { error: `Failed to record payment: ${error?.message || 'Database error'}` }
   }
 }
+

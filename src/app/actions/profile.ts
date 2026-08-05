@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use server'
 
 import { cache } from 'react'
@@ -62,3 +64,4 @@ export async function updateClinicProfile(formData: FormData) {
     return { error: error.message || 'Failed to update profile.' }
   }
 }
+

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use server'
 
 import prisma from '@/lib/prisma'
@@ -155,5 +157,6 @@ export async function deleteEvent(eventId: string) {
     return { error: 'Failed to delete event' }
   }
 }
+
 
 

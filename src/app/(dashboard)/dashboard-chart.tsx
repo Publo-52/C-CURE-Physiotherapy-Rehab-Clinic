@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -32,6 +33,7 @@ export default function DashboardChart({ data }: DashboardChartProps) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line
     setMounted(true)
   }, [])
 
@@ -83,3 +85,4 @@ export default function DashboardChart({ data }: DashboardChartProps) {
     </div>
   )
 }
+

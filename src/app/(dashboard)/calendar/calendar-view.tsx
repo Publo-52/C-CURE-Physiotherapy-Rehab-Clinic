@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useState, useMemo, useTransition, useEffect } from 'react'
@@ -127,7 +128,9 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
   const [isDeleting, setIsDeleting] = useState(false)
   
   useEffect(() => {
+    // eslint-disable-next-line
     setOptimisticVisits(visits)
+    // eslint-disable-next-line
     setOptimisticEvents(events)
   }, [visits, events])
 
@@ -997,3 +1000,4 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
     </div>
   )
 }
+

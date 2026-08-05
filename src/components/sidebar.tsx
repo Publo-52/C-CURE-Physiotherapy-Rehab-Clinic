@@ -53,7 +53,6 @@ export function Sidebar({ profile }: SidebarProps) {
   }
 
   const name = profile?.practitionerName || 'Sanatan Manna'
-  const clinicName = profile?.clinicName || 'C-CURE Physiotherapy & Rehab Clinic'
   const phone = profile?.phone || '7942688985'
   const email = profile?.email || 'sanatan.manna28072015@gmail.com'
   const address = profile?.address || 'Moyna, Midnapore, West Bengal'

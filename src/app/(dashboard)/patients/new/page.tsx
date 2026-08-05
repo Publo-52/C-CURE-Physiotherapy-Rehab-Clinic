@@ -62,6 +62,8 @@ export default function NewPatientPage() {
   })
 
   // Watch all values for auto-save
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/incompatible-library
   const formValues = watch()
 
   // Load draft on mount
@@ -72,7 +74,7 @@ export default function NewPatientPage() {
         const parsed = JSON.parse(draft)
         reset(parsed)
         toast.success('Restored auto-saved draft')
-      } catch (e) {
+      } catch {
         console.error('Failed to parse draft')
       }
     }

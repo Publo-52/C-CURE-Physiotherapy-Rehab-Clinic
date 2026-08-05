@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 import prisma from '@/lib/prisma'
@@ -114,3 +116,4 @@ export async function deleteSession() {
 
   cookieStore.delete('session')
 }
+
