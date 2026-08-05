@@ -85,20 +85,32 @@ export default async function DashboardPage() {
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 5)
 
-  // Chart data
-  const daysMap: Record<string, { revenue: number }> = {}
-  for (let i = 0; i < 7; i++) {
+  // 7-Day Revenue Chart Data
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() - (6 - i))
-    const key = d.toLocaleDateString('en-US', { weekday: 'short' })
-    daysMap[key] = { revenue: 0 }
-  }
-  pastPayments.forEach(p => {
-    const key = new Date(p.paymentDate).toLocaleDateString('en-US', { weekday: 'short' })
-    if (daysMap[key]) daysMap[key].revenue += p.amountPaidToday
+    return {
+      year: d.getFullYear(),
+      month: d.getMonth(),
+      date: d.getDate(),
+      dayLabel: d.toLocaleDateString('en-US', { weekday: 'short' }),
+      revenue: 0,
+    }
   })
-  const chartData = Object.keys(daysMap).map(day => ({
-    day, revenue: daysMap[day].revenue,
+
+  pastPayments.forEach(p => {
+    const pDate = new Date(p.paymentDate)
+    const matchedDay = last7Days.find(
+      d => d.year === pDate.getFullYear() && d.month === pDate.getMonth() && d.date === pDate.getDate()
+    )
+    if (matchedDay) {
+      matchedDay.revenue += p.amountPaidToday
+    }
+  })
+
+  const chartData = last7Days.map(d => ({
+    day: d.dayLabel,
+    revenue: Math.round(d.revenue),
   }))
 
   // UI helpers
