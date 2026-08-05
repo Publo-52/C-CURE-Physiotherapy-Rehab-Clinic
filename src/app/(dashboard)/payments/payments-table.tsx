@@ -257,11 +257,12 @@ Thank you for visiting us! 🙏`
         borderWidth: 1,
       })
 
-      page.drawText(sanitizeText(`Total Bill Amount:  Rs. ${payment.totalBill.toLocaleString('en-IN')}`), { x: width - 250, y: y - 18, size: 9, font: helveticaFont, color: greenText })
-      page.drawText(sanitizeText(`Amount Paid Today:  Rs. ${payment.amountPaidToday.toLocaleString('en-IN')}`), { x: width - 250, y: y - 34, size: 11, font: helveticaBold, color: greenText })
-      if (payment.remainingDue > 0) {
-        page.drawText(sanitizeText(`Remaining Balance Due:  Rs. ${payment.remainingDue.toLocaleString('en-IN')}`), { x: width - 250, y: y - 48, size: 9, font: helveticaBold, color: redText })
-      }
+      page.drawText(sanitizeText(`Total Bill Amount:  Rs. ${payment.totalBill.toLocaleString('en-IN')}`), { x: width - 250, y: y - 18, size: 9, font: helveticaFont, color: darkSlate })
+      page.drawText(sanitizeText(`Amount Paid Today:  Rs. ${payment.amountPaidToday.toLocaleString('en-IN')}`), { x: width - 250, y: y - 34, size: 10, font: helveticaBold, color: greenText })
+      page.drawText(
+        sanitizeText(`Remaining Balance Due:  Rs. ${payment.remainingDue.toLocaleString('en-IN')} ${payment.remainingDue <= 0 ? '(CLEARED)' : ''}`),
+        { x: width - 250, y: y - 48, size: 10, font: helveticaBold, color: payment.remainingDue > 0 ? redText : greenText }
+      )
 
       y -= 75
 

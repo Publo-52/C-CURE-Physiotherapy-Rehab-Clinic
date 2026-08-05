@@ -16,8 +16,8 @@ export async function downloadPatientInvoicePDF(patientInput: any, profileInput?
   let patient = patientInput
   let profile = profileInput
 
-  // If payments or full details are missing, fetch fresh DB record
-  if (patient?.id && (!patient.payments || !Array.isArray(patient.payments) || !profile)) {
+  // Always fetch fresh DB record with all payment history and clinic profile
+  if (patient?.id) {
     try {
       const fetched = await getPatientPDFData(patient.id)
       if (fetched.patient) patient = fetched.patient
