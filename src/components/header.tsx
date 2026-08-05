@@ -33,7 +33,7 @@ export function Header({ profile }: HeaderProps) {
       <div className="flex items-center gap-2.5 md:hidden">
         <div className="relative h-8 w-8 rounded-full overflow-hidden flex-shrink-0 bg-white shadow-sm ring-1 ring-border">
           <Image
-            src="/logo.jpg"
+            src="/mobile-logo.png"
             alt="C-CURE Logo"
             fill
             sizes="32px"
