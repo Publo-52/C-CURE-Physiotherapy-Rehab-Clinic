@@ -44,7 +44,7 @@ function DownloadDropdown({ payment }: { payment: PaymentItem }) {
   const dateStr = formatDate(payment.paymentDate)
   const paymentText = 
 `🏥 *C-CURE Physiotherapy & Rehab Clinic*
-👨‍⚕️ Dr. Sonatan Manna
+Sanatan Manna (Physiotherapist)
 
 📋 *Payment Receipt*
 ━━━━━━━━━━━━━━━━━━━━
@@ -98,56 +98,144 @@ Thank you for visiting us! 🙏`
         <head>
           <title>Payment Receipt - ${payment.invoiceNumber}</title>
           <style>
-            body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 40px; color: #1e293b; background: #fff; }
-            .header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #0ea5e9; padding-bottom: 20px; }
-            .header h1 { color: #0284c7; margin: 0 0 6px 0; font-size: 26px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
-            .header p { margin: 3px 0; font-size: 15px; color: #475569; font-weight: 600; }
-            .title { text-align: center; font-size: 18px; font-weight: 700; text-transform: uppercase; margin-bottom: 20px; background: #f0f9ff; color: #0369a1; padding: 10px; border-radius: 8px; border: 1px solid #bae6fd; }
-            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
-            .box { background: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid #e2e8f0; }
-            .box p { margin: 8px 0; font-size: 14px; }
-            .box strong { display: inline-block; width: 120px; color: #475569; }
-            .amounts { background: #f0fdf4; padding: 20px; border-radius: 10px; border: 1px solid #bbf7d0; text-align: right; margin-bottom: 25px; }
-            .amounts p { margin: 8px 0; font-size: 15px; color: #166534; }
-            .amounts .total { font-size: 20px; font-weight: 800; color: #15803d; border-top: 1.5px dashed #bbf7d0; padding-top: 10px; margin-top: 10px; }
-            .footer { text-align: center; margin-top: 35px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 18px; }
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: 'Inter', system-ui, -apple-system, sans-serif; padding: 30px; color: #0f172a; background: #fff; line-height: 1.5; }
+            .container { max-width: 750px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+            .header { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #fff; padding: 28px 32px; display: flex; justify-content: space-between; align-items: center; }
+            .brand { flex: 1; }
+            .brand h1 { font-size: 22px; font-weight: 800; tracking: -0.5px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2; }
+            .brand p { font-size: 13px; color: #bae6fd; font-weight: 600; margin-top: 4px; }
+            .contact-info { text-align: right; font-size: 11px; color: #e0f2fe; line-height: 1.6; }
+            .meta-bar { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 14px 32px; display: flex; justify-content: space-between; align-items: center; }
+            .meta-item { text-align: left; }
+            .meta-item span { display: block; font-size: 10px; text-transform: uppercase; font-weight: 700; color: #64748b; tracking: 0.5px; }
+            .meta-item strong { font-size: 14px; font-weight: 700; color: #0f172a; font-family: monospace; }
+            .status-badge { background: ${payment.status === 'Paid' ? '#dcfce7' : payment.status === 'Partially Paid' ? '#fef9c3' : '#fee2e2'}; color: ${payment.status === 'Paid' ? '#15803d' : payment.status === 'Partially Paid' ? '#a16207' : '#b91c1c'}; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; border: 1px solid currentColor; }
+            .content { padding: 32px; }
+            .section-title { font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; color: #0284c7; margin-bottom: 12px; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+            .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+            .info-card p { font-size: 13px; margin-bottom: 6px; color: #334155; }
+            .info-card p:last-child { margin-bottom: 0; }
+            .info-card strong { font-weight: 600; color: #0f172a; display: inline-block; width: 100px; }
+            .table-container { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 28px; }
+            table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+            th { background: #f1f5f9; font-weight: 700; color: #475569; text-transform: uppercase; font-size: 11px; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; }
+            td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+            tr:last-child td { border-bottom: none; }
+            .summary-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; text-align: right; margin-bottom: 32px; }
+            .summary-row { display: flex; justify-content: flex-end; gap: 24px; font-size: 13px; margin-bottom: 6px; color: #166534; }
+            .summary-total { display: flex; justify-content: flex-end; gap: 24px; font-size: 18px; font-weight: 800; color: #15803d; border-top: 1.5px dashed #86efac; padding-top: 10px; margin-top: 10px; }
+            .footer { display: flex; justify-content: space-between; align-items: flex-end; pt-20px; border-top: 1px solid #e2e8f0; padding-top: 24px; }
+            .notice { font-size: 11px; color: #64748b; max-width: 400px; line-height: 1.5; }
+            .signature { text-align: right; }
+            .sig-line { width: 160px; border-bottom: 1.5px dashed #94a3b8; margin-bottom: 8px; margin-left: auto; }
+            .sig-name { font-size: 13px; font-weight: 700; color: #0f172a; }
+            .sig-title { font-size: 11px; color: #64748b; }
             @media print {
-              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 10px; }
+              body { padding: 0; background: #fff; }
+              .container { border: none; box-shadow: none; max-width: 100%; }
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1>C-CURE PHYSIOTHERAPY & REHAB CLINIC</h1>
-            <p>Dr. Sonatan Manna</p>
-          </div>
-          <div class="title">Official Payment Receipt</div>
-          
-          <div class="grid">
-            <div class="box">
-              <p><strong>Invoice Number:</strong> ${payment.invoiceNumber}</p>
-              <p><strong>Date:</strong> ${dateStr}</p>
-              <p><strong>Payment Mode:</strong> ${payment.paymentMode}</p>
-              <p><strong>Status:</strong> ${payment.status}</p>
+          <div class="container">
+            <div class="header">
+              <div class="brand">
+                <h1>C-CURE PHYSIOTHERAPY & REHAB CLINIC</h1>
+                <p>Sanatan Manna (Physiotherapist)</p>
+              </div>
+              <div class="contact-info">
+                <p>📞 7942688985</p>
+                <p>✉️ sanatan.manna28072015@gmail.com</p>
+                <p>📍 Moyna, Midnapore, West Bengal</p>
+              </div>
             </div>
-            <div class="box">
-              <p><strong>Patient Name:</strong> ${payment.patient.name}</p>
-              <p><strong>Patient ID:</strong> ${payment.patient.patientId}</p>
+
+            <div class="meta-bar">
+              <div class="meta-item">
+                <span>Invoice Number</span>
+                <strong>${payment.invoiceNumber}</strong>
+              </div>
+              <div class="meta-item">
+                <span>Date Issued</span>
+                <strong style="font-family: inherit;">${dateStr}</strong>
+              </div>
+              <div class="meta-item">
+                <span>Payment Mode</span>
+                <strong style="font-family: inherit;">${payment.paymentMode}</strong>
+              </div>
+              <div>
+                <span class="status-badge">${payment.status}</span>
+              </div>
             </div>
-          </div>
 
-          <div class="amounts">
-            <p><strong>Total Bill:</strong> ₹${payment.totalBill}</p>
-            <p><strong>Previous Due:</strong> ₹${payment.remainingDue + payment.amountPaidToday - payment.totalBill > 0 ? payment.remainingDue + payment.amountPaidToday - payment.totalBill : 0}</p>
-            <div class="total">Amount Paid Today: ₹${payment.amountPaidToday}</div>
-            <p style="color: ${payment.remainingDue > 0 ? '#dc2626' : '#16a34a'}; margin-top: 10px; font-weight: bold;">
-              <strong>Current Due:</strong> ₹${payment.remainingDue}
-            </p>
-          </div>
+            <div class="content">
+              <div class="grid">
+                <div class="info-card">
+                  <div class="section-title">Patient Information</div>
+                  <p><strong>Name:</strong> ${payment.patient.name}</p>
+                  <p><strong>Patient ID:</strong> <span style="font-family: monospace; font-weight: 600;">${payment.patient.patientId}</span></p>
+                </div>
+                <div class="info-card">
+                  <div class="section-title">Clinic Practitioner</div>
+                  <p><strong>Practitioner:</strong> Sanatan Manna</p>
+                  <p><strong>Designation:</strong> Physiotherapist</p>
+                </div>
+              </div>
 
-          <div class="footer">
-            <p>Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.</p>
-            <p>Wishing you a speedy recovery!</p>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Description</th>
+                      <th style="text-align: right;">Total Bill</th>
+                      <th style="text-align: right;">Paid Today</th>
+                      <th style="text-align: right;">Current Due</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Physiotherapy Treatment / Consultation Fee</td>
+                      <td style="text-align: right; font-weight: 600;">₹${payment.totalBill.toLocaleString('en-IN')}</td>
+                      <td style="text-align: right; font-weight: 700; color: #16a34a;">₹${payment.amountPaidToday.toLocaleString('en-IN')}</td>
+                      <td style="text-align: right; font-weight: 700; color: ${payment.remainingDue > 0 ? '#dc2626' : '#16a34a'};">₹${payment.remainingDue.toLocaleString('en-IN')}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="summary-box">
+                <div class="summary-row">
+                  <span>Total Bill Amount:</span>
+                  <span style="font-weight: 600; width: 90px;">₹${payment.totalBill.toLocaleString('en-IN')}</span>
+                </div>
+                <div class="summary-total">
+                  <span>Amount Paid Today:</span>
+                  <span style="width: 100px;">₹${payment.amountPaidToday.toLocaleString('en-IN')}</span>
+                </div>
+                ${payment.remainingDue > 0 ? `
+                  <div style="color: #dc2626; font-size: 13px; font-weight: 700; margin-top: 8px;">
+                    Remaining Balance Due: ₹${payment.remainingDue.toLocaleString('en-IN')}
+                  </div>
+                ` : ''}
+              </div>
+
+              <div class="footer">
+                <div class="notice">
+                  <p>• Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.</p>
+                  <p>• This is an official computer-generated receipt.</p>
+                </div>
+                <div class="signature">
+                  <div class="sig-line"></div>
+                  <div class="sig-name">Sanatan Manna</div>
+                  <div class="sig-title">Physiotherapist</div>
+                </div>
+              </div>
+            </div>
           </div>
         </body>
       </html>
