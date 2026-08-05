@@ -14,15 +14,19 @@ export async function proxy(req: NextRequest) {
     )
   const isPublicRoute = publicRoutes.includes(path)
 
-  // Read the session cookie directly from the request (runtime-safe)
   const sessionCookie = req.cookies.get('session')?.value
 
   let session = null
   if (sessionCookie) {
     try {
-      session = await decrypt(sessionCookie)
+      const payload = await decrypt(sessionCookie)
+      // The DB-level session validity (token existence) is checked in verifySession()
+      // inside server components/actions. The proxy only checks the JWT is valid
+      // and has a sessionToken field (i.e. it was issued by the new system).
+      if (payload?.sessionToken) {
+        session = payload
+      }
     } catch {
-      // Invalid or expired JWT — treat as unauthenticated
       session = null
     }
   }

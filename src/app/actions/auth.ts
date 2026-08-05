@@ -32,10 +32,15 @@ export async function login(formData: FormData) {
       data: { lastLogin: new Date() },
     })
   } catch (error) {
-    console.warn("Could not update lastLogin. If running on Vercel with SQLite, writes are not supported.", error)
+    console.warn('Could not update lastLogin.', error)
   }
 
-  await createSession(admin.id)
+  // createSession enforces the 3-device limit
+  const result = await createSession(admin.id)
+  if (result.error) {
+    return { error: result.error }
+  }
+
   return { success: true }
 }
 
@@ -43,4 +48,3 @@ export async function logout() {
   await deleteSession()
   // Navigation is handled by the caller (client component via router.push)
 }
-
