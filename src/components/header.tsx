@@ -116,6 +116,12 @@ export function Header({ profile }: HeaderProps) {
           </SheetContent>
         </Sheet>
 
+        {/* Mobile Navbar Branding */}
+        <div className="flex md:hidden items-center gap-2">
+          <span className="text-sm font-semibold gradient-text truncate max-w-[200px] sm:max-w-[300px]">
+            C-CURE Physiotherapy &amp; Rehab Clinic
+          </span>
+        </div>
       </div>
       {/* Desktop center branding */}
       <div className="hidden md:flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
