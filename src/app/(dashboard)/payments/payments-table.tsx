@@ -220,7 +220,20 @@ Thank you for visiting us! 🙏`
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       }
 
-      await (window as any).html2pdf().set(opt).from(container).save()
+      const originalConsoleError = console.error
+      console.error = (...args: any[]) => {
+        if (typeof args[0] === 'string' && args[0].includes('unsupported color function')) {
+          return
+        }
+        originalConsoleError.apply(console, args)
+      }
+
+      try {
+        await (window as any).html2pdf().set(opt).from(container).save()
+      } finally {
+        console.error = originalConsoleError
+      }
+
       toast.success('PDF downloaded!', { id: 'pdf-toast' })
     } catch (err) {
       console.error('PDF download error:', err)
