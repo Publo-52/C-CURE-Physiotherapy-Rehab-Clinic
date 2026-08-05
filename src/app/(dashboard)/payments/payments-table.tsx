@@ -281,9 +281,9 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
         ) : (
           <>
             {/* ── Mobile Card View (< md) ── */}
-            <div className="block md:hidden divide-y divide-border">
+            <div className="block md:hidden space-y-3 p-3 bg-muted/20">
               {filteredPayments.map((p) => (
-                <div key={p.id} className="p-4 space-y-3">
+                <div key={p.id} className="p-4 space-y-3 bg-background border border-border/70 rounded-2xl shadow-xs">
                   {/* Invoice + Date */}
                   <div className="flex items-start justify-between gap-2">
                     <div>

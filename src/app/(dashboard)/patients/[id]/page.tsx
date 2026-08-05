@@ -280,9 +280,9 @@ export default async function PatientProfilePage({ params }: Props) {
                 ) : (
                   <>
                     {/* Mobile card view */}
-                    <div className="block md:hidden divide-y divide-border">
+                    <div className="block md:hidden space-y-3 p-3 bg-muted/20">
                       {patient.visits.map((visit) => (
-                        <div key={visit.id} className="p-4 space-y-2">
+                        <div key={visit.id} className="p-4 space-y-2 bg-background border border-border/70 rounded-2xl shadow-xs">
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <p className="font-semibold text-sm">Visit #{visit.visitNumber}</p>
@@ -347,9 +347,9 @@ export default async function PatientProfilePage({ params }: Props) {
                 ) : (
                   <>
                     {/* Mobile card view */}
-                    <div className="block md:hidden divide-y divide-border">
+                    <div className="block md:hidden space-y-3 p-3 bg-muted/20">
                       {patient.payments.map((p) => (
-                        <div key={p.id} className="p-4 space-y-2">
+                        <div key={p.id} className="p-4 space-y-2 bg-background border border-border/70 rounded-2xl shadow-xs">
                           <div className="flex items-start justify-between gap-2">
                             <p className="font-mono text-xs font-semibold text-primary">{p.invoiceNumber}</p>
                             <Badge variant={p.status === 'Paid' ? 'default' : 'destructive'} className="text-[10px]">{p.status}</Badge>
