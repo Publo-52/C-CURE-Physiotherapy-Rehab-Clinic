@@ -25,6 +25,7 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
   const lightBg = rgb(0.97, 0.98, 0.99)
   const greenText = rgb(0.09, 0.5, 0.24)
   const redText = rgb(0.86, 0.15, 0.15)
+  const orangeText = rgb(0.85, 0.45, 0.05)
 
   const clinicName = profile?.clinicName || 'C-CURE PHYSIOTHERAPY & REHAB CLINIC'
   const practitionerName = profile?.practitionerName || 'Sanatan Manna'
@@ -107,6 +108,7 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
 
   // 3. Patient Details + Health Summary Grid
   const cardW = (width - 95) / 2
+  const actualVisitsCount = visitsCount || (Array.isArray(patient.visits) ? patient.visits.length : 0)
 
   // Patient Card
   page.drawRectangle({
@@ -141,33 +143,49 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
   page.drawText(sanitizeText(`Condition: ${patient.disease || 'N/A'}`), { x: 40 + cardW + 25, y: y - 34, size: 9, font: helvetica, color: darkSlate })
   page.drawText(sanitizeText(`Complaint: ${patient.chiefComplaint ? patient.chiefComplaint.substring(0, 28) : 'N/A'}`), { x: 40 + cardW + 25, y: y - 48, size: 9, font: helvetica, color: darkSlate })
   page.drawText(sanitizeText(`Diagnosis: ${patient.diagnosis ? patient.diagnosis.substring(0, 28) : 'N/A'}`), { x: 40 + cardW + 25, y: y - 62, size: 9, font: helvetica, color: darkSlate })
-  page.drawText(sanitizeText(`Total Visits: ${visitsCount}`), { x: 40 + cardW + 25, y: y - 76, size: 9, font: helveticaBold, color: darkSlate })
+  page.drawText(sanitizeText(`Total Visits: ${actualVisitsCount}`), { x: 40 + cardW + 25, y: y - 76, size: 9, font: helveticaBold, color: darkSlate })
 
   y -= 120
 
-  // 4. Financial Summary
-  const totalBilled = patient.payments ? patient.payments.reduce((s: number, p: any) => s + (p.totalBill || 0), 0) : 0
-  const totalPaid   = patient.payments ? patient.payments.reduce((s: number, p: any) => s + (p.amountPaidToday || 0), 0) : 0
-  const totalDue    = patient.payments && patient.payments.length > 0 ? (patient.payments[0].remainingDue || 0) : 0
+  // 4. Financial Summary & Outstanding Bill Due
+  const hasPayments = Array.isArray(patient.payments) && patient.payments.length > 0
+  const totalBilled = hasPayments
+    ? patient.payments.reduce((s: number, p: any) => s + (p.totalBill || 0), 0)
+    : 0
+  const totalPaid = hasPayments
+    ? patient.payments.reduce((s: number, p: any) => s + (p.amountPaidToday || 0), 0)
+    : 0
+  const totalDue = hasPayments
+    ? (patient.payments[0].remainingDue !== undefined ? patient.payments[0].remainingDue : Math.max(0, totalBilled - totalPaid))
+    : 0
+
+  const statusStr = hasPayments
+    ? (totalDue <= 0 ? 'CLEARED' : totalPaid > 0 ? 'PARTIALLY PAID' : 'OUTSTANDING DUE')
+    : 'NO RECORDED PAYMENTS'
+
+  const statusColor = totalDue <= 0 && hasPayments ? greenText : totalPaid > 0 ? orangeText : redText
 
   page.drawRectangle({
     x: 40,
-    y: y - 50,
+    y: y - 65,
     width: width - 80,
-    height: 50,
-    color: rgb(0.94, 0.99, 0.95),
-    borderColor: rgb(0.73, 0.97, 0.82),
+    height: 65,
+    color: rgb(0.97, 0.98, 1),
+    borderColor: rgb(0.8, 0.85, 0.95),
     borderWidth: 1,
   })
 
-  page.drawText(sanitizeText(`Total Billed: Rs. ${totalBilled.toLocaleString('en-IN')}`), { x: 55, y: y - 30, size: 10, font: helveticaBold, color: darkSlate })
-  page.drawText(sanitizeText(`Total Paid: Rs. ${totalPaid.toLocaleString('en-IN')}`), { x: 230, y: y - 30, size: 10, font: helveticaBold, color: greenText })
-  page.drawText(sanitizeText(`Remaining Due: Rs. ${totalDue.toLocaleString('en-IN')}`), { x: 400, y: y - 30, size: 10, font: helveticaBold, color: totalDue > 0 ? redText : greenText })
+  page.drawText('FINANCIAL LEDGER & BILL DUE OVERVIEW', { x: 55, y: y - 16, size: 8, font: helveticaBold, color: primaryBlue })
 
-  y -= 70
+  page.drawText(sanitizeText(`Total Billed: Rs. ${totalBilled.toLocaleString('en-IN')}`), { x: 55, y: y - 36, size: 10, font: helveticaBold, color: darkSlate })
+  page.drawText(sanitizeText(`Total Paid: Rs. ${totalPaid.toLocaleString('en-IN')}`), { x: 210, y: y - 36, size: 10, font: helveticaBold, color: greenText })
+  page.drawText(sanitizeText(`Bill Due: Rs. ${totalDue.toLocaleString('en-IN')}`), { x: 350, y: y - 36, size: 11, font: helveticaBold, color: totalDue > 0 ? redText : greenText })
+  page.drawText(sanitizeText(`Status: ${statusStr}`), { x: 55, y: y - 52, size: 9, font: helveticaBold, color: statusColor })
+
+  y -= 85
 
   // 5. Payment History Table
-  if (patient.payments && patient.payments.length > 0) {
+  if (hasPayments) {
     const tableHeaderH = 22
     const rowH = 20
     const paymentsCount = Math.min(patient.payments.length, 8)
@@ -203,14 +221,26 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
       page.drawText(sanitizeText(p.invoiceNumber), { x: 50, y: currentY - 14, size: 8, font: helveticaBold, color: darkSlate })
       page.drawText(sanitizeText(new Date(p.paymentDate).toLocaleDateString('en-IN')), { x: 150, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
       page.drawText(sanitizeText(p.paymentMode), { x: 250, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
-      page.drawText(sanitizeText(`Rs. ${p.totalBill}`), { x: 320, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
-      page.drawText(sanitizeText(`Rs. ${p.amountPaidToday}`), { x: 390, y: currentY - 14, size: 8, font: helveticaBold, color: greenText })
-      page.drawText(sanitizeText(`Rs. ${p.remainingDue}`), { x: 460, y: currentY - 14, size: 8, font: helveticaBold, color: (p.remainingDue || 0) > 0 ? redText : greenText })
+      page.drawText(sanitizeText(`Rs. ${(p.totalBill || 0).toLocaleString('en-IN')}`), { x: 320, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
+      page.drawText(sanitizeText(`Rs. ${(p.amountPaidToday || 0).toLocaleString('en-IN')}`), { x: 390, y: currentY - 14, size: 8, font: helveticaBold, color: greenText })
+      page.drawText(sanitizeText(`Rs. ${(p.remainingDue || 0).toLocaleString('en-IN')}`), { x: 460, y: currentY - 14, size: 8, font: helveticaBold, color: (p.remainingDue || 0) > 0 ? redText : greenText })
 
       currentY -= rowH
     })
 
     y -= (tableH + 30)
+  } else {
+    page.drawRectangle({
+      x: 40,
+      y: y - 35,
+      width: width - 80,
+      height: 35,
+      color: lightBg,
+      borderColor: rgb(0.89, 0.91, 0.94),
+      borderWidth: 1,
+    })
+    page.drawText('- No individual payment entries logged yet. Outstanding Bill Due: Rs. 0', { x: 55, y: y - 22, size: 9, font: helvetica, color: textMuted })
+    y -= 50
   }
 
   // 6. Footer & Signature
