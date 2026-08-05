@@ -3,6 +3,7 @@
 import prisma from '@/lib/prisma'
 import { createSession, deleteSession } from '@/lib/session'
 import bcrypt from 'bcryptjs'
+import { redirect } from 'next/navigation'
 
 export async function login(formData: FormData) {
   const email = formData.get('email') as string
@@ -46,5 +47,5 @@ export async function login(formData: FormData) {
 
 export async function logout() {
   await deleteSession()
-  // Navigation is handled by the caller (client component via router.push)
+  redirect('/login')
 }

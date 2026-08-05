@@ -7,7 +7,7 @@ import { Button } from "./ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "./ui/sheet"
 import { navItems } from "./sidebar"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { logout } from "@/app/actions/auth"
@@ -22,16 +22,17 @@ interface HeaderProps {
 export function Header({ profile }: HeaderProps) {
   const { theme, setTheme } = useTheme()
   const pathname = usePathname()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   const handleLogout = async () => {
     setLoggingOut(true)
+    setOpen(false)
     await logout()
-    // Optionally close menu
-    // setOpen(false) 
-    // Usually redirect handles state anyway
+    router.push('/login')
+    router.refresh()
   }
 
   useEffect(() => {
