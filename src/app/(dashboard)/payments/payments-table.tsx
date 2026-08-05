@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { Search, Share2, Copy, Check, MessageCircle, Printer } from 'lucide-react'
+import { Search, Share2, Copy, Check, MessageCircle, Download, MoreVertical } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'react-hot-toast'
@@ -37,7 +37,7 @@ const statusColor: Record<string, 'default' | 'secondary' | 'destructive' | 'out
   'Advance Paid': 'outline',
 }
 
-function ShareDropdown({ payment }: { payment: PaymentItem }) {
+function DownloadDropdown({ payment }: { payment: PaymentItem }) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -93,25 +93,26 @@ Thank you for visiting us! 🙏`
 
   const handlePrintPDF = () => {
     const printContent = `
+      <!DOCTYPE html>
       <html>
         <head>
           <title>Payment Receipt - ${payment.invoiceNumber}</title>
           <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #0ea5e9; padding-bottom: 20px; }
-            .header h1 { color: #0ea5e9; margin: 0 0 10px 0; font-size: 28px; text-transform: uppercase; letter-spacing: 1px; }
-            .header p { margin: 5px 0; font-size: 16px; color: #555; font-weight: bold; }
-            .title { text-align: center; font-size: 20px; text-transform: uppercase; margin-bottom: 20px; background: #f0f9ff; padding: 10px; border-radius: 5px;}
-            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-            .box { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+            body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 40px; color: #1e293b; background: #fff; }
+            .header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #0ea5e9; padding-bottom: 20px; }
+            .header h1 { color: #0284c7; margin: 0 0 6px 0; font-size: 26px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
+            .header p { margin: 3px 0; font-size: 15px; color: #475569; font-weight: 600; }
+            .title { text-align: center; font-size: 18px; font-weight: 700; text-transform: uppercase; margin-bottom: 20px; background: #f0f9ff; color: #0369a1; padding: 10px; border-radius: 8px; border: 1px solid #bae6fd; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+            .box { background: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid #e2e8f0; }
             .box p { margin: 8px 0; font-size: 14px; }
             .box strong { display: inline-block; width: 120px; color: #475569; }
-            .amounts { background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #bbf7d0; text-align: right; margin-bottom: 30px; }
-            .amounts p { margin: 10px 0; font-size: 16px; }
-            .amounts .total { font-size: 20px; font-weight: bold; color: #166534; border-top: 1px solid #bbf7d0; padding-top: 10px; }
-            .footer { text-align: center; margin-top: 40px; font-size: 14px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+            .amounts { background: #f0fdf4; padding: 20px; border-radius: 10px; border: 1px solid #bbf7d0; text-align: right; margin-bottom: 25px; }
+            .amounts p { margin: 8px 0; font-size: 15px; color: #166534; }
+            .amounts .total { font-size: 20px; font-weight: 800; color: #15803d; border-top: 1.5px dashed #bbf7d0; padding-top: 10px; margin-top: 10px; }
+            .footer { text-align: center; margin-top: 35px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 18px; }
             @media print {
-              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 10px; }
             }
           </style>
         </head>
@@ -120,7 +121,7 @@ Thank you for visiting us! 🙏`
             <h1>C-CURE PHYSIOTHERAPY & REHAB CLINIC</h1>
             <p>Dr. Sonatan Manna</p>
           </div>
-          <div class="title">Payment Receipt</div>
+          <div class="title">Official Payment Receipt</div>
           
           <div class="grid">
             <div class="box">
@@ -139,7 +140,7 @@ Thank you for visiting us! 🙏`
             <p><strong>Total Bill:</strong> ₹${payment.totalBill}</p>
             <p><strong>Previous Due:</strong> ₹${payment.remainingDue + payment.amountPaidToday - payment.totalBill > 0 ? payment.remainingDue + payment.amountPaidToday - payment.totalBill : 0}</p>
             <div class="total">Amount Paid Today: ₹${payment.amountPaidToday}</div>
-            <p style="color: ${payment.remainingDue > 0 ? '#dc2626' : '#16a34a'}; margin-top: 10px;">
+            <p style="color: ${payment.remainingDue > 0 ? '#dc2626' : '#16a34a'}; margin-top: 10px; font-weight: bold;">
               <strong>Current Due:</strong> ₹${payment.remainingDue}
             </p>
           </div>
@@ -156,7 +157,6 @@ Thank you for visiting us! 🙏`
       printWindow.document.write(printContent)
       printWindow.document.close()
       printWindow.focus()
-      // Wait for styling to apply
       setTimeout(() => {
         printWindow.print()
         printWindow.close()
@@ -166,13 +166,24 @@ Thank you for visiting us! 🙏`
   }
 
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-flex items-center gap-1">
+      {/* Primary Download PDF Button */}
+      <button
+        onClick={handlePrintPDF}
+        title={`Download PDF for ${payment.patient.name}`}
+        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 transition-all shadow-2xs"
+      >
+        <Download className="h-3.5 w-3.5" />
+        <span>PDF</span>
+      </button>
+
+      {/* More Options Dropdown */}
       <button
         onClick={() => setOpen(o => !o)}
-        title="Share Payment Record"
-        className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+        title="More Options"
+        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
       >
-        <Share2 className="h-3.5 w-3.5" />
+        <MoreVertical className="h-3.5 w-3.5" />
       </button>
 
       {open && (
@@ -180,40 +191,40 @@ Thank you for visiting us! 🙏`
           {/* Backdrop */}
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           {/* Dropdown */}
-          <div className="absolute right-0 top-8 z-50 w-48 bg-card border rounded-xl shadow-lg overflow-hidden">
+          <div className="absolute right-0 top-8 z-50 w-52 bg-card border rounded-xl shadow-lg overflow-hidden">
             <div className="px-3 py-2 border-b">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Share Receipt</p>
-              <p className="text-[10px] text-muted-foreground truncate">{payment.invoiceNumber}</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Download / Share</p>
+              <p className="text-[10px] text-muted-foreground truncate">{payment.patient.name} ({payment.invoiceNumber})</p>
             </div>
             <div className="p-1">
               <button
+                onClick={handlePrintPDF}
+                className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium rounded-lg hover:bg-primary/10 text-primary transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                Download PDF Receipt
+              </button>
+              <button
                 onClick={handleWhatsApp}
-                className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-green-500/10 text-green-600 transition-colors"
+                className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium rounded-lg hover:bg-green-500/10 text-green-600 transition-colors"
               >
                 <MessageCircle className="h-4 w-4" />
                 Share on WhatsApp
               </button>
               <button
                 onClick={handleShare}
-                className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-blue-500/10 text-blue-600 transition-colors"
+                className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium rounded-lg hover:bg-blue-500/10 text-blue-600 transition-colors"
               >
                 <Share2 className="h-4 w-4" />
-                Share / More...
-              </button>
-              <button
-                onClick={handlePrintPDF}
-                className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-orange-500/10 text-orange-600 transition-colors"
-              >
-                <Printer className="h-4 w-4" />
-                Print / Save PDF
+                Share Options...
               </button>
               <div className="h-px bg-border my-1 mx-2" />
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-muted transition-colors text-foreground"
+                className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium rounded-lg hover:bg-muted transition-colors text-foreground"
               >
                 {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                {copied ? 'Copied!' : 'Copy Text'}
+                {copied ? 'Copied!' : 'Copy Text Details'}
               </button>
             </div>
           </div>
@@ -317,10 +328,10 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
                     </div>
                   </div>
 
-                  {/* Mode + Share */}
+                  {/* Mode + Download */}
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">{p.paymentMode}</span>
-                    <ShareDropdown payment={p} />
+                    <DownloadDropdown payment={p} />
                   </div>
                 </div>
               ))}
@@ -339,7 +350,7 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
                     <th className="text-right py-3 px-4 font-medium text-muted-foreground">Due</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Mode</th>
-                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Share</th>
+                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Download</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -365,7 +376,7 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
                       </td>
                       <td className="py-3 px-4 text-muted-foreground">{p.paymentMode}</td>
                       <td className="py-3 px-4 text-center">
-                        <ShareDropdown payment={p} />
+                        <DownloadDropdown payment={p} />
                       </td>
                     </tr>
                   ))}
