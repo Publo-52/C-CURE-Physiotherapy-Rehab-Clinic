@@ -43,13 +43,13 @@ export function Header({ profile }: HeaderProps) {
       
       {/* Left — Logo + Clinic name on mobile */}
       <div className="flex items-center gap-2.5 md:hidden">
-        <div className="relative h-7 w-7 rounded-full overflow-hidden flex-shrink-0 bg-muted shadow-sm ring-2 ring-primary/15">
+        <div className="relative h-8 w-8 rounded-full overflow-hidden flex-shrink-0 bg-white shadow-sm ring-1 ring-border">
           <Image
-            src="/doctor-sonatan.png"
-            alt={name}
+            src="/logo.jpg"
+            alt="C-CURE Logo"
             fill
-            sizes="28px"
-            className="object-cover"
+            sizes="32px"
+            className="object-contain p-0.5"
           />
         </div>
         <div className="flex flex-col min-w-0">
