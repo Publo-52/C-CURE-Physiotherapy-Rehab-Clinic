@@ -28,10 +28,6 @@ export const metadata: Metadata = {
     locale: "en_IN",
     siteName: "C-CURE Physiotherapy",
   },
-  icons: {
-    icon: "/logo.jpg",
-    apple: "/mobile-logo.png",
-  },
 };
 
 export default function RootLayout({

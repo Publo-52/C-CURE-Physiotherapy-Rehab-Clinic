@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { KeyRound, User, Building2, Phone, MapPin, Clock, IndianRupee, FileText } from "lucide-react"
+import { KeyRound, User, Building2, Phone, MapPin, Clock, IndianRupee, FileText, LogOut } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from 'react-hot-toast'
 import { updateAdminPassword } from '@/app/actions/settings'
 import { updateClinicProfile } from '@/app/actions/profile'
+import { logout } from '@/app/actions/auth'
 
 interface Profile {
   practitionerName: string
@@ -30,6 +31,7 @@ interface SettingsFormProps {
 export default function SettingsForm({ profile }: SettingsFormProps) {
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [profileLoading, setProfileLoading] = useState(false)
+  const [logoutLoading, setLogoutLoading] = useState(false)
 
   // Profile state — seeded with live DB values
   const [practitionerName, setPractitionerName] = useState(profile.practitionerName)
@@ -66,6 +68,11 @@ export default function SettingsForm({ profile }: SettingsFormProps) {
       toast.success(result.message || 'Password updated successfully!')
       e.currentTarget.reset()
     }
+  }
+
+  const handleLogout = async () => {
+    setLogoutLoading(true)
+    await logout()
   }
 
   return (
@@ -257,6 +264,31 @@ export default function SettingsForm({ profile }: SettingsFormProps) {
               {passwordLoading ? 'Updating Password...' : 'Update Password'}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* === Logout (Mobile Only) === */}
+      <Card className="shadow-sm md:hidden border-destructive/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg text-destructive">
+            <LogOut className="h-5 w-5" />
+            Logout
+          </CardTitle>
+          <CardDescription>
+            Sign out of your account on this device.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button 
+            type="button"
+            variant="destructive" 
+            onClick={handleLogout} 
+            disabled={logoutLoading}
+            className="w-full font-bold"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            {logoutLoading ? 'Logging out...' : 'Logout Now'}
+          </Button>
         </CardContent>
       </Card>
     </div>
