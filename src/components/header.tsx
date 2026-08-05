@@ -116,22 +116,11 @@ export function Header({ profile }: HeaderProps) {
           </SheetContent>
         </Sheet>
 
-        {/* Mobile Navbar Branding */}
-        <div className="flex md:hidden items-center gap-2">
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold gradient-text leading-tight">
-              C-CURE Physiotherapy
-            </span>
-            <span className="text-sm font-semibold gradient-text leading-tight">
-              &amp; Rehab Clinic
-            </span>
-          </div>
-        </div>
       </div>
-      {/* Desktop center branding */}
-      <div className="hidden md:flex flex-col items-center justify-center absolute left-1/2 -translate-x-1/2 text-center">
-        <span className="text-sm font-semibold gradient-text leading-tight">C-CURE Physiotherapy</span>
-        <span className="text-sm font-semibold gradient-text leading-tight">&amp; Rehab Clinic</span>
+      {/* Center branding (All screens) */}
+      <div className="flex flex-col items-center justify-center absolute left-1/2 -translate-x-1/2 text-center pointer-events-none w-[60%] sm:w-auto">
+        <span className="text-sm font-semibold gradient-text leading-tight truncate w-full sm:w-auto">C-CURE Physiotherapy</span>
+        <span className="text-xs font-semibold gradient-text leading-tight truncate w-full sm:w-auto">&amp; Rehab Clinic</span>
       </div>
       <div className="flex items-center space-x-4 ml-auto">
         {mounted && (
