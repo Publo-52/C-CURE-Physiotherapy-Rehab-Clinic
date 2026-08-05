@@ -5,7 +5,6 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGri
 interface ChartDataPoint {
   day: string
   revenue: number
-  visits: number
 }
 
 interface DashboardChartProps {

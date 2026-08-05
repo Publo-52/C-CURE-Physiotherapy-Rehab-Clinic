@@ -86,19 +86,19 @@ export default async function DashboardPage() {
     .slice(0, 5)
 
   // Chart data
-  const daysMap: Record<string, { revenue: number; visits: number }> = {}
+  const daysMap: Record<string, { revenue: number }> = {}
   for (let i = 0; i < 7; i++) {
     const d = new Date()
     d.setDate(d.getDate() - (6 - i))
     const key = d.toLocaleDateString('en-US', { weekday: 'short' })
-    daysMap[key] = { revenue: 0, visits: 0 }
+    daysMap[key] = { revenue: 0 }
   }
   pastPayments.forEach(p => {
     const key = new Date(p.paymentDate).toLocaleDateString('en-US', { weekday: 'short' })
     if (daysMap[key]) daysMap[key].revenue += p.amountPaidToday
   })
   const chartData = Object.keys(daysMap).map(day => ({
-    day, revenue: daysMap[day].revenue, visits: daysMap[day].visits,
+    day, revenue: daysMap[day].revenue,
   }))
 
   // UI helpers

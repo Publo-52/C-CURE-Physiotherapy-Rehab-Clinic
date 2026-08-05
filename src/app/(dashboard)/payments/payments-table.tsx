@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { Search, Share2, Copy, Check, MessageCircle, Printer, Download } from 'lucide-react'
+import { Search, Share2, Copy, Check, MessageCircle, Printer } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'react-hot-toast'

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Settings as SettingsIcon, KeyRound, User, Building2, Phone, MapPin, Clock, IndianRupee, FileText } from "lucide-react"
+import { KeyRound, User, Building2, Phone, MapPin, Clock, IndianRupee, FileText } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"

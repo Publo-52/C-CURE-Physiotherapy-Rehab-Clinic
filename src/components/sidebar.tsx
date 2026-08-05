@@ -70,9 +70,10 @@ export function Sidebar({ profile }: SidebarProps) {
           <Image
             src="/logo.jpg"
             alt="C-CURE Logo"
-            width={160}
-            height={64}
-            className="h-16 w-auto object-contain"
+            width={240}
+            height={96}
+            className="h-24 w-auto object-contain"
+            style={{ width: 'auto' }}
             priority
           />
         </div>

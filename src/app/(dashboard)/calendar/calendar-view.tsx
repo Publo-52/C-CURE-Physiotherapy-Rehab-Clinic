@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useTransition } from 'react'
+import { useState, useMemo, useTransition, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, User, Clock, Plus, X, GripVertical, Trash2, Search, Video, Home, Building, FileText, CheckCircle2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -126,7 +126,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   
-  useMemo(() => {
+  useEffect(() => {
     setOptimisticVisits(visits)
     setOptimisticEvents(events)
   }, [visits, events])

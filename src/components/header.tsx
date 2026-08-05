@@ -14,11 +14,8 @@ import Image from "next/image"
 interface HeaderProps {
   profile?: {
     practitionerName: string
-    clinicName: string
     phone: string
     email: string
-    address: string
-    workingHours: string
   } | null
 }
 
@@ -33,11 +30,8 @@ export function Header({ profile }: HeaderProps) {
   }, [])
 
   const name = profile?.practitionerName || 'Sanatan Manna'
-  const clinicName = profile?.clinicName || 'C-CURE Physiotherapy & Rehab Clinic'
   const phone = profile?.phone || '7942688985'
   const email = profile?.email || 'sanatan.manna28072015@gmail.com'
-  const address = profile?.address || 'Moyna, Midnapore, West Bengal'
-  const workingHours = profile?.workingHours || 'Open 24 Hours'
 
   const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
 
@@ -59,9 +53,10 @@ export function Header({ profile }: HeaderProps) {
                 <Image
                   src="/logo.jpg"
                   alt="C-CURE Logo"
-                  width={140}
-                  height={56}
-                  className="h-14 w-auto object-contain"
+                  width={180}
+                  height={72}
+                  className="h-16 w-auto object-contain"
+                  style={{ width: 'auto' }}
                   priority
                 />
               </div>
@@ -126,9 +121,10 @@ export function Header({ profile }: HeaderProps) {
           <Image
             src="/logo.jpg"
             alt="Logo"
-            width={28}
-            height={28}
-            className="h-7 w-auto object-contain bg-white p-0.5 rounded-lg border shadow-sm"
+            width={48}
+            height={48}
+            className="h-12 w-auto object-contain bg-white p-1 rounded-lg border shadow-sm"
+            style={{ width: 'auto' }}
           />
         </div>
       </div>
