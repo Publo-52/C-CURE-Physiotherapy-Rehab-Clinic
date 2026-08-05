@@ -191,13 +191,37 @@ Thank you for visiting us! 🙏`
       </div>
     `
 
-    const container = document.createElement('div')
-    container.style.position = 'fixed'
-    container.style.left = '-9999px'
-    container.style.top = '-9999px'
-    container.style.width = '750px'
-    container.innerHTML = receiptContent
-    document.body.appendChild(container)
+    const iframe = document.createElement('iframe')
+    iframe.style.position = 'fixed'
+    iframe.style.left = '-9999px'
+    iframe.style.top = '-9999px'
+    iframe.style.width = '750px'
+    iframe.style.height = '1000px'
+    iframe.style.border = 'none'
+    document.body.appendChild(iframe)
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document
+    if (!doc) {
+      if (document.body.contains(iframe)) document.body.removeChild(iframe)
+      return
+    }
+
+    doc.open()
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: system-ui, -apple-system, sans-serif; background: #ffffff; }
+          </style>
+        </head>
+        <body>
+          ${receiptContent}
+        </body>
+      </html>
+    `)
+    doc.close()
 
     toast.loading('Downloading PDF...', { id: 'pdf-toast' })
 
@@ -216,24 +240,11 @@ Thank you for visiting us! 🙏`
         margin:       [6, 6, 6, 6],
         filename:     `${filename}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        html2canvas:  { scale: 2, useCORS: true, logging: false, windowWidth: 750 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       }
 
-      const originalConsoleError = console.error
-      console.error = (...args: any[]) => {
-        if (typeof args[0] === 'string' && args[0].includes('unsupported color function')) {
-          return
-        }
-        originalConsoleError.apply(console, args)
-      }
-
-      try {
-        await (window as any).html2pdf().set(opt).from(container).save()
-      } finally {
-        console.error = originalConsoleError
-      }
-
+      await (window as any).html2pdf().set(opt).from(doc.body).save()
       toast.success('PDF downloaded!', { id: 'pdf-toast' })
     } catch (err) {
       console.error('PDF download error:', err)
@@ -249,8 +260,8 @@ Thank you for visiting us! 🙏`
       URL.revokeObjectURL(url)
       toast.success('Receipt file downloaded!', { id: 'pdf-toast' })
     } finally {
-      if (document.body.contains(container)) {
-        document.body.removeChild(container)
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe)
       }
       setOpen(false)
     }
