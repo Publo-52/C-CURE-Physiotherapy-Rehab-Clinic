@@ -143,19 +143,19 @@ Thank you for visiting us! 🙏`
           </style>
         </head>
         <body>
-          <div class="no-print" style="background: #0f172a; color: #ffffff; padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; font-family: 'Inter', system-ui, sans-serif; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="font-weight: 700; font-size: 14px; color: #38bdf8;">📄 ${payment.patient.name}</span>
-              <span style="font-size: 12px; color: #94a3b8;">(${payment.invoiceNumber})</span>
+          <div class="no-print" style="background: #0f172a; color: #ffffff; padding: 10px 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; font-family: 'Inter', system-ui, sans-serif; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-weight: 700; font-size: 13px; color: #38bdf8;">📄 ${payment.patient.name}</span>
+              <span style="font-size: 11px; color: #94a3b8;">(${payment.invoiceNumber})</span>
             </div>
-            <div style="display: flex; items-center; gap: 10px;">
-              <button onclick="window.print()" style="background: #0284c7; color: #ffffff; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; display: flex; items-center; gap: 6px; box-shadow: 0 2px 6px rgba(2,132,199,0.4);">
-                📥 Save / Download as PDF
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button onclick="window.print()" style="background: #0284c7; color: #ffffff; border: none; padding: 7px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(2,132,199,0.4);">
+                📥 Save / Download PDF
               </button>
             </div>
           </div>
 
-          <div style="padding-top: 20px;">
+          <div style="padding-top: 10px;">
             <div class="container">
               <div class="header">
                 <div class="brand">
@@ -255,11 +255,16 @@ Thank you for visiting us! 🙏`
         </body>
       </html>
     `
-    const printWindow = window.open('', '_blank')
-    if (printWindow) {
-      printWindow.document.write(printContent)
-      printWindow.document.close()
-      printWindow.focus()
+    const blob = new Blob([printContent], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+
+    const win = window.open(url, '_blank')
+    if (!win) {
+      const a = document.createElement('a')
+      a.href = url
+      a.target = '_blank'
+      a.rel = 'noopener,noreferrer'
+      a.click()
     }
     setOpen(false)
   }
