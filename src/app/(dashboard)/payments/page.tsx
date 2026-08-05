@@ -6,14 +6,19 @@ import prisma from "@/lib/prisma"
 import PaymentsTable from "./payments-table"
 
 export default async function PaymentsPage() {
-  const payments = await prisma.payment.findMany({
-    include: { patient: { select: { id: true, name: true, patientId: true } } },
-    orderBy: { paymentDate: 'desc' },
-  })
+  const [payments, totalCollectedRes, totalDuesRes, pendingCount] = await Promise.all([
+    prisma.payment.findMany({
+      take: 100,
+      include: { patient: { select: { id: true, name: true, patientId: true } } },
+      orderBy: { paymentDate: 'desc' },
+    }),
+    prisma.payment.aggregate({ _sum: { amountPaidToday: true } }),
+    prisma.payment.aggregate({ _sum: { remainingDue: true } }),
+    prisma.payment.count({ where: { status: { in: ['Due', 'Partially Paid'] } } }),
+  ])
 
-  const totalCollected = payments.reduce((acc, p) => acc + p.amountPaidToday, 0)
-  const totalDues = payments.reduce((acc, p) => acc + p.remainingDue, 0)
-  const overduePayments = payments.filter(p => p.status === 'Due' || p.status === 'Partially Paid')
+  const totalCollected = totalCollectedRes._sum.amountPaidToday || 0
+  const totalDues = totalDuesRes._sum.remainingDue || 0
 
   return (
     <div className="space-y-6">
@@ -46,7 +51,7 @@ export default async function PaymentsPage() {
             <AlertCircle className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{overduePayments.length}</div>
+            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendingCount}</div>
             <p className="text-xs text-muted-foreground">patients with pending dues</p>
           </CardContent>
         </Card>

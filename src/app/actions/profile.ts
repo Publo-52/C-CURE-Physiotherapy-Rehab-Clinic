@@ -1,9 +1,8 @@
-'use server'
-
+import { cache } from 'react'
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
-export async function getClinicProfile() {
+export const getClinicProfile = cache(async () => {
   try {
     let profile = await prisma.clinicProfile.findFirst()
     if (!profile) {
@@ -25,7 +24,7 @@ export async function getClinicProfile() {
   } catch (error) {
     return null
   }
-}
+})
 
 export async function updateClinicProfile(formData: FormData) {
   try {

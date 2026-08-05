@@ -70,7 +70,9 @@ export async function createSession(userId: string): Promise<{ error?: string }>
   return {}
 }
 
-export async function verifySession() {
+import { cache } from 'react'
+
+export const verifySession = cache(async () => {
   const cookieStore = await cookies()
   const sessionCookie = cookieStore.get('session')?.value
   if (!sessionCookie) return null
@@ -90,7 +92,7 @@ export async function verifySession() {
   } catch {
     return null
   }
-}
+})
 
 export async function deleteSession() {
   const cookieStore = await cookies()

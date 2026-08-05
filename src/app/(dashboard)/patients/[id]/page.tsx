@@ -26,11 +26,16 @@ export default async function PatientProfilePage({ params }: Props) {
       include: {
         visits: {
           orderBy: { date: 'desc' },
+          take: 20,
         },
         payments: {
           orderBy: { paymentDate: 'desc' },
+          take: 20,
         },
-        treatmentPlans: true
+        treatmentPlans: {
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        }
       }
     }),
     getClinicProfile()
