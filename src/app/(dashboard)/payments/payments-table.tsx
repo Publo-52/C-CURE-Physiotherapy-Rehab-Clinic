@@ -91,189 +91,163 @@ Thank you for visiting us! 🙏`
     }
   }
 
-  const handlePrintPDF = () => {
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Payment Receipt - ${payment.invoiceNumber}</title>
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-            * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: 'Inter', system-ui, -apple-system, sans-serif; padding: 30px; color: #0f172a; background: #fff; line-height: 1.5; }
-            .container { max-width: 750px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
-            .header { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #fff; padding: 28px 32px; display: flex; justify-content: space-between; align-items: center; }
-            .brand { flex: 1; }
-            .brand h1 { font-size: 22px; font-weight: 800; tracking: -0.5px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2; }
-            .brand p { font-size: 13px; color: #bae6fd; font-weight: 600; margin-top: 4px; }
-            .contact-info { text-align: right; font-size: 11px; color: #e0f2fe; line-height: 1.6; }
-            .meta-bar { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 14px 32px; display: flex; justify-content: space-between; align-items: center; }
-            .meta-item { text-align: left; }
-            .meta-item span { display: block; font-size: 10px; text-transform: uppercase; font-weight: 700; color: #64748b; tracking: 0.5px; }
-            .meta-item strong { font-size: 14px; font-weight: 700; color: #0f172a; font-family: monospace; }
-            .status-badge { background: ${payment.status === 'Paid' ? '#dcfce7' : payment.status === 'Partially Paid' ? '#fef9c3' : '#fee2e2'}; color: ${payment.status === 'Paid' ? '#15803d' : payment.status === 'Partially Paid' ? '#a16207' : '#b91c1c'}; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; border: 1px solid currentColor; }
-            .content { padding: 32px; }
-            .section-title { font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; color: #0284c7; margin-bottom: 12px; }
-            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
-            .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
-            .info-card p { font-size: 13px; margin-bottom: 6px; color: #334155; }
-            .info-card p:last-child { margin-bottom: 0; }
-            .info-card strong { font-weight: 600; color: #0f172a; display: inline-block; width: 100px; }
-            .table-container { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 28px; }
-            table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-            th { background: #f1f5f9; font-weight: 700; color: #475569; text-transform: uppercase; font-size: 11px; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; }
-            td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; color: #334155; }
-            tr:last-child td { border-bottom: none; }
-            .summary-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; text-align: right; margin-bottom: 32px; }
-            .summary-row { display: flex; justify-content: flex-end; gap: 24px; font-size: 13px; margin-bottom: 6px; color: #166534; }
-            .summary-total { display: flex; justify-content: flex-end; gap: 24px; font-size: 18px; font-weight: 800; color: #15803d; border-top: 1.5px dashed #86efac; padding-top: 10px; margin-top: 10px; }
-            .footer { display: flex; justify-content: space-between; align-items: flex-end; pt-20px; border-top: 1px solid #e2e8f0; padding-top: 24px; }
-            .notice { font-size: 11px; color: #64748b; max-width: 400px; line-height: 1.5; }
-            .signature { text-align: right; }
-            .sig-line { width: 160px; border-bottom: 1.5px dashed #94a3b8; margin-bottom: 8px; margin-left: auto; }
-            .sig-name { font-size: 13px; font-weight: 700; color: #0f172a; }
-            .sig-title { font-size: 11px; color: #64748b; }
-            @media print {
-              body { padding: 0; background: #fff; }
-              .container { border: none; box-shadow: none; max-w-100%; }
-              .no-print { display: none !important; }
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="no-print" style="background: #0f172a; color: #ffffff; padding: 10px 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; font-family: 'Inter', system-ui, sans-serif; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-weight: 700; font-size: 13px; color: #38bdf8;">📄 ${payment.patient.name}</span>
-              <span style="font-size: 11px; color: #94a3b8;">(${payment.invoiceNumber})</span>
+  const handleDownloadPDF = async () => {
+    const filename = `Receipt_${payment.invoiceNumber}_${payment.patient.name.replace(/\s+/g, '_')}`
+
+    const receiptContent = `
+      <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; padding: 24px; color: #0f172a; background: #ffffff; width: 700px; margin: 0 auto; box-sizing: border-box;">
+        <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; padding: 24px 28px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h1 style="font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">C-CURE PHYSIOTHERAPY & REHAB CLINIC</h1>
+            <p style="font-size: 13px; color: #bae6fd; font-weight: 600; margin: 4px 0 0 0;">Sanatan Manna (Physiotherapist)</p>
+          </div>
+          <div style="text-align: right; font-size: 11px; color: #e0f2fe; line-height: 1.5;">
+            <p style="margin: 0;">📞 7942688985</p>
+            <p style="margin: 2px 0 0 0;">📍 Moyna, Midnapore, West Bengal</p>
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; padding: 12px 28px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-size: 10px; text-transform: uppercase; font-weight: 700; color: #64748b; display: block;">Invoice Number</span>
+            <strong style="font-size: 14px; font-weight: 700; color: #0f172a; font-family: monospace;">${payment.invoiceNumber}</strong>
+          </div>
+          <div>
+            <span style="font-size: 10px; text-transform: uppercase; font-weight: 700; color: #64748b; display: block;">Date Issued</span>
+            <strong style="font-size: 13px; font-weight: 700; color: #0f172a;">${dateStr}</strong>
+          </div>
+          <div>
+            <span style="font-size: 10px; text-transform: uppercase; font-weight: 700; color: #64748b; display: block;">Payment Mode</span>
+            <strong style="font-size: 13px; font-weight: 700; color: #0f172a;">${payment.paymentMode}</strong>
+          </div>
+          <div>
+            <span style="background: ${payment.status === 'Paid' ? '#dcfce7' : payment.status === 'Partially Paid' ? '#fef9c3' : '#fee2e2'}; color: ${payment.status === 'Paid' ? '#15803d' : payment.status === 'Partially Paid' ? '#a16207' : '#b91c1c'}; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; border: 1px solid currentColor;">${payment.status}</span>
+          </div>
+        </div>
+
+        <div style="padding: 24px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+              <div style="font-size: 10px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; color: #0284c7; margin-bottom: 8px;">Patient Information</div>
+              <p style="font-size: 13px; margin: 0 0 4px 0;"><strong style="font-weight: 600; color: #475569;">Name:</strong> ${payment.patient.name}</p>
+              <p style="font-size: 13px; margin: 0;"><strong style="font-weight: 600; color: #475569;">Patient ID:</strong> <span style="font-family: monospace; font-weight: 600;">${payment.patient.patientId}</span></p>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <button onclick="window.print()" style="background: #0284c7; color: #ffffff; border: none; padding: 7px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(2,132,199,0.4);">
-                📥 Save / Download PDF
-              </button>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+              <div style="font-size: 10px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; color: #0284c7; margin-bottom: 8px;">Clinic Practitioner</div>
+              <p style="font-size: 13px; margin: 0 0 4px 0;"><strong style="font-weight: 600; color: #475569;">Practitioner:</strong> Sanatan Manna</p>
+              <p style="font-size: 13px; margin: 0;"><strong style="font-weight: 600; color: #475569;">Designation:</strong> Physiotherapist</p>
             </div>
           </div>
 
-          <div style="padding-top: 10px;">
-            <div class="container">
-              <div class="header">
-                <div class="brand">
-                  <h1>C-CURE PHYSIOTHERAPY & REHAB CLINIC</h1>
-                  <p>Sanatan Manna (Physiotherapist)</p>
-                </div>
-                <div class="contact-info">
-                  <p>📞 7942688985</p>
-                  <p>✉️ sanatan.manna28072015@gmail.com</p>
-                  <p>📍 Moyna, Midnapore, West Bengal</p>
-                </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 24px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+              <thead>
+                <tr style="background: #f1f5f9;">
+                  <th style="font-weight: 700; color: #475569; text-transform: uppercase; font-size: 10px; padding: 10px 14px; border-bottom: 1px solid #e2e8f0;">Description</th>
+                  <th style="font-weight: 700; color: #475569; text-transform: uppercase; font-size: 10px; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; text-align: right;">Total Bill</th>
+                  <th style="font-weight: 700; color: #475569; text-transform: uppercase; font-size: 10px; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; text-align: right;">Paid Today</th>
+                  <th style="font-weight: 700; color: #475569; text-transform: uppercase; font-size: 10px; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; text-align: right;">Current Due</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: 12px 14px; color: #334155;">Physiotherapy Treatment / Consultation Fee</td>
+                  <td style="padding: 12px 14px; text-align: right; font-weight: 600; color: #334155;">₹${payment.totalBill.toLocaleString('en-IN')}</td>
+                  <td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #16a34a;">₹${payment.amountPaidToday.toLocaleString('en-IN')}</td>
+                  <td style="padding: 12px 14px; text-align: right; font-weight: 700; color: ${payment.remainingDue > 0 ? '#dc2626' : '#16a34a'};">₹${payment.remainingDue.toLocaleString('en-IN')}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px; text-align: right; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: flex-end; gap: 20px; font-size: 13px; color: #166534; margin-bottom: 4px;">
+              <span>Total Bill Amount:</span>
+              <span style="font-weight: 600; min-width: 80px;">₹${payment.totalBill.toLocaleString('en-IN')}</span>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 20px; font-size: 16px; font-weight: 800; color: #15803d; border-top: 1.5px dashed #86efac; padding-top: 8px; margin-top: 8px;">
+              <span>Amount Paid Today:</span>
+              <span style="min-width: 80px;">₹${payment.amountPaidToday.toLocaleString('en-IN')}</span>
+            </div>
+            ${payment.remainingDue > 0 ? `
+              <div style="color: #dc2626; font-size: 12px; font-weight: 700; margin-top: 6px;">
+                Remaining Balance Due: ₹${payment.remainingDue.toLocaleString('en-IN')}
               </div>
+            ` : ''}
+          </div>
 
-              <div class="meta-bar">
-                <div class="meta-item">
-                  <span>Invoice Number</span>
-                  <strong>${payment.invoiceNumber}</strong>
-                </div>
-                <div class="meta-item">
-                  <span>Date Issued</span>
-                  <strong style="font-family: inherit;">${dateStr}</strong>
-                </div>
-                <div class="meta-item">
-                  <span>Payment Mode</span>
-                  <strong style="font-family: inherit;">${payment.paymentMode}</strong>
-                </div>
-                <div>
-                  <span class="status-badge">${payment.status}</span>
-                </div>
-              </div>
-
-              <div class="content">
-                <div class="grid">
-                  <div class="info-card">
-                    <div class="section-title">Patient Information</div>
-                    <p><strong>Name:</strong> ${payment.patient.name}</p>
-                    <p><strong>Patient ID:</strong> <span style="font-family: monospace; font-weight: 600;">${payment.patient.patientId}</span></p>
-                  </div>
-                  <div class="info-card">
-                    <div class="section-title">Clinic Practitioner</div>
-                    <p><strong>Practitioner:</strong> Sanatan Manna</p>
-                    <p><strong>Designation:</strong> Physiotherapist</p>
-                  </div>
-                </div>
-
-                <div class="table-container">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Description</th>
-                        <th style="text-align: right;">Total Bill</th>
-                        <th style="text-align: right;">Paid Today</th>
-                        <th style="text-align: right;">Current Due</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Physiotherapy Treatment / Consultation Fee</td>
-                        <td style="text-align: right; font-weight: 600;">₹${payment.totalBill.toLocaleString('en-IN')}</td>
-                        <td style="text-align: right; font-weight: 700; color: #16a34a;">₹${payment.amountPaidToday.toLocaleString('en-IN')}</td>
-                        <td style="text-align: right; font-weight: 700; color: ${payment.remainingDue > 0 ? '#dc2626' : '#16a34a'};">₹${payment.remainingDue.toLocaleString('en-IN')}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <div class="summary-box">
-                  <div class="summary-row">
-                    <span>Total Bill Amount:</span>
-                    <span style="font-weight: 600; width: 90px;">₹${payment.totalBill.toLocaleString('en-IN')}</span>
-                  </div>
-                  <div class="summary-total">
-                    <span>Amount Paid Today:</span>
-                    <span style="width: 100px;">₹${payment.amountPaidToday.toLocaleString('en-IN')}</span>
-                  </div>
-                  ${payment.remainingDue > 0 ? `
-                    <div style="color: #dc2626; font-size: 13px; font-weight: 700; margin-top: 8px;">
-                      Remaining Balance Due: ₹${payment.remainingDue.toLocaleString('en-IN')}
-                    </div>
-                  ` : ''}
-                </div>
-
-                <div class="footer">
-                  <div class="notice">
-                    <p>• Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.</p>
-                    <p>• This is an official computer-generated receipt.</p>
-                  </div>
-                  <div class="signature">
-                    <div class="sig-line"></div>
-                    <div class="sig-name">Sanatan Manna</div>
-                    <div class="sig-title">Physiotherapist</div>
-                  </div>
-                </div>
-              </div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+            <div style="font-size: 11px; color: #64748b; line-height: 1.5;">
+              <p style="margin: 0;">• Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.</p>
+              <p style="margin: 2px 0 0 0;">• Official computer-generated payment receipt.</p>
+            </div>
+            <div style="text-align: right;">
+              <div style="width: 140px; border-bottom: 1.5px dashed #94a3b8; margin-bottom: 6px; margin-left: auto;"></div>
+              <div style="font-size: 12px; font-weight: 700; color: #0f172a;">Sanatan Manna</div>
+              <div style="font-size: 10px; color: #64748b;">Physiotherapist</div>
             </div>
           </div>
-        </body>
-      </html>
+        </div>
+      </div>
     `
-    const blob = new Blob([printContent], { type: 'text/html;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
 
-    const win = window.open(url, '_blank')
-    if (!win) {
+    const container = document.createElement('div')
+    container.style.position = 'fixed'
+    container.style.left = '-9999px'
+    container.style.top = '-9999px'
+    container.style.width = '750px'
+    container.innerHTML = receiptContent
+    document.body.appendChild(container)
+
+    toast.loading('Downloading PDF...', { id: 'pdf-toast' })
+
+    try {
+      if (!(window as any).html2pdf) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
+          script.onload = resolve
+          script.onerror = reject
+          document.body.appendChild(script)
+        })
+      }
+
+      const opt = {
+        margin:       [6, 6, 6, 6],
+        filename:     `${filename}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }
+
+      await (window as any).html2pdf().set(opt).from(container).save()
+      toast.success('PDF downloaded!', { id: 'pdf-toast' })
+    } catch (err) {
+      console.error('PDF download error:', err)
+      // Fallback: direct download of receipt file
+      const blob = new Blob([`<!DOCTYPE html><html><body>${receiptContent}</body></html>`], { type: 'text/html;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.target = '_blank'
-      a.rel = 'noopener,noreferrer'
+      a.download = `${filename}.html`
+      document.body.appendChild(a)
       a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      toast.success('Receipt file downloaded!', { id: 'pdf-toast' })
+    } finally {
+      if (document.body.contains(container)) {
+        document.body.removeChild(container)
+      }
+      setOpen(false)
     }
-    setOpen(false)
   }
 
   return (
     <div className="relative inline-flex items-center gap-1">
       {/* Primary Download PDF Button */}
       <button
-        onClick={handlePrintPDF}
+        onClick={handleDownloadPDF}
         title={`Download PDF for ${payment.patient.name}`}
         className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 transition-all shadow-2xs"
       >
@@ -302,7 +276,7 @@ Thank you for visiting us! 🙏`
             </div>
             <div className="p-1">
               <button
-                onClick={handlePrintPDF}
+                onClick={handleDownloadPDF}
                 className="flex items-center gap-2.5 w-full px-3 py-2 text-xs font-medium rounded-lg hover:bg-primary/10 text-primary transition-colors"
               >
                 <Download className="h-4 w-4" />
