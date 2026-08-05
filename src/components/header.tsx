@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
-import { Moon, Sun, Menu, Stethoscope, Phone, Mail } from "lucide-react"
+import { Moon, Sun, Menu, Stethoscope, Phone, Mail, LogOut } from "lucide-react"
 import { Button } from "./ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "./ui/sheet"
 import { navItems } from "./sidebar"
@@ -10,7 +10,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
-
+import { logout } from "@/app/actions/auth"
 interface HeaderProps {
   profile?: {
     practitionerName: string
@@ -23,7 +23,16 @@ export function Header({ profile }: HeaderProps) {
   const { theme, setTheme } = useTheme()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
   const [mounted, setMounted] = useState(false)
+
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    await logout()
+    // Optionally close menu
+    // setOpen(false) 
+    // Usually redirect handles state anyway
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -123,6 +132,19 @@ export function Header({ profile }: HeaderProps) {
                   )
                 })}
               </nav>
+            </div>
+            
+            {/* === Logout === */}
+            <div className="p-4 border-t border-border/50 bg-background/50 backdrop-blur-sm mt-auto">
+              <Button 
+                variant="destructive" 
+                className="w-full justify-start rounded-xl font-semibold shadow-sm hover:shadow-md transition-all group"
+                onClick={handleLogout}
+                disabled={loggingOut}
+              >
+                <LogOut className="mr-3 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                {loggingOut ? 'Logging out...' : 'Logout'}
+              </Button>
             </div>
           </SheetContent>
         </Sheet>
