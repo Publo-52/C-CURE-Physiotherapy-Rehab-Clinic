@@ -64,20 +64,17 @@ export function Sidebar({ profile }: SidebarProps) {
       
       {/* === Profile Section === */}
       <div className="flex flex-col border-b bg-gradient-to-b from-primary/10 to-primary/5 px-4 pt-4 pb-4 space-y-3">
-
-        {/* Clinic Logo Header */}
-        <div className="flex justify-center bg-card border border-border/40 rounded-2xl p-2.5 shadow-sm">
+        <div className="flex justify-center bg-white border border-slate-200/60 rounded-3xl p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] ring-1 ring-black/5 transition-all duration-300 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)]">
           <Image
             src="/logo.jpg"
             alt="C-CURE Logo"
-            width={240}
-            height={96}
-            className="h-24 w-auto object-contain"
+            width={180}
+            height={72}
+            className="h-16 w-auto object-contain"
             style={{ width: 'auto' }}
             priority
           />
         </div>
-
         {/* Practitioner Profile Card */}
         <div className="bg-background/70 backdrop-blur-sm rounded-xl border border-border/60 p-3 space-y-2 shadow-sm">
           
