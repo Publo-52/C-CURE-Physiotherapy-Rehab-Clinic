@@ -26,6 +26,9 @@ model ActiveSession {
   createdAt DateTime @default(now())
   expiresAt DateTime
   admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([expiresAt])
 }
 
 model Patient {
@@ -81,6 +84,11 @@ model Patient {
 
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
+
+  @@index([name])
+  @@index([status])
+  @@index([phone])
+  @@index([createdAt])
 }
 
 model TreatmentPlan {
@@ -106,6 +114,8 @@ model TreatmentPlan {
   
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
+
+  @@index([patientId])
 }
 
 model Visit {
@@ -138,6 +148,9 @@ model Visit {
   
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([date])
 }
 
 model Payment {
@@ -180,6 +193,10 @@ model Payment {
   
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([paymentDate])
+  @@index([status])
 }
 
 model Expense {
@@ -192,6 +209,9 @@ model Expense {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([date])
+  @@index([category])
 }
 
 model Event {
@@ -203,6 +223,8 @@ model Event {
   duration    Int      @default(30)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([date])
 }
 
 model ClinicProfile {
