@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'react-hot-toast'
 import { formatDate } from '@/lib/utils'
 
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+
 interface PaymentItem {
   id: string
   invoiceNumber: string
@@ -92,177 +94,212 @@ Thank you for visiting us! 🙏`
   }
 
   const handleDownloadPDF = async () => {
-    const filename = `Receipt_${payment.invoiceNumber}_${payment.patient.name.replace(/\s+/g, '_')}`
-
-    const receiptContent = `
-      <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; padding: 24px; color: #0f172a; background: #ffffff; width: 700px; margin: 0 auto; box-sizing: border-box;">
-        <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; padding: 24px 28px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h1 style="font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">C-CURE PHYSIOTHERAPY & REHAB CLINIC</h1>
-            <p style="font-size: 13px; color: #bae6fd; font-weight: 600; margin: 4px 0 0 0;">Sanatan Manna (Physiotherapist)</p>
-          </div>
-          <div style="text-align: right; font-size: 11px; color: #e0f2fe; line-height: 1.5;">
-            <p style="margin: 0;">📞 7942688985</p>
-            <p style="margin: 2px 0 0 0;">📍 Moyna, Midnapore, West Bengal</p>
-          </div>
-        </div>
-
-        <div style="background: #f8fafc; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; padding: 12px 28px; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <span style="font-size: 10px; text-transform: uppercase; font-weight: 700; color: #64748b; display: block;">Invoice Number</span>
-            <strong style="font-size: 14px; font-weight: 700; color: #0f172a; font-family: monospace;">${payment.invoiceNumber}</strong>
-          </div>
-          <div>
-            <span style="font-size: 10px; text-transform: uppercase; font-weight: 700; color: #64748b; display: block;">Date Issued</span>
-            <strong style="font-size: 13px; font-weight: 700; color: #0f172a;">${dateStr}</strong>
-          </div>
-          <div>
-            <span style="font-size: 10px; text-transform: uppercase; font-weight: 700; color: #64748b; display: block;">Payment Mode</span>
-            <strong style="font-size: 13px; font-weight: 700; color: #0f172a;">${payment.paymentMode}</strong>
-          </div>
-          <div>
-            <span style="background: ${payment.status === 'Paid' ? '#dcfce7' : payment.status === 'Partially Paid' ? '#fef9c3' : '#fee2e2'}; color: ${payment.status === 'Paid' ? '#15803d' : payment.status === 'Partially Paid' ? '#a16207' : '#b91c1c'}; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; border: 1px solid currentColor;">${payment.status}</span>
-          </div>
-        </div>
-
-        <div style="padding: 24px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
-              <div style="font-size: 10px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; color: #0284c7; margin-bottom: 8px;">Patient Information</div>
-              <p style="font-size: 13px; margin: 0 0 4px 0;"><strong style="font-weight: 600; color: #475569;">Name:</strong> ${payment.patient.name}</p>
-              <p style="font-size: 13px; margin: 0;"><strong style="font-weight: 600; color: #475569;">Patient ID:</strong> <span style="font-family: monospace; font-weight: 600;">${payment.patient.patientId}</span></p>
-            </div>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
-              <div style="font-size: 10px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; color: #0284c7; margin-bottom: 8px;">Clinic Practitioner</div>
-              <p style="font-size: 13px; margin: 0 0 4px 0;"><strong style="font-weight: 600; color: #475569;">Practitioner:</strong> Sanatan Manna</p>
-              <p style="font-size: 13px; margin: 0;"><strong style="font-weight: 600; color: #475569;">Designation:</strong> Physiotherapist</p>
-            </div>
-          </div>
-
-          <div style="border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 24px;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
-              <thead>
-                <tr style="background: #f1f5f9;">
-                  <th style="font-weight: 700; color: #475569; text-transform: uppercase; font-size: 10px; padding: 10px 14px; border-bottom: 1px solid #e2e8f0;">Description</th>
-                  <th style="font-weight: 700; color: #475569; text-transform: uppercase; font-size: 10px; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; text-align: right;">Total Bill</th>
-                  <th style="font-weight: 700; color: #475569; text-transform: uppercase; font-size: 10px; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; text-align: right;">Paid Today</th>
-                  <th style="font-weight: 700; color: #475569; text-transform: uppercase; font-size: 10px; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; text-align: right;">Current Due</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="padding: 12px 14px; color: #334155;">Physiotherapy Treatment / Consultation Fee</td>
-                  <td style="padding: 12px 14px; text-align: right; font-weight: 600; color: #334155;">₹${payment.totalBill.toLocaleString('en-IN')}</td>
-                  <td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #16a34a;">₹${payment.amountPaidToday.toLocaleString('en-IN')}</td>
-                  <td style="padding: 12px 14px; text-align: right; font-weight: 700; color: ${payment.remainingDue > 0 ? '#dc2626' : '#16a34a'};">₹${payment.remainingDue.toLocaleString('en-IN')}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px; text-align: right; margin-bottom: 24px;">
-            <div style="display: flex; justify-content: flex-end; gap: 20px; font-size: 13px; color: #166534; margin-bottom: 4px;">
-              <span>Total Bill Amount:</span>
-              <span style="font-weight: 600; min-width: 80px;">₹${payment.totalBill.toLocaleString('en-IN')}</span>
-            </div>
-            <div style="display: flex; justify-content: flex-end; gap: 20px; font-size: 16px; font-weight: 800; color: #15803d; border-top: 1.5px dashed #86efac; padding-top: 8px; margin-top: 8px;">
-              <span>Amount Paid Today:</span>
-              <span style="min-width: 80px;">₹${payment.amountPaidToday.toLocaleString('en-IN')}</span>
-            </div>
-            ${payment.remainingDue > 0 ? `
-              <div style="color: #dc2626; font-size: 12px; font-weight: 700; margin-top: 6px;">
-                Remaining Balance Due: ₹${payment.remainingDue.toLocaleString('en-IN')}
-              </div>
-            ` : ''}
-          </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-            <div style="font-size: 11px; color: #64748b; line-height: 1.5;">
-              <p style="margin: 0;">• Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.</p>
-              <p style="margin: 2px 0 0 0;">• Official computer-generated payment receipt.</p>
-            </div>
-            <div style="text-align: right;">
-              <div style="width: 140px; border-bottom: 1.5px dashed #94a3b8; margin-bottom: 6px; margin-left: auto;"></div>
-              <div style="font-size: 12px; font-weight: 700; color: #0f172a;">Sanatan Manna</div>
-              <div style="font-size: 10px; color: #64748b;">Physiotherapist</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `
-
-    const iframe = document.createElement('iframe')
-    iframe.style.position = 'fixed'
-    iframe.style.left = '-9999px'
-    iframe.style.top = '-9999px'
-    iframe.style.width = '750px'
-    iframe.style.height = '1000px'
-    iframe.style.border = 'none'
-    document.body.appendChild(iframe)
-
-    const doc = iframe.contentDocument || iframe.contentWindow?.document
-    if (!doc) {
-      if (document.body.contains(iframe)) document.body.removeChild(iframe)
-      return
-    }
-
-    doc.open()
-    doc.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: system-ui, -apple-system, sans-serif; background: #ffffff; }
-          </style>
-        </head>
-        <body>
-          ${receiptContent}
-        </body>
-      </html>
-    `)
-    doc.close()
-
-    toast.loading('Downloading PDF...', { id: 'pdf-toast' })
-
+    toast.loading('Generating PDF receipt...', { id: 'pdf-toast' })
     try {
-      if (!(window as any).html2pdf) {
-        await new Promise((resolve, reject) => {
-          const script = document.createElement('script')
-          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
-          script.onload = resolve
-          script.onerror = reject
-          document.body.appendChild(script)
-        })
+      const pdfDoc = await PDFDocument.create()
+      const page = pdfDoc.addPage([595.28, 841.89])
+      const { width, height } = page.getSize()
+
+      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+      const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+
+      const primaryBlue = rgb(0.01, 0.52, 0.78)
+      const darkSlate = rgb(0.06, 0.09, 0.16)
+      const textMuted = rgb(0.39, 0.45, 0.55)
+      const lightBg = rgb(0.97, 0.98, 0.99)
+      const greenText = rgb(0.09, 0.5, 0.24)
+      const redText = rgb(0.86, 0.15, 0.15)
+
+      let y = height - 40
+
+      // Header Banner
+      page.drawRectangle({
+        x: 40,
+        y: y - 65,
+        width: width - 80,
+        height: 65,
+        color: primaryBlue,
+      })
+
+      page.drawText('C-CURE PHYSIOTHERAPY & REHAB CLINIC', {
+        x: 55,
+        y: y - 28,
+        size: 15,
+        font: helveticaBold,
+        color: rgb(1, 1, 1),
+      })
+
+      page.drawText('Sanatan Manna (Physiotherapist)', {
+        x: 55,
+        y: y - 46,
+        size: 10,
+        font: helveticaBold,
+        color: rgb(0.73, 0.9, 0.99),
+      })
+
+      page.drawText('Ph: 7942688985', {
+        x: width - 170,
+        y: y - 28,
+        size: 9,
+        font: helveticaFont,
+        color: rgb(0.88, 0.95, 1),
+      })
+
+      page.drawText('Moyna, Midnapore, WB', {
+        x: width - 170,
+        y: y - 44,
+        size: 9,
+        font: helveticaFont,
+        color: rgb(0.88, 0.95, 1),
+      })
+
+      y -= 65
+
+      // Meta Bar
+      page.drawRectangle({
+        x: 40,
+        y: y - 42,
+        width: width - 80,
+        height: 42,
+        color: lightBg,
+        borderColor: rgb(0.89, 0.91, 0.94),
+        borderWidth: 1,
+      })
+
+      page.drawText('INVOICE NUMBER', { x: 55, y: y - 18, size: 7, font: helveticaBold, color: textMuted })
+      page.drawText(payment.invoiceNumber, { x: 55, y: y - 32, size: 10, font: helveticaBold, color: darkSlate })
+
+      page.drawText('DATE ISSUED', { x: 200, y: y - 18, size: 7, font: helveticaBold, color: textMuted })
+      page.drawText(dateStr, { x: 200, y: y - 32, size: 10, font: helveticaFont, color: darkSlate })
+
+      page.drawText('PAYMENT MODE', { x: 330, y: y - 18, size: 7, font: helveticaBold, color: textMuted })
+      page.drawText(payment.paymentMode, { x: 330, y: y - 32, size: 10, font: helveticaFont, color: darkSlate })
+
+      page.drawText(`STATUS: ${payment.status.toUpperCase()}`, {
+        x: width - 170,
+        y: y - 26,
+        size: 9,
+        font: helveticaBold,
+        color: payment.status === 'Paid' ? greenText : redText,
+      })
+
+      y -= 58
+
+      // Info Cards
+      const cardW = (width - 95) / 2
+      // Patient Box
+      page.drawRectangle({
+        x: 40,
+        y: y - 60,
+        width: cardW,
+        height: 60,
+        color: lightBg,
+        borderColor: rgb(0.89, 0.91, 0.94),
+        borderWidth: 1,
+      })
+      page.drawText('PATIENT INFORMATION', { x: 50, y: y - 16, size: 8, font: helveticaBold, color: primaryBlue })
+      page.drawText(`Name: ${payment.patient.name}`, { x: 50, y: y - 34, size: 9, font: helveticaFont, color: darkSlate })
+      page.drawText(`Patient ID: ${payment.patient.patientId}`, { x: 50, y: y - 48, size: 9, font: helveticaFont, color: darkSlate })
+
+      // Practitioner Box
+      page.drawRectangle({
+        x: 40 + cardW + 15,
+        y: y - 60,
+        width: cardW,
+        height: 60,
+        color: lightBg,
+        borderColor: rgb(0.89, 0.91, 0.94),
+        borderWidth: 1,
+      })
+      page.drawText('CLINIC PRACTITIONER', { x: 40 + cardW + 25, y: y - 16, size: 8, font: helveticaBold, color: primaryBlue })
+      page.drawText('Practitioner: Sanatan Manna', { x: 40 + cardW + 25, y: y - 34, size: 9, font: helveticaFont, color: darkSlate })
+      page.drawText('Designation: Physiotherapist', { x: 40 + cardW + 25, y: y - 48, size: 9, font: helveticaFont, color: darkSlate })
+
+      y -= 80
+
+      // Financial Table
+      page.drawRectangle({
+        x: 40,
+        y: y - 65,
+        width: width - 80,
+        height: 65,
+        borderColor: rgb(0.89, 0.91, 0.94),
+        borderWidth: 1,
+      })
+      page.drawRectangle({
+        x: 40,
+        y: y - 22,
+        width: width - 80,
+        height: 22,
+        color: rgb(0.94, 0.96, 0.98),
+      })
+      page.drawText('DESCRIPTION', { x: 50, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
+      page.drawText('TOTAL BILL', { x: 280, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
+      page.drawText('PAID TODAY', { x: 370, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
+      page.drawText('CURRENT DUE', { x: 460, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
+
+      page.drawText('Physiotherapy Treatment / Consultation Fee', { x: 50, y: y - 45, size: 9, font: helveticaFont, color: darkSlate })
+      page.drawText(`Rs. ${payment.totalBill.toLocaleString('en-IN')}`, { x: 280, y: y - 45, size: 9, font: helveticaFont, color: darkSlate })
+      page.drawText(`Rs. ${payment.amountPaidToday.toLocaleString('en-IN')}`, { x: 370, y: y - 45, size: 9, font: helveticaBold, color: greenText })
+      page.drawText(`Rs. ${payment.remainingDue.toLocaleString('en-IN')}`, { x: 460, y: y - 45, size: 9, font: helveticaBold, color: payment.remainingDue > 0 ? redText : greenText })
+
+      y -= 85
+
+      // Summary Box
+      page.drawRectangle({
+        x: 40,
+        y: y - 55,
+        width: width - 80,
+        height: 55,
+        color: rgb(0.94, 0.99, 0.95),
+        borderColor: rgb(0.73, 0.97, 0.82),
+        borderWidth: 1,
+      })
+
+      page.drawText(`Total Bill Amount:  Rs. ${payment.totalBill.toLocaleString('en-IN')}`, { x: width - 250, y: y - 18, size: 9, font: helveticaFont, color: greenText })
+      page.drawText(`Amount Paid Today:  Rs. ${payment.amountPaidToday.toLocaleString('en-IN')}`, { x: width - 250, y: y - 34, size: 11, font: helveticaBold, color: greenText })
+      if (payment.remainingDue > 0) {
+        page.drawText(`Remaining Balance Due:  Rs. ${payment.remainingDue.toLocaleString('en-IN')}`, { x: width - 250, y: y - 48, size: 9, font: helveticaBold, color: redText })
       }
 
-      const opt = {
-        margin:       [6, 6, 6, 6],
-        filename:     `${filename}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false, windowWidth: 750 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }
+      y -= 75
 
-      await (window as any).html2pdf().set(opt).from(doc.body).save()
-      toast.success('PDF downloaded!', { id: 'pdf-toast' })
-    } catch (err) {
-      console.error('PDF download error:', err)
-      // Fallback: direct download of receipt file
-      const blob = new Blob([`<!DOCTYPE html><html><body>${receiptContent}</body></html>`], { type: 'text/html;charset=utf-8' })
+      // Footer & Signature
+      page.drawLine({
+        start: { x: 40, y: y },
+        end: { x: width - 40, y: y },
+        thickness: 1,
+        color: rgb(0.89, 0.91, 0.94),
+      })
+
+      page.drawText('• Thank you for visiting C-CURE Physiotherapy & Rehab Clinic.', { x: 40, y: y - 18, size: 8, font: helveticaFont, color: textMuted })
+      page.drawText('• Official computer-generated payment receipt.', { x: 40, y: y - 30, size: 8, font: helveticaFont, color: textMuted })
+
+      page.drawLine({
+        start: { x: width - 180, y: y - 30 },
+        end: { x: width - 40, y: y - 30 },
+        thickness: 1,
+        color: rgb(0.58, 0.64, 0.72),
+      })
+      page.drawText('Sanatan Manna', { x: width - 145, y: y - 44, size: 10, font: helveticaBold, color: darkSlate })
+      page.drawText('Physiotherapist', { x: width - 140, y: y - 56, size: 8, font: helveticaFont, color: textMuted })
+
+      const pdfBytes = await pdfDoc.save()
+      const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${filename}.html`
+      a.download = `Receipt_${payment.invoiceNumber}_${payment.patient.name.replace(/\s+/g, '_')}.pdf`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-      toast.success('Receipt file downloaded!', { id: 'pdf-toast' })
+
+      toast.success('PDF downloaded!', { id: 'pdf-toast' })
+    } catch (err) {
+      console.error('PDF generation error:', err)
+      toast.error('Failed to generate PDF', { id: 'pdf-toast' })
     } finally {
-      if (document.body.contains(iframe)) {
-        document.body.removeChild(iframe)
-      }
       setOpen(false)
     }
   }
