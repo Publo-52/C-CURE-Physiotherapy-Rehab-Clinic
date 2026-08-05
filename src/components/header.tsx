@@ -118,14 +118,20 @@ export function Header({ profile }: HeaderProps) {
 
         {/* Mobile Navbar Branding */}
         <div className="flex md:hidden items-center gap-2">
-          <span className="text-sm font-semibold gradient-text truncate max-w-[200px] sm:max-w-[300px]">
-            C-CURE Physiotherapy &amp; Rehab Clinic
-          </span>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold gradient-text leading-tight">
+              C-CURE Physiotherapy
+            </span>
+            <span className="text-sm font-semibold gradient-text leading-tight">
+              &amp; Rehab Clinic
+            </span>
+          </div>
         </div>
       </div>
       {/* Desktop center branding */}
-      <div className="hidden md:flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-        <span className="text-sm font-semibold gradient-text">C-CURE Physiotherapy &amp; Rehab Clinic</span>
+      <div className="hidden md:flex flex-col items-center justify-center absolute left-1/2 -translate-x-1/2 text-center">
+        <span className="text-sm font-semibold gradient-text leading-tight">C-CURE Physiotherapy</span>
+        <span className="text-sm font-semibold gradient-text leading-tight">&amp; Rehab Clinic</span>
       </div>
       <div className="flex items-center space-x-4 ml-auto">
         {mounted && (
