@@ -123,29 +123,29 @@ export default function NewPatientPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name *</Label>
-                <Input id="name" placeholder="John Doe" className={errors.name ? 'border-destructive' : ''} {...register('name')} />
+                <Input id="name" placeholder="Enter patient full name (e.g., Rajesh Kumar)" className={errors.name ? 'border-destructive' : ''} {...register('name')} />
                 {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number *</Label>
-                <Input id="phone" placeholder="+91 9876543210" className={errors.phone ? 'border-destructive' : ''} {...register('phone')} />
+                <Input id="phone" placeholder="10-digit mobile number (e.g., 9876543210)" className={errors.phone ? 'border-destructive' : ''} {...register('phone')} />
                 {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
-                <Input id="email" type="email" placeholder="patient@example.com" className={errors.email ? 'border-destructive' : ''} {...register('email')} />
+                <Input id="email" type="email" placeholder="Optional email address (e.g., rajesh@gmail.com)" className={errors.email ? 'border-destructive' : ''} {...register('email')} />
                 {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="alternatePhone">Alternate Phone / WhatsApp</Label>
-                <Input id="alternatePhone" placeholder="+91 9876543211" {...register('alternatePhone')} />
+                <Input id="alternatePhone" placeholder="Alternate mobile or WhatsApp number" {...register('alternatePhone')} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="age">Age</Label>
-                <Input id="age" type="number" placeholder="45" className={errors.age ? 'border-destructive' : ''} {...register('age')} />
+                <Input id="age" type="number" placeholder="Age in years (e.g., 45)" className={errors.age ? 'border-destructive' : ''} {...register('age')} />
                 {errors.age && <p className="text-xs text-destructive">{errors.age.message}</p>}
               </div>
               
@@ -191,12 +191,12 @@ export default function NewPatientPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="aadhaar">Aadhaar / ID Number</Label>
-                <Input id="aadhaar" placeholder="1234 5678 9012" {...register('aadhaar')} />
+                <Input id="aadhaar" placeholder="12-digit Aadhaar number" {...register('aadhaar')} />
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="address">Address</Label>
-                <Input id="address" placeholder="123 Main St, City" {...register('address')} />
+                <Input id="address" placeholder="Village / Street, Post, District, Pin Code" {...register('address')} />
               </div>
             </div>
           </CardContent>
@@ -210,28 +210,28 @@ export default function NewPatientPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="disease">Primary Condition / Disease *</Label>
-                <Input id="disease" placeholder="e.g., Frozen Shoulder, Lumbar Spondylosis" className={errors.disease ? 'border-destructive' : ''} {...register('disease')} />
+                <Input id="disease" placeholder="e.g., Frozen Shoulder, Lumbar Spondylosis, Knee Osteoarthritis" className={errors.disease ? 'border-destructive' : ''} {...register('disease')} />
                 {errors.disease && <p className="text-xs text-destructive">{errors.disease.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="chiefComplaint">Chief Complaint</Label>
-                <Textarea id="chiefComplaint" placeholder="Describe symptoms and primary issues..." {...register('chiefComplaint')} />
+                <Textarea id="chiefComplaint" placeholder="Describe main complaints, pain area, duration..." {...register('chiefComplaint')} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="diagnosis">Diagnosis Details</Label>
-                <Textarea id="diagnosis" placeholder="Medical diagnosis from physician or assessment..." {...register('diagnosis')} />
+                <Textarea id="diagnosis" placeholder="Physician / clinical diagnosis assessment..." {...register('diagnosis')} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="medicalHistory">Past Medical History</Label>
-                <Textarea id="medicalHistory" placeholder="Surgeries, chronic conditions, prior physio..." {...register('medicalHistory')} />
+                <Textarea id="medicalHistory" placeholder="Prior surgeries, chronic illness, previous physio treatment..." {...register('medicalHistory')} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="currentMedication">Current Medication</Label>
-                <Textarea id="currentMedication" placeholder="Prescriptions, pain killers, supplements..." {...register('currentMedication')} />
+                <Textarea id="currentMedication" placeholder="Ongoing medicines, pain killers, supplements..." {...register('currentMedication')} />
               </div>
             </div>
           </CardContent>
@@ -245,11 +245,11 @@ export default function NewPatientPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="emerContactName">Contact Person Name</Label>
-                <Input id="emerContactName" placeholder="Spouse / Relative Name" {...register('emerContactName')} />
+                <Input id="emerContactName" placeholder="Spouse / Parent / Relative name" {...register('emerContactName')} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="emerContactPhone">Contact Person Phone</Label>
-                <Input id="emerContactPhone" placeholder="+91 9876543210" {...register('emerContactPhone')} />
+                <Input id="emerContactPhone" placeholder="Emergency contact mobile number" {...register('emerContactPhone')} />
               </div>
             </div>
           </CardContent>
