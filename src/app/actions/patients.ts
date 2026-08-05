@@ -192,3 +192,22 @@ export async function markVisitDone(id: string) {
     return { error: `Failed to mark visit done: ${error?.message || 'Database error'}` }
   }
 }
+
+export async function getPatientPDFData(id: string) {
+  try {
+    const [patient, profile] = await Promise.all([
+      prisma.patient.findUnique({
+        where: { id },
+        include: {
+          payments: { orderBy: { paymentDate: 'desc' } },
+          visits: { orderBy: { date: 'desc' } },
+        }
+      }),
+      prisma.clinicProfile.findFirst()
+    ])
+    return { patient, profile }
+  } catch (error: any) {
+    console.error('Error fetching patient PDF data:', error)
+    return { patient: null, profile: null }
+  }
+}

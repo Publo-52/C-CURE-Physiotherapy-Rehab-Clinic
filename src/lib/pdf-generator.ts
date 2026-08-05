@@ -1,4 +1,5 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { getPatientPDFData } from '@/app/actions/patients'
 
 export function sanitizeText(str: any): string {
   if (str === null || str === undefined) return ''
@@ -11,7 +12,21 @@ export function sanitizeText(str: any): string {
     .replace(/[^\x00-\x7F]/g, '')
 }
 
-export async function downloadPatientInvoicePDF(patient: any, profile?: any, visitsCount = 0) {
+export async function downloadPatientInvoicePDF(patientInput: any, profileInput?: any, visitsCountInput = 0) {
+  let patient = patientInput
+  let profile = profileInput
+
+  // If payments or full details are missing, fetch fresh DB record
+  if (patient?.id && (!patient.payments || !Array.isArray(patient.payments) || !profile)) {
+    try {
+      const fetched = await getPatientPDFData(patient.id)
+      if (fetched.patient) patient = fetched.patient
+      if (fetched.profile) profile = fetched.profile
+    } catch (e) {
+      console.error('PDF data fetch error:', e)
+    }
+  }
+
   const pdfDoc = await PDFDocument.create()
   const page = pdfDoc.addPage([595.28, 841.89]) // A4 size
   const { width, height } = page.getSize()
@@ -32,6 +47,7 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
   const phone = profile?.phone || '7942688985'
   const email = profile?.email || 'sanatan.manna28072015@gmail.com'
   const address = profile?.address || 'Moyna, Midnapore, West Bengal'
+  const defaultFee = profile?.defaultFee || 500
 
   let y = height - 40
 
@@ -108,7 +124,7 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
 
   // 3. Patient Details + Health Summary Grid
   const cardW = (width - 95) / 2
-  const actualVisitsCount = visitsCount || (Array.isArray(patient.visits) ? patient.visits.length : 0)
+  const actualVisitsCount = visitsCountInput || (Array.isArray(patient.visits) ? patient.visits.length : 0)
 
   // Patient Card
   page.drawRectangle({
@@ -149,21 +165,31 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
 
   // 4. Financial Summary & Outstanding Bill Due
   const hasPayments = Array.isArray(patient.payments) && patient.payments.length > 0
-  const totalBilled = hasPayments
-    ? patient.payments.reduce((s: number, p: any) => s + (p.totalBill || 0), 0)
-    : 0
-  const totalPaid = hasPayments
-    ? patient.payments.reduce((s: number, p: any) => s + (p.amountPaidToday || 0), 0)
-    : 0
-  const totalDue = hasPayments
-    ? (patient.payments[0].remainingDue !== undefined ? patient.payments[0].remainingDue : Math.max(0, totalBilled - totalPaid))
-    : 0
 
-  const statusStr = hasPayments
-    ? (totalDue <= 0 ? 'CLEARED' : totalPaid > 0 ? 'PARTIALLY PAID' : 'OUTSTANDING DUE')
-    : 'NO RECORDED PAYMENTS'
+  let totalBilled = 0
+  let totalPaid = 0
+  let totalDue = 0
 
-  const statusColor = totalDue <= 0 && hasPayments ? greenText : totalPaid > 0 ? orangeText : redText
+  if (hasPayments) {
+    totalBilled = patient.payments.reduce((s: number, p: any) => s + (p.totalBill || 0), 0)
+    totalPaid   = patient.payments.reduce((s: number, p: any) => s + (p.amountPaidToday || 0), 0)
+    const latestPayment = patient.payments[0]
+    totalDue = latestPayment.remainingDue !== undefined ? latestPayment.remainingDue : Math.max(0, totalBilled - totalPaid)
+  } else {
+    // If no payment transactions recorded yet, compute estimated bill from consultation/visit fee
+    const estimatedVisits = Math.max(1, actualVisitsCount)
+    totalBilled = estimatedVisits * defaultFee
+    totalPaid = 0
+    totalDue = totalBilled
+  }
+
+  const statusStr = totalDue <= 0
+    ? 'CLEARED'
+    : totalPaid > 0
+      ? 'PARTIALLY PAID'
+      : 'OUTSTANDING DUE'
+
+  const statusColor = totalDue <= 0 ? greenText : totalPaid > 0 ? orangeText : redText
 
   page.drawRectangle({
     x: 40,
@@ -179,15 +205,16 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
 
   page.drawText(sanitizeText(`Total Billed: Rs. ${totalBilled.toLocaleString('en-IN')}`), { x: 55, y: y - 36, size: 10, font: helveticaBold, color: darkSlate })
   page.drawText(sanitizeText(`Total Paid: Rs. ${totalPaid.toLocaleString('en-IN')}`), { x: 210, y: y - 36, size: 10, font: helveticaBold, color: greenText })
-  page.drawText(sanitizeText(`Bill Due: Rs. ${totalDue.toLocaleString('en-IN')}`), { x: 350, y: y - 36, size: 11, font: helveticaBold, color: totalDue > 0 ? redText : greenText })
-  page.drawText(sanitizeText(`Status: ${statusStr}`), { x: 55, y: y - 52, size: 9, font: helveticaBold, color: statusColor })
+  page.drawText(sanitizeText(`Remaining Due: Rs. ${totalDue.toLocaleString('en-IN')}`), { x: 350, y: y - 36, size: 11, font: helveticaBold, color: totalDue > 0 ? redText : greenText })
+  page.drawText(sanitizeText(`Payment Status: ${statusStr}`), { x: 55, y: y - 52, size: 9, font: helveticaBold, color: statusColor })
 
   y -= 85
 
-  // 5. Payment History Table
+  // 5. Payment History / Ledger Table
+  const tableHeaderH = 22
+  const rowH = 20
+
   if (hasPayments) {
-    const tableHeaderH = 22
-    const rowH = 20
     const paymentsCount = Math.min(patient.payments.length, 8)
     const tableH = tableHeaderH + paymentsCount * rowH
 
@@ -230,17 +257,41 @@ export async function downloadPatientInvoicePDF(patient: any, profile?: any, vis
 
     y -= (tableH + 30)
   } else {
+    // Default Consultation & Visit Fee table row when no explicit payment rows exist yet
+    const tableH = tableHeaderH + rowH
+
     page.drawRectangle({
       x: 40,
-      y: y - 35,
+      y: y - tableH,
       width: width - 80,
-      height: 35,
-      color: lightBg,
+      height: tableH,
       borderColor: rgb(0.89, 0.91, 0.94),
       borderWidth: 1,
     })
-    page.drawText('- No individual payment entries logged yet. Outstanding Bill Due: Rs. 0', { x: 55, y: y - 22, size: 9, font: helvetica, color: textMuted })
-    y -= 50
+
+    page.drawRectangle({
+      x: 40,
+      y: y - tableHeaderH,
+      width: width - 80,
+      height: tableHeaderH,
+      color: rgb(0.94, 0.96, 0.98),
+    })
+
+    page.drawText('DESCRIPTION / TREATMENT', { x: 50, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
+    page.drawText('RATE', { x: 260, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
+    page.drawText('BILLED', { x: 330, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
+    page.drawText('PAID', { x: 400, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
+    page.drawText('DUE', { x: 470, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
+
+    const currentY = y - tableHeaderH
+    const visitLabel = Math.max(1, actualVisitsCount)
+    page.drawText(sanitizeText(`Physiotherapy Consultation (${visitLabel} Session${visitLabel > 1 ? 's' : ''})`), { x: 50, y: currentY - 14, size: 8, font: helveticaBold, color: darkSlate })
+    page.drawText(sanitizeText(`Rs. ${defaultFee}`), { x: 260, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
+    page.drawText(sanitizeText(`Rs. ${totalBilled.toLocaleString('en-IN')}`), { x: 330, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
+    page.drawText('Rs. 0', { x: 400, y: currentY - 14, size: 8, font: helveticaBold, color: greenText })
+    page.drawText(sanitizeText(`Rs. ${totalDue.toLocaleString('en-IN')}`), { x: 470, y: currentY - 14, size: 8, font: helveticaBold, color: redText })
+
+    y -= (tableH + 30)
   }
 
   // 6. Footer & Signature
