@@ -76,24 +76,24 @@ export function Sidebar({ profile }: SidebarProps) {
           />
         </div>
         {/* Practitioner Profile Card */}
-        <div className="bg-background/70 backdrop-blur-sm rounded-xl border border-border/60 p-3 space-y-2 shadow-sm">
+        <div className="bg-background/80 backdrop-blur-sm rounded-2xl border border-border/60 p-4 space-y-3.5 shadow-sm">
           
           {/* Avatar + Name */}
-          <div className="flex items-center gap-2.5">
-            <div className="relative h-11 w-11 rounded-full overflow-hidden flex-shrink-0 shadow-md ring-2 ring-primary/20 bg-muted">
+          <div className="flex items-center gap-3">
+            <div className="relative h-14 w-14 rounded-full overflow-hidden flex-shrink-0 shadow-md ring-2 ring-primary/20 bg-muted">
               <Image
                 src="/doctor-sonatan.png"
                 alt={name}
                 fill
-                sizes="44px"
+                sizes="56px"
                 className="object-cover"
               />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-extrabold leading-tight truncate text-foreground">{name}</p>
-              <div className="flex items-center gap-1 mt-0.5">
-                <Stethoscope className="h-3 w-3 text-primary" />
-                <p className="text-[10px] text-primary font-bold">Physiotherapist</p>
+              <p className="text-base font-extrabold leading-tight truncate text-foreground">{name}</p>
+              <div className="flex items-center gap-1.5 mt-1">
+                <Stethoscope className="h-3.5 w-3.5 text-primary" />
+                <p className="text-xs text-primary font-bold">Physiotherapist</p>
               </div>
             </div>
           </div>
@@ -102,22 +102,22 @@ export function Sidebar({ profile }: SidebarProps) {
           <div className="border-t border-border/50" />
 
           {/* Contact & Location info */}
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Phone className="h-3 w-3 flex-shrink-0 text-primary/70" />
-              <span className="text-[10px] font-semibold truncate">{phone}</span>
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Phone className="h-3.5 w-3.5 flex-shrink-0 text-primary/70" />
+              <span className="text-xs font-semibold truncate">{phone}</span>
             </div>
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Mail className="h-3 w-3 flex-shrink-0 text-primary/70" />
-              <span className="text-[9px] font-semibold truncate leading-tight">{email}</span>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Mail className="h-3.5 w-3.5 flex-shrink-0 text-primary/70" />
+              <span className="text-xs font-semibold truncate leading-tight">{email}</span>
             </div>
-            <div className="flex items-start gap-1.5 text-muted-foreground">
-              <MapPin className="h-3 w-3 flex-shrink-0 text-primary/70 mt-0.5" />
-              <span className="text-[10px] font-semibold leading-tight line-clamp-2">{address}</span>
+            <div className="flex items-start gap-2 text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5 flex-shrink-0 text-primary/70 mt-0.5" />
+              <span className="text-xs font-semibold leading-tight line-clamp-2">{address}</span>
             </div>
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Clock className="h-3 w-3 flex-shrink-0 text-emerald-500" />
-              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 truncate">{workingHours}</span>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Clock className="h-3.5 w-3.5 flex-shrink-0 text-emerald-500" />
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 truncate">{workingHours}</span>
             </div>
           </div>
         </div>

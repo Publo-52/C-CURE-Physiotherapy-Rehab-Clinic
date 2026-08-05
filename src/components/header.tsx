@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
-import { Moon, Sun, Menu } from "lucide-react"
+import { Moon, Sun, Menu, Stethoscope, Phone, Mail } from "lucide-react"
 import { Button } from "./ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "./ui/sheet"
 import { navItems } from "./sidebar"
@@ -62,25 +62,36 @@ export function Header({ profile }: HeaderProps) {
               </div>
 
               {/* Profile details */}
-              <div className="bg-background/80 backdrop-blur-sm rounded-xl border border-border/50 p-2.5 space-y-1.5 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <div className="relative h-9 w-9 rounded-full overflow-hidden flex-shrink-0 bg-muted">
+              <div className="bg-background/90 backdrop-blur-md rounded-2xl border border-border/50 p-4 space-y-2.5 shadow-sm mt-2">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-12 w-12 rounded-full overflow-hidden flex-shrink-0 bg-muted shadow-sm ring-2 ring-primary/10">
                     <Image
                       src="/doctor-sonatan.png"
                       alt={name}
                       fill
-                      sizes="36px"
+                      sizes="48px"
                       className="object-cover"
                     />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold truncate leading-tight">{name}</p>
-                    <p className="text-[9px] text-primary font-semibold mt-0.5">Physiotherapist</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-extrabold truncate leading-tight text-foreground">{name}</p>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <Stethoscope className="h-3.5 w-3.5 text-primary" />
+                      <p className="text-xs text-primary font-bold">Physiotherapist</p>
+                    </div>
                   </div>
                 </div>
-                <div className="border-t border-border/50 my-1" />
-                <p className="text-[9px] text-muted-foreground font-semibold">📞 {phone}</p>
-                <p className="text-[9px] text-muted-foreground font-semibold truncate">✉️ {email}</p>
+                <div className="border-t border-border/60 my-2" />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Phone className="h-3.5 w-3.5 flex-shrink-0 text-primary/70" />
+                    <span className="text-xs font-semibold truncate">{phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Mail className="h-3.5 w-3.5 flex-shrink-0 text-primary/70" />
+                    <span className="text-xs font-semibold truncate leading-tight">{email}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
