@@ -531,8 +531,8 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                 <Input id="ownName" name="name" defaultValue={currentAdmin?.name || ''} placeholder="Enter username / display name" required className="font-semibold" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ownEmail">Email Address</Label>
-                <Input id="ownEmail" value={currentAdmin?.email || ''} placeholder="Enter email address" disabled className="bg-muted font-medium cursor-not-allowed" />
+                <Label htmlFor="ownEmail">Email Address *</Label>
+                <Input id="ownEmail" name="email" type="email" defaultValue={currentAdmin?.email || ''} placeholder="Enter email address" required className="font-semibold" />
               </div>
             </div>
 

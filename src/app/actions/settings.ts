@@ -222,12 +222,13 @@ export async function updateOwnAccount(formData: FormData) {
   }
 
   const name = (formData.get('name') as string)?.trim()
+  const email = (formData.get('email') as string)?.trim()
   const currentPassword = formData.get('currentPassword') as string
   const newPassword = formData.get('newPassword') as string
   const confirmPassword = formData.get('confirmPassword') as string
 
-  if (!name) {
-    return { error: 'Name / Username is required.' }
+  if (!name || !email) {
+    return { error: 'Name and Email address are required.' }
   }
 
   try {
@@ -239,7 +240,20 @@ export async function updateOwnAccount(formData: FormData) {
       return { error: 'Account not found.' }
     }
 
-    const updateData: any = { name }
+    // Check if new email is already in use by another account
+    if (email.toLowerCase() !== admin.email.toLowerCase()) {
+      const existing = await prisma.admin.findFirst({
+        where: {
+          email,
+          NOT: { id: admin.id }
+        }
+      })
+      if (existing) {
+        return { error: 'This email address is already in use by another user account.' }
+      }
+    }
+
+    const updateData: any = { name, email }
 
     if (newPassword) {
       if (!currentPassword) {
@@ -255,16 +269,18 @@ export async function updateOwnAccount(formData: FormData) {
       if (newPassword.length < 6) {
         return { error: 'New password must be at least 6 characters.' }
       }
+      // Replaces old password with new hashed password in DB
       updateData.password = await bcrypt.hash(newPassword, 10)
     }
 
+    // Overwrites old email and password in Supabase PostgreSQL database
     await prisma.admin.update({
       where: { id: admin.id },
       data: updateData
     })
 
     revalidatePath('/settings')
-    return { success: true, message: 'Your username and account settings have been updated!' }
+    return { success: true, message: 'Your account credentials (email, username, password) have been updated and replaced in the database!' }
   } catch (error: any) {
     console.error('Error updating account:', error)
     return { error: error?.message || 'Failed to update account.' }
