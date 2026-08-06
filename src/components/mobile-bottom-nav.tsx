@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { 
   LayoutDashboard, 
   Users, 
@@ -22,6 +22,7 @@ export const navItems = [
 // Mobile bottom nav bar for small screens
 export function MobileBottomNav() {
   const pathname = usePathname()
+  const router = useRouter()
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/95 backdrop-blur-md border-t border-border/80 shadow-[0_-2px_24px_rgba(0,0,0,0.08)] safe-area-inset-bottom">
@@ -32,6 +33,13 @@ export function MobileBottomNav() {
             <Link
               key={item.name}
               href={item.href}
+              prefetch={true}
+              onTouchStart={() => {
+                try { router.prefetch(item.href) } catch {}
+              }}
+              onMouseEnter={() => {
+                try { router.prefetch(item.href) } catch {}
+              }}
               className={cn(
                 "flex flex-col items-center justify-center flex-1 gap-0.5 px-1 py-2 transition-all duration-200 relative active-press",
                 isActive

@@ -141,6 +141,10 @@ export function Sidebar({ profile, currentUser }: SidebarProps) {
               <Link
                 key={item.name}
                 href={item.href}
+                prefetch={true}
+                onMouseEnter={() => {
+                  try { router.prefetch(item.href) } catch {}
+                }}
                 className={cn(
                   "flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold transition-all",
                   isActive
