@@ -197,6 +197,13 @@
     will-change: transform;
   }
 
+  /* Splash Screen Loading Bar Keyframes */
+  @keyframes splashLoading {
+    0%   { width: 0%; transform: translate3d(-100%, 0, 0); }
+    50%  { width: 65%; transform: translate3d(20%, 0, 0); }
+    100% { width: 100%; transform: translate3d(100%, 0, 0); }
+  }
+
   /* Mobile Page & Drawer Smooth Keyframes */
   @keyframes mobilePageEnter {
     from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.99); }

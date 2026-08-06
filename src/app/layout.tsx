@@ -37,6 +37,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { OpeningSplashScreen } from "@/components/opening-splash-screen";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -54,6 +56,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
+          <OpeningSplashScreen />
           {children}
           <Toaster position="top-right" />
         </ThemeProvider>
