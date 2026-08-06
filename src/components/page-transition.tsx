@@ -1,38 +1,36 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useRef } from 'react'
+import { useState } from 'react'
 
 const routes = ['/', '/patients', '/payments', '/calendar', '/settings']
 
+function getRouteIndex(path: string) {
+  const idx = routes.findIndex(r => r === path || (r !== '/' && path.startsWith(r)))
+  return idx === -1 ? 0 : idx
+}
+
 export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const prevPathRef = useRef(pathname)
+  const [prevPath, setPrevPath] = useState(pathname)
+  const [animClass, setAnimClass] = useState('animate-mobile-page')
 
-  const getRouteIndex = (path: string) => {
-    const idx = routes.findIndex(r => r === path || (r !== '/' && path.startsWith(r)))
-    return idx === -1 ? 0 : idx
-  }
+  if (prevPath !== pathname) {
+    const prevIdx = getRouteIndex(prevPath)
+    const currIdx = getRouteIndex(pathname)
 
-  const prevIdx = getRouteIndex(prevPathRef.current)
-  const currIdx = getRouteIndex(pathname)
-
-  let animationClass = 'animate-mobile-page'
-  if (currIdx > prevIdx) {
-    animationClass = 'animate-shift-left'
-  } else if (currIdx < prevIdx) {
-    animationClass = 'animate-shift-right'
-  }
-
-  if (prevPathRef.current !== pathname) {
-    prevPathRef.current = pathname
+    setPrevPath(pathname)
+    if (currIdx > prevIdx) {
+      setAnimClass('animate-shift-left')
+    } else if (currIdx < prevIdx) {
+      setAnimClass('animate-shift-right')
+    } else {
+      setAnimClass('animate-mobile-page')
+    }
   }
 
   return (
-    <div
-      key={pathname}
-      className={`flex-1 ${animationClass}`}
-    >
+    <div key={pathname} className={`flex-1 ${animClass}`}>
       {children}
     </div>
   )
