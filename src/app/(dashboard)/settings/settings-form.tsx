@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { KeyRound, User, Building2, Phone, MapPin, Clock, FileText, LogOut, ShieldCheck, ShieldAlert, Edit, Check, Lock, Smartphone } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -240,7 +241,7 @@ export default function SettingsForm({ profile, currentAdmin, accounts = [] }: S
 
                         <div className="space-y-1.5">
                           <Label htmlFor={`password-${acc.id}`} className="text-xs">New Password (Leave blank to keep current)</Label>
-                          <Input id={`password-${acc.id}`} name="password" type="password" placeholder="••••••••" minLength={6} className="text-xs" />
+                          <PasswordInput id={`password-${acc.id}`} name="password" placeholder="••••••••" minLength={6} className="text-xs" />
                         </div>
                       </div>
 
@@ -443,15 +444,15 @@ export default function SettingsForm({ profile, currentAdmin, accounts = [] }: S
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">Current Password</Label>
-                <Input id="currentPassword" name="currentPassword" type="password" placeholder="••••••••" />
+                <PasswordInput id="currentPassword" name="currentPassword" placeholder="••••••••" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
-                <Input id="newPassword" name="newPassword" type="password" placeholder="••••••••" minLength={6} />
+                <PasswordInput id="newPassword" name="newPassword" placeholder="••••••••" minLength={6} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input id="confirmPassword" name="confirmPassword" type="password" placeholder="••••••••" minLength={6} />
+                <PasswordInput id="confirmPassword" name="confirmPassword" placeholder="••••••••" minLength={6} />
               </div>
             </div>
             <Button type="submit" disabled={passwordLoading} className="font-bold">

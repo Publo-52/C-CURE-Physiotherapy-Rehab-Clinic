@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { login } from '@/app/actions/auth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Activity } from 'lucide-react'
@@ -79,7 +80,7 @@ export default function LoginPage() {
                 id="email" 
                 name="email"
                 type="email" 
-                placeholder="admin@c-cure.com" 
+                placeholder="sanatan54@gmail.com" 
                 required 
                 autoComplete="email"
               />
@@ -88,12 +89,12 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
               </div>
-              <Input 
+              <PasswordInput 
                 id="password" 
                 name="password"
-                type="password" 
                 required 
                 autoComplete="current-password"
+                placeholder="Enter password"
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
