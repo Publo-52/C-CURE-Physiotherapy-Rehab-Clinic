@@ -21,7 +21,7 @@ interface Profile {
   address: string
   about?: string | null
   workingHours: string
-  defaultFee: number
+  defaultFee?: number
 }
 
 interface SettingsFormProps {
@@ -41,7 +41,6 @@ export default function SettingsForm({ profile }: SettingsFormProps) {
   const [address, setAddress] = useState(profile.address)
   const [about, setAbout] = useState(profile.about || '')
   const [workingHours, setWorkingHours] = useState(profile.workingHours)
-  const [defaultFee, setDefaultFee] = useState(String(profile.defaultFee))
 
   const handleSaveProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -175,34 +174,18 @@ export default function SettingsForm({ profile }: SettingsFormProps) {
                     className="font-semibold resize-none"
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="workingHours">
-                      <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Working Hours</span>
-                    </Label>
-                    <Input
-                      id="workingHours"
-                      name="workingHours"
-                      value={workingHours}
-                      onChange={(e) => setWorkingHours(e.target.value)}
-                      placeholder="Open 24 Hours — Monday to Sunday"
-                      className="font-semibold"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="defaultFee">
-                      <span className="flex items-center gap-1"><IndianRupee className="h-3.5 w-3.5" /> Default Consultation Fee (₹)</span>
-                    </Label>
-                    <Input
-                      id="defaultFee"
-                      name="defaultFee"
-                      type="number"
-                      value={defaultFee}
-                      onChange={(e) => setDefaultFee(e.target.value)}
-                      placeholder="500"
-                      className="font-semibold"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="workingHours">
+                    <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Working Hours</span>
+                  </Label>
+                  <Input
+                    id="workingHours"
+                    name="workingHours"
+                    value={workingHours}
+                    onChange={(e) => setWorkingHours(e.target.value)}
+                    placeholder="Open 24 Hours — Monday to Sunday"
+                    className="font-semibold"
+                  />
                 </div>
               </div>
             </div>
