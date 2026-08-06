@@ -212,6 +212,10 @@ export function parseDeviceInfo(
     }
   }
 
+  if (!deviceName || deviceName.trim().length === 0) {
+    deviceName = /mobile|android|iphone|ipad/i.test(ua) ? 'Mobile Device' : 'Desktop PC'
+  }
+
   const fullLabel = `${deviceName} • ${browserFull} on ${osFull}`
 
   return {

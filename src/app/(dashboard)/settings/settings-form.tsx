@@ -339,9 +339,18 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                   <div className="space-y-3">
                     {sessions.map(s => {
                       const isCurrentDevice = s.token === currentSessionToken
-                      const deviceLabel = s.deviceType && s.deviceType !== 'Desktop PC' && s.deviceType !== 'Android Smartphone'
-                        ? s.deviceType
-                        : (s.userAgent ? parseDeviceInfo(s.userAgent).fullLabel : (s.deviceType || 'Desktop PC'))
+                      const deviceLabel = (() => {
+                        if (s.deviceType && s.deviceType.trim().length > 0 && s.deviceType !== 'Desktop PC' && s.deviceType !== 'Android Smartphone') {
+                          return s.deviceType.trim()
+                        }
+                        if (s.userAgent && s.userAgent.trim().length > 0) {
+                          const parsed = parseDeviceInfo(s.userAgent)
+                          if (parsed.fullLabel && parsed.fullLabel.trim().length > 0) {
+                            return parsed.fullLabel
+                          }
+                        }
+                        return s.deviceType || 'Logged-In Mobile Device'
+                      })()
 
                       const isMobile = /phone|android|mobile|ios|galaxy|pixel|redmi|xiaomi|realme|oppo|vivo|oneplus/i.test(deviceLabel)
                       const IconComponent = isMobile ? Smartphone : Laptop
