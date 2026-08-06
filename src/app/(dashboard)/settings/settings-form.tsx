@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { toast } from 'react-hot-toast'
-import { updateUserAccount, updateOwnAccount, revokeActiveSession } from '@/app/actions/settings'
+import { updateUserAccount, updateOwnAccount, revokeActiveSession, deleteUserAccount } from '@/app/actions/settings'
 import { updateClinicProfile } from '@/app/actions/profile'
 import { logout } from '@/app/actions/auth'
 
@@ -199,14 +199,32 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                         </p>
                       </div>
 
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setEditingUserId(acc.id)}
-                        className="gap-1.5 text-xs font-medium"
-                      >
-                        <Edit className="h-3.5 w-3.5" /> Edit Account &amp; Password
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingUserId(acc.id)}
+                          className="gap-1.5 text-xs font-semibold"
+                        >
+                          <Edit className="h-3.5 w-3.5" /> Edit Account
+                        </Button>
+                        {acc.id !== currentAdmin?.id && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              if (confirm(`Are you sure you want to permanently delete user "${acc.name}" (${acc.email})? This user and all their active device sessions will be deleted.`)) {
+                                const res = await deleteUserAccount(acc.id)
+                                if (res.error) toast.error(res.error)
+                                else toast.success(res.message || 'User deleted successfully!')
+                              }
+                            }}
+                            className="gap-1.5 text-xs text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/40 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-semibold"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Delete User
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     /* Inline User Edit Form */

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { decrypt } from '@/lib/session'
+import prisma from '@/lib/prisma'
 
 const protectedPrefixes = ['/', '/patients', '/payments', '/calendar', '/settings']
 const publicRoutes = ['/login']
@@ -16,24 +17,48 @@ export async function proxy(req: NextRequest) {
 
   const sessionCookie = req.cookies.get('session')?.value
 
-  let session = null
+  let session: any = null
+  let isSessionValidInDb = false
+
   if (sessionCookie) {
     try {
       const payload = await decrypt(sessionCookie)
-      // The DB-level session validity (token existence) is checked in verifySession()
-      // inside server components/actions. The proxy only checks the JWT is valid
-      // and has a sessionToken field (i.e. it was issued by the new system).
       if (payload?.sessionToken) {
-        session = payload
+        // Verify session token is STILL in DB and user account still exists
+        const dbSession = await prisma.activeSession.findUnique({
+          where: { token: payload.sessionToken },
+          select: { id: true, expiresAt: true, admin: { select: { id: true } } }
+        })
+        if (dbSession && dbSession.expiresAt > new Date() && dbSession.admin) {
+          session = payload
+          isSessionValidInDb = true
+        }
       }
     } catch {
       session = null
+      isSessionValidInDb = false
+    }
+  }
+
+  // If user has a session cookie but it's revoked/invalid in DB:
+  if (sessionCookie && !isSessionValidInDb) {
+    if (isProtectedRoute) {
+      const res = NextResponse.redirect(new URL('/login', req.nextUrl))
+      res.cookies.delete('session')
+      return res
+    }
+    if (isPublicRoute) {
+      const res = NextResponse.next()
+      res.cookies.delete('session')
+      return res
     }
   }
 
   // Redirect unauthenticated users away from protected routes
   if (!session && isProtectedRoute) {
-    return NextResponse.redirect(new URL('/login', req.nextUrl))
+    const res = NextResponse.redirect(new URL('/login', req.nextUrl))
+    res.cookies.delete('session')
+    return res
   }
 
   // Redirect already-logged-in users away from the login page

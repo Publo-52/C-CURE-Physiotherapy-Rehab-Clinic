@@ -2,7 +2,7 @@ import { Sidebar } from "@/components/sidebar"
 import { Header } from "@/components/header"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { getClinicProfile } from "@/app/actions/profile"
-import { verifySession } from "@/lib/session"
+import { verifySession, deleteSession } from "@/lib/session"
 import { redirect } from "next/navigation"
 
 export default async function DashboardLayout({
@@ -12,8 +12,9 @@ export default async function DashboardLayout({
 }) {
   const session = await verifySession()
 
-  // If session is expired or user token is invalid/revoked, force login
+  // If session is expired or user token is invalid/revoked, clear cookie & force login
   if (!session || !session.user) {
+    await deleteSession()
     redirect('/login')
   }
 

@@ -287,3 +287,41 @@ export async function updateOwnAccount(formData: FormData) {
   }
 }
 
+export async function deleteUserAccount(targetId: string) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
+  const currentAdmin = await prisma.admin.findUnique({
+    where: { id: session.userId },
+    select: { id: true, role: true }
+  })
+
+  if (!currentAdmin || currentAdmin.role !== 'Super Admin') {
+    return { error: 'Unauthorized. Only Super Admin can delete user accounts.' }
+  }
+
+  if (currentAdmin.id === targetId) {
+    return { error: 'You cannot delete your own Super Admin account.' }
+  }
+
+  try {
+    // Delete all active sessions for this target user from database
+    await prisma.activeSession.deleteMany({
+      where: { adminId: targetId }
+    })
+
+    // Delete the user account from database
+    await prisma.admin.delete({
+      where: { id: targetId }
+    })
+
+    revalidatePath('/settings')
+    return { success: true, message: 'User account and all active sessions deleted from database!' }
+  } catch (error: any) {
+    console.error('Error deleting user account:', error)
+    return { error: error?.message || 'Failed to delete user account.' }
+  }
+}
+
