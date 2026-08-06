@@ -229,12 +229,12 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <Label htmlFor={`name-${acc.id}`} className="text-xs">Full Name / Username *</Label>
-                          <Input id={`name-${acc.id}`} name="name" defaultValue={acc.name} required className="text-xs font-medium" />
+                          <Input id={`name-${acc.id}`} name="name" defaultValue={acc.name} placeholder="Enter full name / username" required className="text-xs font-medium" />
                         </div>
 
                         <div className="space-y-1.5">
                           <Label htmlFor={`email-${acc.id}`} className="text-xs">Email Address *</Label>
-                          <Input id={`email-${acc.id}`} name="email" type="email" defaultValue={acc.email} required className="text-xs font-medium" />
+                          <Input id={`email-${acc.id}`} name="email" type="email" defaultValue={acc.email} placeholder="Enter email address" required className="text-xs font-medium" />
                         </div>
 
                         <div className="space-y-1.5">
@@ -252,7 +252,7 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
 
                         <div className="space-y-1.5">
                           <Label htmlFor={`password-${acc.id}`} className="text-xs">New Password (Leave blank to keep current)</Label>
-                          <PasswordInput id={`password-${acc.id}`} name="password" placeholder="••••••••" minLength={6} className="text-xs" />
+                          <PasswordInput id={`password-${acc.id}`} name="password" placeholder="Enter new password (optional)" minLength={6} className="text-xs" />
                         </div>
                       </div>
 
@@ -387,7 +387,7 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                     name="practitionerName"
                     value={practitionerName}
                     onChange={(e) => setPractitionerName(e.target.value)}
-                    placeholder="Sanatan Manna"
+                    placeholder="Enter practitioner full name"
                     required
                     className="font-semibold"
                   />
@@ -402,7 +402,7 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                     name="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="7942688985"
+                    placeholder="Enter contact phone number"
                     required
                     className="font-semibold"
                   />
@@ -415,7 +415,7 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="sanatan.manna28072015@gmail.com"
+                    placeholder="Enter email address"
                     required
                     className="font-semibold"
                   />
@@ -438,7 +438,7 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                     name="clinicName"
                     value={clinicName}
                     onChange={(e) => setClinicName(e.target.value)}
-                    placeholder="C-CURE Physiotherapy & Rehab Clinic"
+                    placeholder="Enter clinic name"
                     required
                     className="font-semibold"
                   />
@@ -452,7 +452,7 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                     name="address"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Moyna Hospital, More Moyna, Tamluk, Moyna, Midnapore-721629, West Bengal"
+                    placeholder="Enter clinic full address"
                     rows={2}
                     className="font-semibold resize-none"
                   />
@@ -466,7 +466,7 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                     name="workingHours"
                     value={workingHours}
                     onChange={(e) => setWorkingHours(e.target.value)}
-                    placeholder="Open 24 Hours — Monday to Sunday"
+                    placeholder="Enter clinic working hours"
                     className="font-semibold"
                   />
                 </div>
@@ -528,11 +528,11 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="ownName">Username / Display Name *</Label>
-                <Input id="ownName" name="name" defaultValue={currentAdmin?.name || ''} required className="font-semibold" />
+                <Input id="ownName" name="name" defaultValue={currentAdmin?.name || ''} placeholder="Enter username / display name" required className="font-semibold" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="ownEmail">Email Address</Label>
-                <Input id="ownEmail" value={currentAdmin?.email || ''} disabled className="bg-muted font-medium cursor-not-allowed" />
+                <Input id="ownEmail" value={currentAdmin?.email || ''} placeholder="Enter email address" disabled className="bg-muted font-medium cursor-not-allowed" />
               </div>
             </div>
 
@@ -542,15 +542,15 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">Current Password</Label>
-                <PasswordInput id="currentPassword" name="currentPassword" placeholder="••••••••" />
+                <PasswordInput id="currentPassword" name="currentPassword" placeholder="Enter current password" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
-                <PasswordInput id="newPassword" name="newPassword" placeholder="••••••••" minLength={6} />
+                <PasswordInput id="newPassword" name="newPassword" placeholder="Enter new password" minLength={6} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <PasswordInput id="confirmPassword" name="confirmPassword" placeholder="••••••••" minLength={6} />
+                <PasswordInput id="confirmPassword" name="confirmPassword" placeholder="Confirm new password" minLength={6} />
               </div>
             </div>
             <Button type="submit" disabled={passwordLoading} className="font-bold">

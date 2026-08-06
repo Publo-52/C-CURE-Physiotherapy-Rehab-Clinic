@@ -114,32 +114,32 @@ export function EditPaymentForm({ patient, payment }: EditPaymentFormProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="consultationFee">Consultation Fee (₹)</Label>
-                  <Input id="consultationFee" name="consultationFee" type="number" min="0" value={consultationFee} onChange={(e) => setConsultationFee(Number(e.target.value))} />
+                  <Input id="consultationFee" name="consultationFee" type="number" min="0" placeholder="Enter consultation fee" value={consultationFee} onChange={(e) => setConsultationFee(Number(e.target.value))} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="visitFee">Visit / Therapy Fee (₹)</Label>
-                  <Input id="visitFee" name="visitFee" type="number" min="0" value={visitFee} onChange={(e) => setVisitFee(Number(e.target.value))} />
+                  <Input id="visitFee" name="visitFee" type="number" min="0" placeholder="Enter visit fee" value={visitFee} onChange={(e) => setVisitFee(Number(e.target.value))} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="extraCharges">Extra Charges (Medicine/Equipment) (₹)</Label>
-                  <Input id="extraCharges" name="extraCharges" type="number" min="0" value={extraCharges} onChange={(e) => setExtraCharges(Number(e.target.value))} />
+                  <Input id="extraCharges" name="extraCharges" type="number" min="0" placeholder="Enter extra charges" value={extraCharges} onChange={(e) => setExtraCharges(Number(e.target.value))} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="discount">Discount (₹)</Label>
-                  <Input id="discount" name="discount" type="number" min="0" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
+                  <Input id="discount" name="discount" type="number" min="0" placeholder="Enter discount amount" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="previousDue">Previous Outstanding Due (₹)</Label>
-                  <Input id="previousDue" name="previousDue" type="number" value={previousDue} onChange={(e) => setPreviousDue(Number(e.target.value))} />
+                  <Input id="previousDue" name="previousDue" type="number" placeholder="Enter previous due" value={previousDue} onChange={(e) => setPreviousDue(Number(e.target.value))} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="amountPaidToday">Amount Paid (₹) *</Label>
-                  <Input id="amountPaidToday" name="amountPaidToday" type="number" min="0" required value={amountPaidToday} onChange={(e) => setAmountPaidToday(Number(e.target.value))} className="border-primary font-bold" />
+                  <Input id="amountPaidToday" name="amountPaidToday" type="number" min="0" required placeholder="Enter amount paid" value={amountPaidToday} onChange={(e) => setAmountPaidToday(Number(e.target.value))} className="border-primary font-bold" />
                 </div>
 
                 {remainingDue > 0 && (
@@ -151,12 +151,12 @@ export function EditPaymentForm({ patient, payment }: EditPaymentFormProps) {
 
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="transactionId">Transaction ID / UPI Reference (Optional)</Label>
-                  <Input id="transactionId" name="transactionId" defaultValue={payment.transactionId || ''} placeholder="e.g. UPI-123456789" />
+                  <Input id="transactionId" name="transactionId" defaultValue={payment.transactionId || ''} placeholder="Enter transaction ID or UPI reference number" />
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="paymentNotes">Payment Notes</Label>
-                  <Textarea id="paymentNotes" name="paymentNotes" defaultValue={payment.paymentNotes || ''} placeholder="Any remarks regarding this payment..." />
+                  <Textarea id="paymentNotes" name="paymentNotes" defaultValue={payment.paymentNotes || ''} placeholder="Enter payment notes / remarks..." />
                 </div>
               </div>
             </form>

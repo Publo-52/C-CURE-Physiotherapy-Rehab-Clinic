@@ -80,7 +80,7 @@ export default function LoginPage() {
                 id="email" 
                 name="email"
                 type="email" 
-                placeholder="sanatan54@gmail.com" 
+                placeholder="Enter email address" 
                 required 
                 autoComplete="email"
               />

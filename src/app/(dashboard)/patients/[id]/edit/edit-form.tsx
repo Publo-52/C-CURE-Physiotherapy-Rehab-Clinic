@@ -118,29 +118,29 @@ export default function EditPatientForm({ patient }: EditPatientFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name *</Label>
-              <Input id="name" placeholder="Enter patient full name (e.g., Rajesh Kumar)" className={errors.name ? 'border-destructive' : ''} {...register('name')} />
+              <Input id="name" placeholder="Enter patient full name" className={errors.name ? 'border-destructive' : ''} {...register('name')} />
               {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number *</Label>
-              <Input id="phone" placeholder="10-digit mobile number (e.g., 9876543210)" className={errors.phone ? 'border-destructive' : ''} {...register('phone')} />
+              <Input id="phone" placeholder="Enter 10-digit mobile number" className={errors.phone ? 'border-destructive' : ''} {...register('phone')} />
               {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" placeholder="Optional email address (e.g., rajesh@gmail.com)" className={errors.email ? 'border-destructive' : ''} {...register('email')} />
+              <Input id="email" type="email" placeholder="Enter email address" className={errors.email ? 'border-destructive' : ''} {...register('email')} />
               {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="alternatePhone">Alternate Phone / WhatsApp</Label>
-              <Input id="alternatePhone" placeholder="Alternate mobile or WhatsApp number" {...register('alternatePhone')} />
+              <Input id="alternatePhone" placeholder="Enter alternate phone / WhatsApp number" {...register('alternatePhone')} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="age">Age</Label>
-              <Input id="age" type="number" placeholder="Age in years (e.g., 45)" className={errors.age ? 'border-destructive' : ''} {...register('age')} />
+              <Input id="age" type="number" placeholder="Enter age in years" className={errors.age ? 'border-destructive' : ''} {...register('age')} />
               {errors.age && <p className="text-xs text-destructive">{errors.age.message}</p>}
             </div>
             
@@ -186,12 +186,12 @@ export default function EditPatientForm({ patient }: EditPatientFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="aadhaar">Aadhaar / ID Number</Label>
-              <Input id="aadhaar" placeholder="12-digit Aadhaar number" {...register('aadhaar')} />
+              <Input id="aadhaar" placeholder="Enter 12-digit Aadhaar number" {...register('aadhaar')} />
             </div>
 
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="address">Address</Label>
-              <Input id="address" placeholder="Village / Street, Post, District, Pin Code" {...register('address')} />
+              <Input id="address" placeholder="Enter full address (village / street, post, district, pin code)" {...register('address')} />
             </div>
           </div>
         </CardContent>
@@ -205,28 +205,28 @@ export default function EditPatientForm({ patient }: EditPatientFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="disease">Primary Condition / Disease *</Label>
-              <Input id="disease" placeholder="e.g., Frozen Shoulder, Lumbar Spondylosis, Knee Osteoarthritis" className={errors.disease ? 'border-destructive' : ''} {...register('disease')} />
+              <Input id="disease" placeholder="Enter primary condition / disease" className={errors.disease ? 'border-destructive' : ''} {...register('disease')} />
               {errors.disease && <p className="text-xs text-destructive">{errors.disease.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="chiefComplaint">Chief Complaint</Label>
-              <Textarea id="chiefComplaint" placeholder="Describe main complaints, pain area, duration..." {...register('chiefComplaint')} />
+              <Textarea id="chiefComplaint" placeholder="Enter chief complaints, pain area, duration..." {...register('chiefComplaint')} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="diagnosis">Diagnosis Details</Label>
-              <Textarea id="diagnosis" placeholder="Physician / clinical diagnosis assessment..." {...register('diagnosis')} />
+              <Textarea id="diagnosis" placeholder="Enter diagnosis details..." {...register('diagnosis')} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="medicalHistory">Past Medical History</Label>
-              <Textarea id="medicalHistory" placeholder="Prior surgeries, chronic illness, previous physio treatment..." {...register('medicalHistory')} />
+              <Textarea id="medicalHistory" placeholder="Enter past medical history, prior surgeries, chronic illness..." {...register('medicalHistory')} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="currentMedication">Current Medication</Label>
-              <Textarea id="currentMedication" placeholder="Ongoing medicines, pain killers, supplements..." {...register('currentMedication')} />
+              <Textarea id="currentMedication" placeholder="Enter ongoing medicines, painkillers, supplements..." {...register('currentMedication')} />
             </div>
           </div>
         </CardContent>
@@ -240,11 +240,11 @@ export default function EditPatientForm({ patient }: EditPatientFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="emerContactName">Contact Person Name</Label>
-              <Input id="emerContactName" placeholder="Spouse / Parent / Relative name" {...register('emerContactName')} />
+              <Input id="emerContactName" placeholder="Enter emergency contact person name" {...register('emerContactName')} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="emerContactPhone">Contact Person Phone</Label>
-              <Input id="emerContactPhone" placeholder="Emergency contact mobile number" {...register('emerContactPhone')} />
+              <Input id="emerContactPhone" placeholder="Enter emergency contact phone number" {...register('emerContactPhone')} />
             </div>
           </div>
         </CardContent>

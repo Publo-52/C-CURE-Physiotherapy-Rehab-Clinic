@@ -877,7 +877,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                     <Label htmlFor="treatment">Planned Treatment Program</Label>
                     <Textarea
                       id="treatment"
-                      placeholder="e.g. Cervical Traction, IFT, Stretching exercises"
+                      placeholder="Enter planned treatment program"
                       value={treatmentGiven}
                       onChange={(e) => setTreatmentGiven(e.target.value)}
                       className="font-semibold"
@@ -888,7 +888,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                     <Label htmlFor="exercises">Exercises</Label>
                     <Textarea
                       id="exercises"
-                      placeholder="e.g. Home exercise plan, Isometric neck exercises"
+                      placeholder="Enter home exercise plan"
                       value={exerciseGiven}
                       onChange={(e) => setExerciseGiven(e.target.value)}
                       className="font-semibold"
@@ -899,7 +899,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                     <Label htmlFor="notes">Physiotherapist Notes</Label>
                     <Textarea
                       id="notes"
-                      placeholder="Any general observations or medical restrictions..."
+                      placeholder="Enter physiotherapist notes and observations..."
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       className="font-semibold"
@@ -915,7 +915,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                     <Label htmlFor="eventTitle">Event Title / Task *</Label>
                     <Input
                       id="eventTitle"
-                      placeholder="e.g. Clinic Staff Meeting, Restock ultrasound gel"
+                      placeholder="Enter event title or task name"
                       value={eventTitle}
                       onChange={(e) => setEventTitle(e.target.value)}
                       required
