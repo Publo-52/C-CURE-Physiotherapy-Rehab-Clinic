@@ -309,24 +309,34 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
           {accounts.map(acc => {
             const sessions = acc.sessions || []
             return (
-              <div key={acc.id} className="space-y-3">
-                <div className="flex items-center justify-between border-b pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-foreground">{acc.name}</span>
-                    <span className="text-xs text-muted-foreground">({acc.email})</span>
-                    <Badge variant={acc.role === 'Super Admin' ? "default" : "outline"} className={acc.role === 'Super Admin' ? "bg-indigo-600 text-[10px]" : "text-[10px]"}>
-                      {acc.role}
+              <div key={acc.id} className="space-y-3.5 border rounded-2xl p-3.5 sm:p-5 bg-card/50">
+                {/* Account Header Section */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-extrabold text-base text-foreground tracking-tight">{acc.name}</span>
+                      <Badge 
+                        variant={acc.role === 'Super Admin' ? "default" : "outline"} 
+                        className={acc.role === 'Super Admin' ? "bg-indigo-600 font-bold text-xs" : "font-semibold text-xs"}
+                      >
+                        {acc.role}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground font-mono break-all">{acc.email}</p>
+                  </div>
+                  
+                  <div className="self-start sm:self-auto shrink-0">
+                    <Badge variant="secondary" className="text-xs font-bold px-2.5 py-1 gap-1.5">
+                      <Smartphone className="h-3.5 w-3.5 text-primary" />
+                      {sessions.length} {sessions.length === 1 ? 'Active Device' : 'Active Devices'}
                     </Badge>
                   </div>
-                  <span className="text-xs font-semibold text-muted-foreground">
-                    {sessions.length} {sessions.length === 1 ? 'Device Active' : 'Devices Active'}
-                  </span>
                 </div>
 
                 {sessions.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic py-2">No active device sessions found.</p>
+                  <p className="text-xs text-muted-foreground italic py-2">No active device sessions found for this account.</p>
                 ) : (
-                  <div className="space-y-2.5">
+                  <div className="space-y-3">
                     {sessions.map(s => {
                       const isCurrentDevice = s.token === currentSessionToken
                       const deviceLabel = s.deviceType && s.deviceType !== 'Desktop PC' && s.deviceType !== 'Android Smartphone'
@@ -337,26 +347,33 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                       const IconComponent = isMobile ? Smartphone : Laptop
 
                       return (
-                        <div key={s.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 rounded-xl border bg-card hover:bg-muted/30 transition-colors gap-3">
-                          <div className="flex items-start gap-3 min-w-0">
+                        <div 
+                          key={s.id} 
+                          className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 rounded-xl border bg-background hover:bg-muted/30 transition-all gap-3.5"
+                        >
+                          <div className="flex items-start gap-3 min-w-0 flex-1">
                             <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0 mt-0.5 sm:mt-0">
                               <IconComponent className="h-5 w-5" />
                             </div>
-                            <div className="space-y-1 min-w-0">
+                            
+                            <div className="space-y-1.5 min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-bold text-sm text-foreground">{deviceLabel}</span>
+                                <span className="font-bold text-sm text-foreground break-words">{deviceLabel}</span>
                                 {isCurrentDevice && (
-                                  <Badge className="bg-emerald-600 text-[10px] gap-1 font-semibold">
+                                  <Badge className="bg-emerald-600 text-[10px] gap-1 font-semibold shrink-0">
                                     <Check className="h-3 w-3" /> This Device (Active Now)
                                   </Badge>
                                 )}
                               </div>
-                              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                                <span className="font-mono bg-muted px-2 py-0.5 rounded text-foreground font-semibold">
+
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-xs text-muted-foreground">
+                                <span className="font-mono bg-muted px-2 py-0.5 rounded text-foreground font-semibold w-fit">
                                   IP: {s.ipAddress || '127.0.0.1 (Localhost)'}
                                 </span>
-                                <span>•</span>
-                                <span>Logged in: {new Date(s.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                <span className="hidden sm:inline opacity-40">•</span>
+                                <span className="text-[11px] sm:text-xs">
+                                  Logged in: {new Date(s.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -366,7 +383,7 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                             variant="outline"
                             disabled={revokingSessionId === s.id}
                             onClick={() => handleRevokeSession(s.id, `${deviceLabel} (${s.ipAddress || 'IP'})`)}
-                            className="text-xs text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/40 hover:bg-rose-50 dark:hover:bg-rose-950/40 gap-1.5 shrink-0 self-end sm:self-center"
+                            className="w-full sm:w-auto text-xs text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/40 hover:bg-rose-50 dark:hover:bg-rose-950/40 gap-1.5 shrink-0 justify-center font-bold"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                             {revokingSessionId === s.id ? 'Removing...' : 'Remove Device'}
