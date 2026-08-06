@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs'
 import { redirect } from 'next/navigation'
 
 import { headers } from 'next/headers'
+import { parseDeviceInfo } from '@/lib/device-parser'
 
 export async function login(formData: FormData) {
   const email = formData.get('email') as string
@@ -47,17 +48,10 @@ export async function login(formData: FormData) {
   const ipAddress = rawIp === '::1' || rawIp === '::ffff:127.0.0.1' ? '127.0.0.1 (Localhost)' : rawIp
 
   const userAgent = reqHeaders.get('user-agent') || 'Unknown Browser'
+  const clientDeviceHint = (formData.get('clientDeviceName') as string)?.trim()
 
-  let deviceType = 'Desktop PC'
-  if (/mobile/i.test(userAgent)) {
-    deviceType = /iphone|ipad|ipod/i.test(userAgent) ? 'iPhone / iOS' : 'Android Smartphone'
-  } else if (/macintosh|mac os x/i.test(userAgent)) {
-    deviceType = 'Mac Computer'
-  } else if (/windows/i.test(userAgent)) {
-    deviceType = 'Windows PC'
-  } else if (/linux/i.test(userAgent)) {
-    deviceType = 'Linux Desktop'
-  }
+  const parsedInfo = parseDeviceInfo(userAgent)
+  const deviceType = clientDeviceHint || parsedInfo.fullLabel
 
   // createSession enforces device limits and saves device metadata
   const result = await createSession(admin.id, { ipAddress, userAgent, deviceType })

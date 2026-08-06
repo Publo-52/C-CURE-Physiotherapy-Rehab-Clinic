@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { toast } from 'react-hot-toast'
 import { updateUserAccount, updateOwnAccount, revokeActiveSession, deleteUserAccount } from '@/app/actions/settings'
+import { parseDeviceInfo } from '@/lib/device-parser'
 import { updateClinicProfile } from '@/app/actions/profile'
 import { logout } from '@/app/actions/auth'
 
@@ -328,8 +329,11 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                   <div className="space-y-2.5">
                     {sessions.map(s => {
                       const isCurrentDevice = s.token === currentSessionToken
-                      const deviceLabel = s.deviceType || 'Desktop PC'
-                      const isMobile = /phone|android|mobile|ios/i.test(deviceLabel)
+                      const deviceLabel = s.deviceType && s.deviceType !== 'Desktop PC' && s.deviceType !== 'Android Smartphone'
+                        ? s.deviceType
+                        : (s.userAgent ? parseDeviceInfo(s.userAgent).fullLabel : (s.deviceType || 'Desktop PC'))
+
+                      const isMobile = /phone|android|mobile|ios|galaxy|pixel|redmi|xiaomi|realme|oppo|vivo|oneplus/i.test(deviceLabel)
                       const IconComponent = isMobile ? Smartphone : Laptop
 
                       return (
@@ -340,7 +344,7 @@ export default function SettingsForm({ profile, currentAdmin, currentSessionToke
                             </div>
                             <div className="space-y-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-semibold text-sm">{deviceLabel}</span>
+                                <span className="font-bold text-sm text-foreground">{deviceLabel}</span>
                                 {isCurrentDevice && (
                                   <Badge className="bg-emerald-600 text-[10px] gap-1 font-semibold">
                                     <Check className="h-3 w-3" /> This Device (Active Now)

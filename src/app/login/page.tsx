@@ -22,6 +22,19 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     const formData = new FormData(e.currentTarget)
+
+    // Capture precise client device model via Client Hints API when supported
+    if (typeof window !== 'undefined' && (navigator as any).userAgentData?.getHighEntropyValues) {
+      try {
+        const hints = await (navigator as any).userAgentData.getHighEntropyValues(['model', 'platform', 'platformVersion'])
+        if (hints?.model) {
+          const platform = hints.platform || 'Device'
+          formData.set('clientDeviceName', `${hints.model} (${platform})`)
+        }
+      } catch {
+        // Fallback to server-side User-Agent parsing
+      }
+    }
     
     try {
       const result = await login(formData)
