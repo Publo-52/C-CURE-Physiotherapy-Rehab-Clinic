@@ -4,31 +4,42 @@ const bcrypt = require('bcryptjs')
 const prisma = new PrismaClient()
 
 async function main() {
-  const hashedPassword = bcrypt.hashSync('admin123', 10)
+  const adminPassword = bcrypt.hashSync('manna@#$4321S', 10)
+  const superAdminPassword = bcrypt.hashSync('phisiyo123ADMIN@$', 10)
 
-  // Upsert primary admin account
+  // 1. Admin account (Max 3 devices limit)
   await prisma.admin.upsert({
-    where: { email: 'admin@phisiyo.com' },
-    update: {},
+    where: { email: 'sanatan54@gmail.com' },
+    update: {
+      password: adminPassword,
+      role: 'Admin',
+      name: 'Sanatan Manna',
+    },
     create: {
-      email: 'admin@phisiyo.com',
-      password: hashedPassword,
+      email: 'sanatan54@gmail.com',
+      password: adminPassword,
+      name: 'Sanatan Manna',
+      role: 'Admin',
+    },
+  })
+  console.log('Admin seeded: sanatan54@gmail.com')
+
+  // 2. Super Admin account (Unlimited devices)
+  await prisma.admin.upsert({
+    where: { email: 'superadmin@gmail.com' },
+    update: {
+      password: superAdminPassword,
+      role: 'Super Admin',
       name: 'Super Admin',
     },
-  })
-  console.log('Admin seeded: admin@phisiyo.com / admin123')
-
-  // Upsert clinic-branded admin account (matches the UI placeholder)
-  await prisma.admin.upsert({
-    where: { email: 'admin@c-cure.com' },
-    update: {},
     create: {
-      email: 'admin@c-cure.com',
-      password: hashedPassword,
-      name: 'Dr. Sonatan Manna',
+      email: 'superadmin@gmail.com',
+      password: superAdminPassword,
+      name: 'Super Admin',
+      role: 'Super Admin',
     },
   })
-  console.log('Admin seeded: admin@c-cure.com / admin123')
+  console.log('Super Admin seeded: superadmin@gmail.com')
 }
 
 main()
@@ -39,4 +50,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
-

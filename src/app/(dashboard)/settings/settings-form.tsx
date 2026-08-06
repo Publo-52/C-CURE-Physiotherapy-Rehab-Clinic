@@ -2,14 +2,16 @@
 
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { KeyRound, User, Building2, Phone, MapPin, Clock, IndianRupee, FileText, LogOut } from "lucide-react"
+import { KeyRound, User, Building2, Phone, MapPin, Clock, FileText, LogOut, ShieldCheck, ShieldAlert, Edit, Check, Lock, Smartphone } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from 'react-hot-toast'
-import { updateAdminPassword } from '@/app/actions/settings'
+import { updateAdminPassword, updateUserAccount } from '@/app/actions/settings'
 import { updateClinicProfile } from '@/app/actions/profile'
 import { logout } from '@/app/actions/auth'
 
@@ -21,17 +23,40 @@ interface Profile {
   address: string
   about?: string | null
   workingHours: string
-  defaultFee?: number
+}
+
+interface AdminAccount {
+  id: string
+  name: string
+  email: string
+  role: string
+  lastLogin?: Date | string | null
+  _count?: {
+    sessions: number
+  }
 }
 
 interface SettingsFormProps {
   profile: Profile
+  currentAdmin?: {
+    id: string
+    name: string
+    email: string
+    role: string
+  } | null
+  accounts?: AdminAccount[]
 }
 
-export default function SettingsForm({ profile }: SettingsFormProps) {
+export default function SettingsForm({ profile, currentAdmin, accounts = [] }: SettingsFormProps) {
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [profileLoading, setProfileLoading] = useState(false)
   const [logoutLoading, setLogoutLoading] = useState(false)
+  
+  // Super Admin editing user modal/inline state
+  const [editingUserId, setEditingUserId] = useState<string | null>(null)
+  const [editLoading, setEditLoading] = useState(false)
+
+  const isSuperAdmin = currentAdmin?.role === 'Super Admin'
 
   // Profile state — seeded with live DB values
   const [practitionerName, setPractitionerName] = useState(profile.practitionerName)
@@ -69,6 +94,21 @@ export default function SettingsForm({ profile }: SettingsFormProps) {
     }
   }
 
+  const handleUpdateUserAccount = async (targetId: string, e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setEditLoading(true)
+    const formData = new FormData(e.currentTarget)
+    const result = await updateUserAccount(targetId, formData)
+    setEditLoading(false)
+
+    if (result.error) {
+      toast.error(result.error)
+    } else {
+      toast.success(result.message || 'User updated successfully!')
+      setEditingUserId(null)
+    }
+  }
+
   const handleLogout = async () => {
     setLogoutLoading(true)
     await logout()
@@ -76,6 +116,150 @@ export default function SettingsForm({ profile }: SettingsFormProps) {
 
   return (
     <div className="space-y-6 max-w-3xl">
+
+      {/* === Current User Identity Bar === */}
+      <div className="p-4 rounded-xl border bg-card/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+            {isSuperAdmin ? <ShieldCheck className="h-6 w-6 text-indigo-600 dark:text-indigo-400" /> : <User className="h-6 w-6" />}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-base">{currentAdmin?.name || 'Logged User'}</span>
+              <Badge variant={isSuperAdmin ? "default" : "secondary"} className={isSuperAdmin ? "bg-indigo-600 hover:bg-indigo-700" : ""}>
+                {currentAdmin?.role || 'Admin'}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">{currentAdmin?.email}</p>
+          </div>
+        </div>
+
+        <div className="text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+          <Smartphone className="h-3.5 w-3.5" />
+          {isSuperAdmin ? (
+            <span className="font-semibold text-indigo-600 dark:text-indigo-400">Unlimited Device Logins Allowed</span>
+          ) : (
+            <span>Device Limit: <strong className="text-foreground">Max 3 Devices</strong></span>
+          )}
+        </div>
+      </div>
+
+      {/* === User Management (Super Admin Exclusive Section) === */}
+      {isSuperAdmin && (
+        <Card className="shadow-sm border-indigo-200 dark:border-indigo-900/40">
+          <CardHeader className="bg-gradient-to-r from-indigo-50/50 to-sky-50/50 dark:from-indigo-950/20 dark:to-sky-950/20 border-b">
+            <CardTitle className="flex items-center gap-2 text-lg text-indigo-950 dark:text-indigo-100">
+              <ShieldCheck className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              User Account Management (Super Admin Controls)
+            </CardTitle>
+            <CardDescription>
+              As Super Admin, you can edit usernames, emails, roles, and reset passwords for both Admin and Super Admin accounts.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6 space-y-4">
+            {accounts.map(acc => {
+              const isEditing = editingUserId === acc.id
+              const accIsSuperAdmin = acc.role === 'Super Admin'
+              return (
+                <div key={acc.id} className="p-4 rounded-xl border bg-background space-y-3">
+                  {!isEditing ? (
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm">{acc.name}</span>
+                          <Badge variant={accIsSuperAdmin ? "default" : "outline"} className={accIsSuperAdmin ? "bg-indigo-600" : ""}>
+                            {acc.role}
+                          </Badge>
+                          {acc.id === currentAdmin?.id && (
+                            <span className="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded font-semibold">
+                              You
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{acc.email}</p>
+                        <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 pt-1">
+                          <Smartphone className="h-3 w-3" />
+                          {accIsSuperAdmin ? (
+                            <span className="text-indigo-600 dark:text-indigo-400 font-medium">Unlimited Devices</span>
+                          ) : (
+                            <span>Max 3 Devices ({acc._count?.sessions || 0} active now)</span>
+                          )}
+                        </p>
+                      </div>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditingUserId(acc.id)}
+                        className="gap-1.5 text-xs font-medium"
+                      >
+                        <Edit className="h-3.5 w-3.5" /> Edit Account &amp; Password
+                      </Button>
+                    </div>
+                  ) : (
+                    /* Inline User Edit Form */
+                    <form onSubmit={(e) => handleUpdateUserAccount(acc.id, e)} className="space-y-4 bg-muted/30 p-4 rounded-lg border">
+                      <div className="flex justify-between items-center border-b pb-2">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                          Edit User Account: {acc.name}
+                        </h4>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditingUserId(null)}
+                          className="h-7 text-xs text-muted-foreground"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`name-${acc.id}`} className="text-xs">Full Name / Username *</Label>
+                          <Input id={`name-${acc.id}`} name="name" defaultValue={acc.name} required className="text-xs font-medium" />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`email-${acc.id}`} className="text-xs">Email Address *</Label>
+                          <Input id={`email-${acc.id}`} name="email" type="email" defaultValue={acc.email} required className="text-xs font-medium" />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`role-${acc.id}`} className="text-xs">Role *</Label>
+                          <select 
+                            id={`role-${acc.id}`} 
+                            name="role" 
+                            defaultValue={acc.role}
+                            className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-ring"
+                          >
+                            <option value="Admin">Admin (Max 3 Devices)</option>
+                            <option value="Super Admin">Super Admin (Unlimited Devices)</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`password-${acc.id}`} className="text-xs">New Password (Leave blank to keep current)</Label>
+                          <Input id={`password-${acc.id}`} name="password" type="password" placeholder="••••••••" minLength={6} className="text-xs" />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-2">
+                        <Button type="button" variant="outline" size="sm" onClick={() => setEditingUserId(null)} className="text-xs">
+                          Cancel
+                        </Button>
+                        <Button type="submit" size="sm" disabled={editLoading} className="text-xs bg-indigo-600 hover:bg-indigo-700 font-bold">
+                          {editLoading ? 'Saving...' : 'Save User Updates'}
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       {/* === Practitioner & Clinic Profile === */}
       <Card className="shadow-sm">
@@ -218,15 +402,15 @@ export default function SettingsForm({ profile }: SettingsFormProps) {
         </CardContent>
       </Card>
 
-      {/* === Change Password === */}
+      {/* === Change Password (For Current User) === */}
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <KeyRound className="h-5 w-5 text-primary" />
-            Change Admin Password
+            Change Your Password ({currentAdmin?.name || 'Your Account'})
           </CardTitle>
           <CardDescription>
-            Update your admin login password. Choose a strong password of at least 6 characters.
+            Update your account password. Choose a strong password of at least 6 characters.
           </CardDescription>
         </CardHeader>
         <CardContent>

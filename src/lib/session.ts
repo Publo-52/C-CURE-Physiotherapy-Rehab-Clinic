@@ -29,19 +29,26 @@ export async function createSession(userId: string): Promise<{ error?: string }>
   const now = new Date()
   const expiresAt = new Date(now.getTime() + SESSION_DURATION_MS)
 
+  const admin = await prisma.admin.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  })
+
   // Clean up any expired sessions for this user first
   await prisma.activeSession.deleteMany({
     where: { adminId: userId, expiresAt: { lt: now } },
   })
 
-  // Count currently active sessions
-  const activeCount = await prisma.activeSession.count({
-    where: { adminId: userId },
-  })
+  // Enforce 3-device limit ONLY for regular 'Admin' (Super Admin gets unlimited device logins)
+  if (admin?.role !== 'Super Admin') {
+    const activeCount = await prisma.activeSession.count({
+      where: { adminId: userId },
+    })
 
-  if (activeCount >= MAX_DEVICES) {
-    return {
-      error: `Maximum ${MAX_DEVICES} devices are already logged in. Please log out from another device first.`,
+    if (activeCount >= MAX_DEVICES) {
+      return {
+        error: `Maximum ${MAX_DEVICES} devices are already logged in for this Admin account. Please log out from another device first.`,
+      }
     }
   }
 
@@ -57,8 +64,8 @@ export async function createSession(userId: string): Promise<{ error?: string }>
     },
   })
 
-  // Embed the sessionToken inside the JWT cookie
-  const session = await encrypt({ userId, sessionToken, expires: expiresAt })
+  // Embed the sessionToken & role inside the JWT cookie
+  const session = await encrypt({ userId, sessionToken, role: admin?.role || 'Admin', expires: expiresAt })
 
   const cookieStore = await cookies()
   cookieStore.set('session', session, {
@@ -86,8 +93,16 @@ export const verifySession = cache(async () => {
     if (payload.sessionToken) {
       const dbSession = await prisma.activeSession.findUnique({
         where: { token: payload.sessionToken },
+        include: {
+          admin: { select: { id: true, email: true, name: true, role: true } }
+        }
       })
       if (!dbSession || dbSession.expiresAt < new Date()) return null
+      return {
+        ...payload,
+        role: dbSession.admin.role,
+        user: dbSession.admin
+      }
     }
 
     return payload

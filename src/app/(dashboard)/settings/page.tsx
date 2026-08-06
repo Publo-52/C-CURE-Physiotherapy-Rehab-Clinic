@@ -1,8 +1,14 @@
+export const dynamic = 'force-dynamic'
+
 import SettingsForm from "./settings-form"
 import { getClinicProfile } from "@/app/actions/profile"
+import { getAdminAccounts } from "@/app/actions/settings"
 
 export default async function SettingsPage() {
-  const profile = await getClinicProfile()
+  const [profile, adminData] = await Promise.all([
+    getClinicProfile(),
+    getAdminAccounts(),
+  ])
 
   const defaultProfile = {
     practitionerName: 'Sanatan Manna',
@@ -12,16 +18,19 @@ export default async function SettingsPage() {
     address: 'Moyna Hospital, More Moyna, Tamluk, Moyna, Midnapore-721629, West Bengal',
     about: '',
     workingHours: 'Open 24 Hours — Monday to Sunday',
-    defaultFee: 500,
   }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage your clinic profile, contact details, and admin password.</p>
+        <p className="text-sm text-muted-foreground mt-1">Manage your clinic profile, user accounts, and credentials.</p>
       </div>
-      <SettingsForm profile={profile ?? defaultProfile} />
+      <SettingsForm 
+        profile={profile ?? defaultProfile} 
+        currentAdmin={adminData.currentAdmin}
+        accounts={adminData.accounts}
+      />
     </div>
   )
 }
