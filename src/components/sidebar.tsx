@@ -13,7 +13,6 @@ import {
   Phone,
   MapPin,
   Clock,
-  Stethoscope,
   Mail,
 } from "lucide-react"
 import { cn } from "@/lib/utils"

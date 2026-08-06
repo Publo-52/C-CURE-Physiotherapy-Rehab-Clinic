@@ -88,8 +88,8 @@ export default function DashboardLoading() {
             <Skeleton className="h-4 w-64" />
           </CardHeader>
           <CardContent className="flex items-end gap-2 h-64 pt-6">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <Skeleton key={`bar-${i}`} className="w-full rounded-t-md" style={{ height: `${Math.random() * 60 + 20}%` }} />
+            {[45, 75, 55, 85, 60, 90, 65].map((height, i) => (
+              <Skeleton key={`bar-${i}`} className="w-full rounded-t-md" style={{ height: `${height}%` }} />
             ))}
           </CardContent>
         </Card>

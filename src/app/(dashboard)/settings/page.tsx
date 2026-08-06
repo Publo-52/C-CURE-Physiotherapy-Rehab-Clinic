@@ -30,7 +30,7 @@ export default async function SettingsPage() {
         profile={profile ?? defaultProfile} 
         currentAdmin={adminData.currentAdmin}
         currentSessionToken={adminData.currentSessionToken}
-        accounts={adminData.accounts as any}
+        accounts={adminData.accounts}
       />
     </div>
   )

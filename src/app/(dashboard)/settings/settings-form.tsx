@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { KeyRound, User, Building2, Phone, MapPin, Clock, FileText, LogOut, ShieldCheck, ShieldAlert, Edit, Check, Lock, Smartphone, Laptop, Globe, Trash2, Monitor } from "lucide-react"
+import { KeyRound, User, Building2, Phone, MapPin, Clock, FileText, LogOut, ShieldCheck, Edit, Check, Smartphone, Laptop, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
@@ -11,10 +11,9 @@ import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { toast } from 'react-hot-toast'
-import { updateAdminPassword, updateUserAccount, updateOwnAccount, revokeActiveSession } from '@/app/actions/settings'
+import { updateUserAccount, updateOwnAccount, revokeActiveSession } from '@/app/actions/settings'
 import { updateClinicProfile } from '@/app/actions/profile'
 import { logout } from '@/app/actions/auth'
-import { formatDate } from '@/lib/utils'
 
 interface Profile {
   practitionerName: string

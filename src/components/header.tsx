@@ -22,13 +22,20 @@ interface HeaderProps {
   } | null
 }
 
+import { useSyncExternalStore } from "react"
+
+const emptySubscribe = () => () => {}
+function useMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )
+}
+
 export function Header({ profile, currentUser }: HeaderProps) {
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const mounted = useMounted()
 
   const name = profile?.practitionerName || 'Sanatan Manna'
   const clinicName = profile?.clinicName || 'C-CURE Physiotherapy & Rehab Clinic'
