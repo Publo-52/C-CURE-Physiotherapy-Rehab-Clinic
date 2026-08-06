@@ -79,7 +79,7 @@ export function Sidebar({ profile, currentUser }: SidebarProps) {
             width={180}
             height={72}
             className="h-16 w-auto object-contain"
-            style={{ width: 'auto' }}
+            style={{ width: 'auto', height: 'auto' }}
             priority
           />
         </div>
