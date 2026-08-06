@@ -16,6 +16,13 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export const metadata: Metadata = {
   title: "C-CURE Physiotherapy & Rehab Clinic",
   description: "C-CURE Physiotherapy & Rehab Clinic - Patient Management System",
