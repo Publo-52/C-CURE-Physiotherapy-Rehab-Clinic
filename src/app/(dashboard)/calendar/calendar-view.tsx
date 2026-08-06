@@ -452,7 +452,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                     key={i}
                     onDragOver={handleDragOver}
                     onDrop={isValid ? (e) => handleDrop(e, cellDate) : undefined}
-                    className={`min-h-[110px] p-2 border-b border-r last:border-r-0 transition-all ${
+                    className={`min-h-[75px] sm:min-h-[110px] p-1.5 sm:p-2 border-b border-r last:border-r-0 transition-all ${
                       !isValid ? 'bg-muted/15' : 'hover:bg-muted/20 bg-background'
                     }`}
                   >
@@ -634,7 +634,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
             onClick={() => setSelectedDetail(null)}
           >
             <div
-              className="bg-card border rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4.5 relative"
+              className="bg-card border rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4.5 relative max-h-[90vh] overflow-y-auto"
               onClick={e => e.stopPropagation()}
             >
               <button
