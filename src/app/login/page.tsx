@@ -66,6 +66,7 @@ export default function LoginPage() {
                 width={224}
                 height={112}
                 className="hidden md:block h-28 w-auto object-contain"
+                style={{ width: 'auto' }}
                 priority
               />
               {/* Mobile Logo */}
@@ -75,6 +76,7 @@ export default function LoginPage() {
                 width={224}
                 height={112}
                 className="block md:hidden h-24 w-auto object-contain"
+                style={{ width: 'auto' }}
                 priority
               />
             </div>

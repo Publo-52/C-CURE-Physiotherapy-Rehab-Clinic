@@ -11,7 +11,7 @@ async function generateSecurityAuditPDF() {
 
   const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
-  const helveticaOblique = await pdfDoc.embedFont(StandardFonts.HelveticaOblique)
+
 
   const primaryBlue = rgb(0.01, 0.52, 0.78)
   const darkSlate = rgb(0.06, 0.09, 0.16)

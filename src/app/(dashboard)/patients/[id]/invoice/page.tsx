@@ -1,5 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 export const dynamic = 'force-dynamic'
+
+import Image from 'next/image'
 
 import prisma from '@/lib/prisma'
 import { notFound } from 'next/navigation'
@@ -70,7 +71,7 @@ export default async function PatientInvoicePage({ params }: Props) {
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-4">
                 <div className="bg-white p-1.5 rounded-xl shrink-0 shadow-sm">
-                  <img src="/logo.jpg" alt="C-CURE Logo" className="h-16 w-auto object-contain" />
+                  <Image src="/logo.jpg" alt="C-CURE Logo" width={200} height={64} className="h-16 w-auto object-contain" style={{ width: 'auto' }} priority />
                 </div>
                 <div>
                   <div className="text-xl font-bold tracking-tight">{clinicName}</div>

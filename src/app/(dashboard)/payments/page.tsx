@@ -9,7 +9,17 @@ export default async function PaymentsPage() {
   const [payments, totalCollectedRes, totalDuesRes, pendingCount] = await Promise.all([
     prisma.payment.findMany({
       take: 100,
-      include: { patient: { select: { id: true, name: true, patientId: true } } },
+      select: {
+        id: true,
+        invoiceNumber: true,
+        paymentDate: true,
+        totalBill: true,
+        amountPaidToday: true,
+        remainingDue: true,
+        status: true,
+        paymentMode: true,
+        patient: { select: { id: true, name: true, patientId: true } }
+      },
       orderBy: { paymentDate: 'desc' },
     }),
     prisma.payment.aggregate({ _sum: { amountPaidToday: true } }),
