@@ -8,14 +8,6 @@ import { PatientsTable } from "./patients-table"
 
 export default async function PatientsPage() {
   const patients = await prisma.patient.findMany({
-    include: {
-      payments: {
-        orderBy: { paymentDate: 'desc' },
-      },
-      visits: {
-        select: { id: true }
-      }
-    },
     orderBy: { createdAt: 'desc' }
   })
 

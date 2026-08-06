@@ -9,8 +9,12 @@ export function formatDate(dateInput: Date | string | null | undefined): string 
   if (!dateInput) return '—'
   const d = new Date(dateInput)
   if (isNaN(d.getTime())) return '—'
-  const day = String(d.getDate()).padStart(2, '0')
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const year = d.getFullYear()
-  return `${day}/${month}/${year}`
+  
+  // Force formatting in IST (Asia/Kolkata) to prevent off-by-one-day errors
+  return d.toLocaleDateString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  })
 }
