@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { KeyRound, User, Building2, Phone, MapPin, Clock, FileText, LogOut, ShieldCheck, ShieldAlert, Edit, Check, Lock, Smartphone } from "lucide-react"
+import { KeyRound, User, Building2, Phone, MapPin, Clock, FileText, LogOut, ShieldCheck, ShieldAlert, Edit, Check, Lock, Smartphone, Laptop, Globe, Trash2, Monitor } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from 'react-hot-toast'
-import { updateAdminPassword, updateUserAccount, updateOwnAccount } from '@/app/actions/settings'
+import { updateAdminPassword, updateUserAccount, updateOwnAccount, revokeActiveSession } from '@/app/actions/settings'
 import { updateClinicProfile } from '@/app/actions/profile'
 import { logout } from '@/app/actions/auth'
+import { formatDate } from '@/lib/utils'
 
 interface Profile {
   practitionerName: string
@@ -26,15 +26,23 @@ interface Profile {
   workingHours: string
 }
 
+interface ActiveSessionItem {
+  id: string
+  token: string
+  ipAddress?: string | null
+  userAgent?: string | null
+  deviceType?: string | null
+  createdAt: Date | string
+  expiresAt: Date | string
+}
+
 interface AdminAccount {
   id: string
   name: string
   email: string
   role: string
   lastLogin?: Date | string | null
-  _count?: {
-    sessions: number
-  }
+  sessions?: ActiveSessionItem[]
 }
 
 interface SettingsFormProps {
@@ -45,10 +53,11 @@ interface SettingsFormProps {
     email: string
     role: string
   } | null
+  currentSessionToken?: string | null
   accounts?: AdminAccount[]
 }
 
-export default function SettingsForm({ profile, currentAdmin, accounts = [] }: SettingsFormProps) {
+export default function SettingsForm({ profile, currentAdmin, currentSessionToken, accounts = [] }: SettingsFormProps) {
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [profileLoading, setProfileLoading] = useState(false)
   const [logoutLoading, setLogoutLoading] = useState(false)
@@ -56,6 +65,7 @@ export default function SettingsForm({ profile, currentAdmin, accounts = [] }: S
   // Super Admin editing user modal/inline state
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [editLoading, setEditLoading] = useState(false)
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null)
 
   const isSuperAdmin = currentAdmin?.role === 'Super Admin'
 
@@ -81,20 +91,6 @@ export default function SettingsForm({ profile, currentAdmin, accounts = [] }: S
     }
   }
 
-  const handlePasswordUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setPasswordLoading(true)
-    const formData = new FormData(e.currentTarget)
-    const result = await updateAdminPassword(formData)
-    setPasswordLoading(false)
-    if (result.error) {
-      toast.error(result.error)
-    } else if (result.success) {
-      toast.success(result.message || 'Password updated successfully!')
-      e.currentTarget.reset()
-    }
-  }
-
   const handleUpdateUserAccount = async (targetId: string, e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setEditLoading(true)
@@ -110,6 +106,22 @@ export default function SettingsForm({ profile, currentAdmin, accounts = [] }: S
     }
   }
 
+  const handleRevokeSession = async (sessionId: string, deviceName: string) => {
+    if (!confirm(`Are you sure you want to remove access for "${deviceName}"? This device will be logged out immediately.`)) {
+      return
+    }
+
+    setRevokingSessionId(sessionId)
+    const result = await revokeActiveSession(sessionId)
+    setRevokingSessionId(null)
+
+    if (result.error) {
+      toast.error(result.error)
+    } else {
+      toast.success(result.message || 'Device session removed successfully!')
+    }
+  }
+
   const handleLogout = async () => {
     setLogoutLoading(true)
     await logout()
@@ -119,7 +131,7 @@ export default function SettingsForm({ profile, currentAdmin, accounts = [] }: S
     <div className="space-y-6 max-w-3xl">
 
       {/* === Current User Identity Bar === */}
-      <div className="p-4 rounded-xl border bg-card/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      <div className="p-4 rounded-xl border bg-card/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
             {isSuperAdmin ? <ShieldCheck className="h-6 w-6 text-indigo-600 dark:text-indigo-400" /> : <User className="h-6 w-6" />}
@@ -145,7 +157,7 @@ export default function SettingsForm({ profile, currentAdmin, accounts = [] }: S
         </div>
       </div>
 
-      {/* === User Management (Super Admin Exclusive Section) === */}
+      {/* === User Management (Super Admin Controls) === */}
       {isSuperAdmin && (
         <Card className="shadow-sm border-indigo-200 dark:border-indigo-900/40">
           <CardHeader className="bg-gradient-to-r from-indigo-50/50 to-sky-50/50 dark:from-indigo-950/20 dark:to-sky-950/20 border-b">
@@ -181,9 +193,9 @@ export default function SettingsForm({ profile, currentAdmin, accounts = [] }: S
                         <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 pt-1">
                           <Smartphone className="h-3 w-3" />
                           {accIsSuperAdmin ? (
-                            <span className="text-indigo-600 dark:text-indigo-400 font-medium">Unlimited Devices</span>
+                            <span className="text-indigo-600 dark:text-indigo-400 font-medium">Unlimited Devices ({acc.sessions?.length || 0} active now)</span>
                           ) : (
-                            <span>Max 3 Devices ({acc._count?.sessions || 0} active now)</span>
+                            <span>Max 3 Devices ({acc.sessions?.length || 0} active now)</span>
                           )}
                         </p>
                       </div>
@@ -261,6 +273,93 @@ export default function SettingsForm({ profile, currentAdmin, accounts = [] }: S
           </CardContent>
         </Card>
       )}
+
+      {/* === Active Logged-In Devices & Session Management === */}
+      <Card className="shadow-sm border-blue-200/60 dark:border-blue-900/40">
+        <CardHeader className="bg-muted/30 border-b pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Smartphone className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            Active Logged-In Devices &amp; IP Addresses
+          </CardTitle>
+          <CardDescription>
+            {isSuperAdmin 
+              ? 'View active device sessions, IP addresses, and revoke access for any Admin or Super Admin account.'
+              : 'View all active devices logged into your Admin account (Max 3 Devices allowed). Remove any unrecognized device below.'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6 space-y-6">
+          {accounts.map(acc => {
+            const sessions = acc.sessions || []
+            return (
+              <div key={acc.id} className="space-y-3">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-foreground">{acc.name}</span>
+                    <span className="text-xs text-muted-foreground">({acc.email})</span>
+                    <Badge variant={acc.role === 'Super Admin' ? "default" : "outline"} className={acc.role === 'Super Admin' ? "bg-indigo-600 text-[10px]" : "text-[10px]"}>
+                      {acc.role}
+                    </Badge>
+                  </div>
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {sessions.length} {sessions.length === 1 ? 'Device Active' : 'Devices Active'}
+                  </span>
+                </div>
+
+                {sessions.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic py-2">No active device sessions found.</p>
+                ) : (
+                  <div className="space-y-2.5">
+                    {sessions.map(s => {
+                      const isCurrentDevice = s.token === currentSessionToken
+                      const deviceLabel = s.deviceType || 'Desktop PC'
+                      const isMobile = /phone|android|mobile|ios/i.test(deviceLabel)
+                      const IconComponent = isMobile ? Smartphone : Laptop
+
+                      return (
+                        <div key={s.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 rounded-xl border bg-card hover:bg-muted/30 transition-colors gap-3">
+                          <div className="flex items-start gap-3 min-w-0">
+                            <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0 mt-0.5 sm:mt-0">
+                              <IconComponent className="h-5 w-5" />
+                            </div>
+                            <div className="space-y-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-semibold text-sm">{deviceLabel}</span>
+                                {isCurrentDevice && (
+                                  <Badge className="bg-emerald-600 text-[10px] gap-1 font-semibold">
+                                    <Check className="h-3 w-3" /> This Device (Active Now)
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                <span className="font-mono bg-muted px-2 py-0.5 rounded text-foreground font-semibold">
+                                  IP: {s.ipAddress || '127.0.0.1 (Localhost)'}
+                                </span>
+                                <span>•</span>
+                                <span>Logged in: {new Date(s.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={revokingSessionId === s.id}
+                            onClick={() => handleRevokeSession(s.id, `${deviceLabel} (${s.ipAddress || 'IP'})`)}
+                            className="text-xs text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/40 hover:bg-rose-50 dark:hover:bg-rose-950/40 gap-1.5 shrink-0 self-end sm:self-center"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            {revokingSessionId === s.id ? 'Removing...' : 'Remove Device'}
+                          </Button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </CardContent>
+      </Card>
 
       {/* === Practitioner & Clinic Profile === */}
       <Card className="shadow-sm">

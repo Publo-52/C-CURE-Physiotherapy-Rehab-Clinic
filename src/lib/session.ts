@@ -25,7 +25,10 @@ export async function decrypt(input: string): Promise<any> {
   return payload
 }
 
-export async function createSession(userId: string): Promise<{ error?: string }> {
+export async function createSession(
+  userId: string,
+  deviceMeta?: { ipAddress?: string; userAgent?: string; deviceType?: string }
+): Promise<{ error?: string }> {
   const now = new Date()
   const expiresAt = new Date(now.getTime() + SESSION_DURATION_MS)
 
@@ -60,6 +63,9 @@ export async function createSession(userId: string): Promise<{ error?: string }>
     data: {
       adminId: userId,
       token: sessionToken,
+      ipAddress: deviceMeta?.ipAddress || null,
+      userAgent: deviceMeta?.userAgent || null,
+      deviceType: deviceMeta?.deviceType || null,
       expiresAt,
     },
   })

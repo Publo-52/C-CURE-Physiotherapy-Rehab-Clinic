@@ -21,12 +21,15 @@ model Admin {
 }
 
 model ActiveSession {
-  id        String   @id @default(uuid())
-  adminId   String
-  token     String   @unique
-  createdAt DateTime @default(now())
-  expiresAt DateTime
-  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid())
+  adminId    String
+  token      String   @unique
+  ipAddress  String?
+  userAgent  String?
+  deviceType String?
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  admin      Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
 
   @@index([adminId])
   @@index([expiresAt])

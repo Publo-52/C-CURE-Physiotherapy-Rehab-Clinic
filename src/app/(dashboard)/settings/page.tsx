@@ -29,7 +29,8 @@ export default async function SettingsPage() {
       <SettingsForm 
         profile={profile ?? defaultProfile} 
         currentAdmin={adminData.currentAdmin}
-        accounts={adminData.accounts}
+        currentSessionToken={adminData.currentSessionToken}
+        accounts={adminData.accounts as any}
       />
     </div>
   )

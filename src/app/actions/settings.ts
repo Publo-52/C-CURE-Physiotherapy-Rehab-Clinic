@@ -59,7 +59,7 @@ export async function updateAdminPassword(formData: FormData) {
 
 export async function getAdminAccounts() {
   const session = await verifySession()
-  if (!session || !session.userId) return { currentAdmin: null, accounts: [] }
+  if (!session || !session.userId) return { currentAdmin: null, currentSessionToken: null, accounts: [] }
 
   try {
     const currentAdmin = await prisma.admin.findUnique({
@@ -67,9 +67,13 @@ export async function getAdminAccounts() {
       select: { id: true, name: true, email: true, role: true }
     })
 
-    if (!currentAdmin) return { currentAdmin: null, accounts: [] }
+    if (!currentAdmin) return { currentAdmin: null, currentSessionToken: null, accounts: [] }
+
+    const isSuperAdmin = currentAdmin.role === 'Super Admin'
+    const now = new Date()
 
     const accounts = await prisma.admin.findMany({
+      where: isSuperAdmin ? undefined : { id: currentAdmin.id },
       orderBy: { createdAt: 'asc' },
       select: {
         id: true,
@@ -77,14 +81,71 @@ export async function getAdminAccounts() {
         email: true,
         role: true,
         lastLogin: true,
-        _count: { select: { sessions: true } }
+        sessions: {
+          where: { expiresAt: { gte: now } },
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            token: true,
+            ipAddress: true,
+            userAgent: true,
+            deviceType: true,
+            createdAt: true,
+            expiresAt: true,
+          }
+        }
       }
     })
 
-    return { currentAdmin, accounts }
+    return { 
+      currentAdmin, 
+      currentSessionToken: session.sessionToken || null, 
+      accounts 
+    }
   } catch (error) {
     console.error('Error fetching admin accounts:', error)
-    return { currentAdmin: null, accounts: [] }
+    return { currentAdmin: null, currentSessionToken: null, accounts: [] }
+  }
+}
+
+export async function revokeActiveSession(sessionId: string) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
+  try {
+    const currentAdmin = await prisma.admin.findUnique({
+      where: { id: session.userId },
+      select: { id: true, role: true }
+    })
+
+    if (!currentAdmin) return { error: 'Admin account not found.' }
+
+    const targetSession = await prisma.activeSession.findUnique({
+      where: { id: sessionId }
+    })
+
+    if (!targetSession) {
+      return { error: 'Session not found or already expired.' }
+    }
+
+    const isSuperAdmin = currentAdmin.role === 'Super Admin'
+    const isSelfSession = targetSession.adminId === currentAdmin.id
+
+    if (!isSuperAdmin && !isSelfSession) {
+      return { error: 'Unauthorized to remove another user\'s device session.' }
+    }
+
+    await prisma.activeSession.delete({
+      where: { id: sessionId }
+    })
+
+    revalidatePath('/settings')
+    return { success: true, message: 'Device session removed successfully!' }
+  } catch (error: any) {
+    console.error('Error revoking active session:', error)
+    return { error: error?.message || 'Failed to remove device session.' }
   }
 }
 
