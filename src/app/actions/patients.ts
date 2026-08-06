@@ -179,6 +179,11 @@ export async function togglePresentStatus(id: string, status: boolean) {
 
 export async function markVisitDone(id: string) {
   try {
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+    const todayEnd = new Date(todayStart)
+    todayEnd.setDate(todayEnd.getDate() + 1)
+
     const patient = await prisma.patient.update({
       where: { id },
       data: {
@@ -186,7 +191,46 @@ export async function markVisitDone(id: string) {
         visitDoneToday: true
       }
     })
+
+    // Check if visit record for today already exists
+    const existingTodayVisit = await prisma.visit.findFirst({
+      where: {
+        patientId: id,
+        date: {
+          gte: todayStart,
+          lt: todayEnd
+        }
+      }
+    })
+
+    if (existingTodayVisit) {
+      await prisma.visit.update({
+        where: { id: existingTodayVisit.id },
+        data: { status: 'Completed' }
+      })
+    } else {
+      const lastVisit = await prisma.visit.findFirst({
+        where: { patientId: id },
+        orderBy: { visitNumber: 'desc' }
+      })
+      const visitNumber = lastVisit ? lastVisit.visitNumber + 1 : 1
+
+      await prisma.visit.create({
+        data: {
+          patientId: id,
+          visitNumber,
+          date: new Date(),
+          type: 'Clinic Visit',
+          status: 'Completed',
+          treatmentGiven: patient.disease || 'General Treatment',
+          notes: 'Completed via Visit Queue'
+        }
+      })
+    }
+
     revalidatePath('/patients')
+    revalidatePath(`/patients/${id}`)
+    revalidatePath('/calendar')
     revalidatePath('/')
     return { success: true, visitDoneToday: patient.visitDoneToday }
   } catch (error: any) {

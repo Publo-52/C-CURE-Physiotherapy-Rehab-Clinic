@@ -178,20 +178,20 @@ export async function downloadPatientInvoicePDF(patientInput: any, profileInput?
     const latestPayment = patient.payments[0]
     totalDue = latestPayment.remainingDue !== undefined ? latestPayment.remainingDue : Math.max(0, totalBilled - totalPaid)
   } else {
-    // If no payment transactions recorded yet, compute estimated bill from consultation/visit fee
-    const estimatedVisits = Math.max(1, actualVisitsCount)
-    totalBilled = estimatedVisits * defaultFee
+    totalBilled = 0
     totalPaid = 0
-    totalDue = totalBilled
+    totalDue = 0
   }
 
-  const statusStr = totalDue <= 0
-    ? 'CLEARED'
-    : totalPaid > 0
-      ? 'PARTIALLY PAID'
-      : 'OUTSTANDING DUE'
+  const statusStr = !hasPayments
+    ? 'NO PAYMENTS RECORDED'
+    : totalDue <= 0
+      ? 'CLEARED'
+      : totalPaid > 0
+        ? 'PARTIALLY PAID'
+        : 'OUTSTANDING DUE'
 
-  const statusColor = totalDue <= 0 ? greenText : totalPaid > 0 ? orangeText : redText
+  const statusColor = !hasPayments ? textMuted : totalDue <= 0 ? greenText : totalPaid > 0 ? orangeText : redText
 
   page.drawRectangle({
     x: 40,
@@ -259,7 +259,7 @@ export async function downloadPatientInvoicePDF(patientInput: any, profileInput?
 
     y -= (tableH + 30)
   } else {
-    // Default Consultation & Visit Fee table row when no explicit payment rows exist yet
+    // Default empty state table row when no payment records exist yet
     const tableH = tableHeaderH + rowH
 
     page.drawRectangle({
@@ -279,19 +279,16 @@ export async function downloadPatientInvoicePDF(patientInput: any, profileInput?
       color: rgb(0.94, 0.96, 0.98),
     })
 
-    page.drawText('DESCRIPTION / TREATMENT', { x: 50, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
-    page.drawText('RATE', { x: 260, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
+    page.drawText('DESCRIPTION / PAYMENT', { x: 50, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
     page.drawText('BILLED', { x: 330, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
     page.drawText('PAID', { x: 400, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
     page.drawText('DUE', { x: 470, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
 
     const currentY = y - tableHeaderH
-    const visitLabel = Math.max(1, actualVisitsCount)
-    page.drawText(sanitizeText(`Physiotherapy Consultation (${visitLabel} Session${visitLabel > 1 ? 's' : ''})`), { x: 50, y: currentY - 14, size: 8, font: helveticaBold, color: darkSlate })
-    page.drawText(sanitizeText(`Rs. ${defaultFee}`), { x: 260, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
-    page.drawText(sanitizeText(`Rs. ${totalBilled.toLocaleString('en-IN')}`), { x: 330, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
+    page.drawText('No payment records entered yet.', { x: 50, y: currentY - 14, size: 8, font: helvetica, color: textMuted })
+    page.drawText('Rs. 0', { x: 330, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
     page.drawText('Rs. 0', { x: 400, y: currentY - 14, size: 8, font: helveticaBold, color: greenText })
-    page.drawText(sanitizeText(`Rs. ${totalDue.toLocaleString('en-IN')}`), { x: 470, y: currentY - 14, size: 8, font: helveticaBold, color: redText })
+    page.drawText('Rs. 0', { x: 470, y: currentY - 14, size: 8, font: helveticaBold, color: greenText })
 
     y -= (tableH + 30)
   }

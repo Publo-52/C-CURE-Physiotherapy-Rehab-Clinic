@@ -11,6 +11,7 @@ import { Edit, User, Phone, Activity, MapPin, CalendarDays, IndianRupee, Mail } 
 import { PatientInvoiceButton } from "./patient-invoice-button"
 import { getClinicProfile } from "@/app/actions/profile"
 import { DeletePatientButton } from "./delete-button"
+import { DeletePaymentButton } from "./delete-payment-button"
 import { formatDate } from "@/lib/utils"
 
 interface Props {
@@ -190,11 +191,21 @@ export default async function PatientProfilePage({ params }: Props) {
                             <p className="font-medium font-mono text-xs">{payment.invoiceNumber}</p>
                             <p className="text-muted-foreground text-xs">{formatDate(payment.paymentDate)}</p>
                           </div>
-                          <div className="text-right">
-                            <p className="font-medium text-green-600">₹{payment.amountPaidToday}</p>
-                            <Badge variant={payment.status === 'Paid' ? 'default' : 'destructive'} className="mt-1 text-[10px]">
-                              {payment.status}
-                            </Badge>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <p className="font-medium text-green-600">₹{payment.amountPaidToday}</p>
+                              <Badge variant={payment.status === 'Paid' ? 'default' : 'destructive'} className="mt-1 text-[10px]">
+                                {payment.status}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-1 border-l pl-2">
+                              <Link href={`/patients/${patient.id}/payments/${payment.id}/edit`}>
+                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground" title="Edit Payment">
+                                  <Edit className="h-3.5 w-3.5" />
+                                </Button>
+                              </Link>
+                              <DeletePaymentButton paymentId={payment.id} invoiceNumber={payment.invoiceNumber} compact />
+                            </div>
                           </div>
                         </li>
                       ))}
@@ -358,7 +369,15 @@ export default async function PatientProfilePage({ params }: Props) {
                         <div key={p.id} className="p-4 space-y-2 bg-background border border-border/70 rounded-2xl shadow-xs">
                           <div className="flex items-start justify-between gap-2">
                             <p className="font-mono text-xs font-semibold text-primary">{p.invoiceNumber}</p>
-                            <Badge variant={p.status === 'Paid' ? 'default' : 'destructive'} className="text-[10px]">{p.status}</Badge>
+                            <div className="flex items-center gap-1.5">
+                              <Badge variant={p.status === 'Paid' ? 'default' : 'destructive'} className="text-[10px]">{p.status}</Badge>
+                              <Link href={`/patients/${patient.id}/payments/${p.id}/edit`}>
+                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" title="Edit">
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                              </Link>
+                              <DeletePaymentButton paymentId={p.id} invoiceNumber={p.invoiceNumber} compact />
+                            </div>
                           </div>
                           <p className="text-xs text-muted-foreground">{formatDate(p.paymentDate)}</p>
                           <div className="grid grid-cols-3 gap-2 text-center">
@@ -390,6 +409,7 @@ export default async function PatientProfilePage({ params }: Props) {
                             <th className="text-right py-3 px-4 font-medium text-muted-foreground">Due</th>
                             <th className="text-left py-3 px-4 font-medium text-muted-foreground">Mode</th>
                             <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
+                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -405,6 +425,16 @@ export default async function PatientProfilePage({ params }: Props) {
                                 <Badge variant={p.status === 'Paid' ? 'default' : 'destructive'} className="mt-1 text-[10px]">
                                   {p.status}
                                 </Badge>
+                              </td>
+                              <td className="py-3 px-4 text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Link href={`/patients/${patient.id}/payments/${p.id}/edit`}>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground" title="Edit Invoice">
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                  </Link>
+                                  <DeletePaymentButton paymentId={p.id} invoiceNumber={p.invoiceNumber} compact />
+                                </div>
                               </td>
                             </tr>
                           ))}

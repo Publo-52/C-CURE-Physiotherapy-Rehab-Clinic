@@ -5,11 +5,12 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { Search, Share2, Copy, Check, MessageCircle, Download, MoreVertical } from 'lucide-react'
+import { Search, Share2, Copy, Check, MessageCircle, Download, MoreVertical, Edit } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'react-hot-toast'
 import { formatDate } from '@/lib/utils'
+import { DeletePaymentButton } from '@/app/(dashboard)/patients/[id]/delete-payment-button'
 
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { sanitizeText } from '@/lib/pdf-generator'
@@ -471,10 +472,18 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
                     </div>
                   </div>
 
-                  {/* Mode + Download */}
-                  <div className="flex items-center justify-between">
+                  {/* Mode + Actions */}
+                  <div className="flex items-center justify-between pt-1 border-t">
                     <span className="text-xs text-muted-foreground">{p.paymentMode}</span>
-                    <DownloadDropdown payment={p} />
+                    <div className="flex items-center gap-1">
+                      <Link href={`/patients/${p.patient.id}/payments/${p.id}/edit`}>
+                        <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all" title="Edit Invoice">
+                          <Edit className="h-3.5 w-3.5" />
+                        </button>
+                      </Link>
+                      <DeletePaymentButton paymentId={p.id} invoiceNumber={p.invoiceNumber} compact />
+                      <DownloadDropdown payment={p} />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -493,7 +502,7 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
                     <th className="text-right py-3 px-4 font-medium text-muted-foreground">Due</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Mode</th>
-                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Download</th>
+                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -519,7 +528,15 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
                       </td>
                       <td className="py-3 px-4 text-muted-foreground">{p.paymentMode}</td>
                       <td className="py-3 px-4 text-center">
-                        <DownloadDropdown payment={p} />
+                        <div className="flex items-center justify-center gap-1">
+                          <DownloadDropdown payment={p} />
+                          <Link href={`/patients/${p.patient.id}/payments/${p.id}/edit`}>
+                            <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all" title="Edit Invoice">
+                              <Edit className="h-4 w-4" />
+                            </button>
+                          </Link>
+                          <DeletePaymentButton paymentId={p.id} invoiceNumber={p.invoiceNumber} compact />
+                        </div>
                       </td>
                     </tr>
                   ))}
