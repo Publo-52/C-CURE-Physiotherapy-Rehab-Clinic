@@ -24,9 +24,9 @@ export function MobileSwipeNavigation({ children }: { children: React.ReactNode 
   }, [router])
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    // Ignore swipe gesture on interactive components, buttons, inputs, links, and forms
+    // Ignore swipe gesture only when directly interacting with form input fields or modals
     const target = e.target as HTMLElement | null
-    if (target?.closest('input, textarea, select, form, button, a, [role="button"], [role="dialog"], .no-swipe, .overflow-y-auto')) {
+    if (target?.closest('input, textarea, select, form, [role="dialog"], .no-swipe')) {
       touchStartX.current = null
       touchStartY.current = null
       return
@@ -53,19 +53,19 @@ export function MobileSwipeNavigation({ children }: { children: React.ReactNode 
     touchStartX.current = null
     touchStartY.current = null
 
-    // Require fast, deliberate horizontal swipe:
-    // 1. Gesture completed within 450ms (prevents slow vertical scroll triggers)
-    // 2. Horizontal distance > 90px
-    // 3. Horizontal movement is at least 2.5x greater than vertical movement
-    if (duration < 450 && Math.abs(deltaX) > 90 && Math.abs(deltaX) > Math.abs(deltaY) * 2.5) {
+    // Require comfortable horizontal swipe:
+    // 1. Gesture completed within 600ms
+    // 2. Horizontal distance > 50px
+    // 3. Horizontal movement greater than vertical movement (* 1.3)
+    if (duration < 600 && Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
       const currentIndex = routes.findIndex(r => r === pathname || (r !== '/' && pathname.startsWith(r)))
       if (currentIndex === -1) return
 
-      if (deltaX < -90 && currentIndex < routes.length - 1) {
-        // Deliberate Swipe Left -> Next Page
+      if (deltaX < -50 && currentIndex < routes.length - 1) {
+        // Swipe Left -> Next Page
         router.push(routes[currentIndex + 1])
-      } else if (deltaX > 90 && currentIndex > 0) {
-        // Deliberate Swipe Right -> Previous Page
+      } else if (deltaX > 50 && currentIndex > 0) {
+        // Swipe Right -> Previous Page
         router.push(routes[currentIndex - 1])
       }
     }
