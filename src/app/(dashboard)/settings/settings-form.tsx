@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from 'react-hot-toast'
-import { updateAdminPassword, updateUserAccount } from '@/app/actions/settings'
+import { updateAdminPassword, updateUserAccount, updateOwnAccount } from '@/app/actions/settings'
 import { updateClinicProfile } from '@/app/actions/profile'
 import { logout } from '@/app/actions/auth'
 
@@ -402,33 +402,60 @@ export default function SettingsForm({ profile, currentAdmin, accounts = [] }: S
         </CardContent>
       </Card>
 
-      {/* === Change Password (For Current User) === */}
+      {/* === My Account Credentials & Password === */}
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <KeyRound className="h-5 w-5 text-primary" />
-            Change Your Password ({currentAdmin?.name || 'Your Account'})
+            My Account Credentials &amp; Password
           </CardTitle>
           <CardDescription>
-            Update your account password. Choose a strong password of at least 6 characters.
+            Update your account username ({currentAdmin?.email}) and password.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handlePasswordUpdate} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password *</Label>
-              <Input id="currentPassword" name="currentPassword" type="password" required />
+          <form onSubmit={async (e) => {
+            e.preventDefault()
+            setPasswordLoading(true)
+            const formData = new FormData(e.currentTarget)
+            const result = await updateOwnAccount(formData)
+            setPasswordLoading(false)
+            if (result.error) {
+              toast.error(result.error)
+            } else if (result.success) {
+              toast.success(result.message || 'Account updated successfully!')
+            }
+          }} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="ownName">Username / Display Name *</Label>
+                <Input id="ownName" name="name" defaultValue={currentAdmin?.name || ''} required className="font-semibold" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ownEmail">Email Address</Label>
+                <Input id="ownEmail" value={currentAdmin?.email || ''} disabled className="bg-muted font-medium cursor-not-allowed" />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New Password *</Label>
-              <Input id="newPassword" name="newPassword" type="password" required minLength={6} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password *</Label>
-              <Input id="confirmPassword" name="confirmPassword" type="password" required minLength={6} />
+
+            <Separator className="my-2" />
+            
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Change Password (Optional)</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="currentPassword">Current Password</Label>
+                <Input id="currentPassword" name="currentPassword" type="password" placeholder="••••••••" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">New Password</Label>
+                <Input id="newPassword" name="newPassword" type="password" placeholder="••••••••" minLength={6} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input id="confirmPassword" name="confirmPassword" type="password" placeholder="••••••••" minLength={6} />
+              </div>
             </div>
             <Button type="submit" disabled={passwordLoading} className="font-bold">
-              {passwordLoading ? 'Updating Password...' : 'Update Password'}
+              {passwordLoading ? 'Saving Changes...' : 'Save Account Settings'}
             </Button>
           </form>
         </CardContent>

@@ -154,3 +154,59 @@ export async function updateUserAccount(targetId: string, formData: FormData) {
   }
 }
 
+export async function updateOwnAccount(formData: FormData) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
+  const name = (formData.get('name') as string)?.trim()
+  const currentPassword = formData.get('currentPassword') as string
+  const newPassword = formData.get('newPassword') as string
+  const confirmPassword = formData.get('confirmPassword') as string
+
+  if (!name) {
+    return { error: 'Name / Username is required.' }
+  }
+
+  try {
+    const admin = await prisma.admin.findUnique({
+      where: { id: session.userId }
+    })
+
+    if (!admin) {
+      return { error: 'Account not found.' }
+    }
+
+    const updateData: any = { name }
+
+    if (newPassword) {
+      if (!currentPassword) {
+        return { error: 'Current password is required to set a new password.' }
+      }
+      const isValid = await bcrypt.compare(currentPassword, admin.password)
+      if (!isValid) {
+        return { error: 'Incorrect current password.' }
+      }
+      if (newPassword !== confirmPassword) {
+        return { error: 'New passwords do not match.' }
+      }
+      if (newPassword.length < 6) {
+        return { error: 'New password must be at least 6 characters.' }
+      }
+      updateData.password = await bcrypt.hash(newPassword, 10)
+    }
+
+    await prisma.admin.update({
+      where: { id: admin.id },
+      data: updateData
+    })
+
+    revalidatePath('/settings')
+    return { success: true, message: 'Your username and account settings have been updated!' }
+  } catch (error: any) {
+    console.error('Error updating account:', error)
+    return { error: error?.message || 'Failed to update account.' }
+  }
+}
+
