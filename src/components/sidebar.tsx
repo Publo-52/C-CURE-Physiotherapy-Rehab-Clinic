@@ -29,6 +29,8 @@ export const navItems = [
   { name: "Settings", href: "/settings", icon: Settings },
 ]
 
+import { Badge } from "@/components/ui/badge"
+
 interface SidebarProps {
   profile?: {
     practitionerName: string
@@ -38,9 +40,15 @@ interface SidebarProps {
     address: string
     workingHours: string
   } | null
+  currentUser?: {
+    id: string
+    name: string
+    email: string
+    role: string
+  } | null
 }
 
-export function Sidebar({ profile }: SidebarProps) {
+export function Sidebar({ profile, currentUser }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [loggingOut, setLoggingOut] = useState(false)
@@ -52,11 +60,13 @@ export function Sidebar({ profile }: SidebarProps) {
     router.refresh()
   }
 
-  const name = profile?.practitionerName || 'Sanatan Manna'
+  const name = currentUser?.name || profile?.practitionerName || 'Sanatan Manna'
   const phone = profile?.phone || '7942688985'
-  const email = profile?.email || 'sanatan.manna28072015@gmail.com'
+  const email = currentUser?.email || profile?.email || 'sanatan.manna28072015@gmail.com'
   const address = profile?.address || 'Moyna, Midnapore, West Bengal'
   const workingHours = profile?.workingHours || 'Open 24 Hours'
+  const role = currentUser?.role || 'Admin'
+  const isSuperAdmin = role === 'Super Admin'
 
   return (
     <div className="hidden md:flex h-full w-64 flex-col bg-card border-r shadow-sm">
@@ -90,9 +100,10 @@ export function Sidebar({ profile }: SidebarProps) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-extrabold leading-tight truncate text-foreground">{name}</p>
-              <div className="flex items-center gap-1 mt-0.5">
-                <Stethoscope className="h-3 w-3 text-primary" />
-                <p className="text-[10px] text-primary font-bold">Physiotherapist</p>
+              <div className="flex items-center gap-1.5 mt-1">
+                <Badge variant={isSuperAdmin ? "default" : "secondary"} className={isSuperAdmin ? "bg-indigo-600 hover:bg-indigo-700 text-[9px] px-1.5 py-0 font-bold" : "text-[9px] px-1.5 py-0 font-bold"}>
+                  {role}
+                </Badge>
               </div>
             </div>
           </div>

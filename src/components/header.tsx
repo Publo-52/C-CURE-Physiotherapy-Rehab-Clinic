@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
-import { Moon, Sun, Stethoscope } from "lucide-react"
+import { Moon, Sun, Stethoscope, ShieldCheck, User } from "lucide-react"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
 
 interface HeaderProps {
   profile?: {
@@ -13,19 +14,26 @@ interface HeaderProps {
     phone: string
     email: string
   } | null
+  currentUser?: {
+    id: string
+    name: string
+    email: string
+    role: string
+  } | null
 }
 
-export function Header({ profile }: HeaderProps) {
+export function Header({ profile, currentUser }: HeaderProps) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    // eslint-disable-next-line
     setMounted(true)
   }, [])
 
   const name = profile?.practitionerName || 'Sanatan Manna'
   const clinicName = profile?.clinicName || 'C-CURE Physiotherapy & Rehab Clinic'
+
+  const isSuperAdmin = currentUser?.role === 'Super Admin'
 
   return (
     <header className="sticky top-0 z-30 flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6 bg-background/92 backdrop-blur-md border-b border-border/60 shadow-sm">
@@ -45,7 +53,7 @@ export function Header({ profile }: HeaderProps) {
           <span className="text-xs font-bold leading-tight gradient-text truncate max-w-[140px] sm:max-w-[200px]">
             C-CURE Physiotherapy
           </span>
-          <span className="text-[9px] text-muted-foreground leading-tight">& Rehab Clinic</span>
+          <span className="text-[9px] text-muted-foreground leading-tight">&amp; Rehab Clinic</span>
         </div>
       </div>
 
@@ -58,8 +66,25 @@ export function Header({ profile }: HeaderProps) {
         </div>
       </div>
 
-      {/* Right — Controls */}
-      <div className="flex items-center gap-2">
+      {/* Right — User Role Badge + Theme controls */}
+      <div className="flex items-center gap-3">
+        {currentUser && (
+          <div className="flex items-center gap-2 bg-muted/60 px-2.5 py-1 rounded-full border border-border/60">
+            {isSuperAdmin ? (
+              <Badge className="bg-indigo-600 hover:bg-indigo-700 font-bold gap-1 text-[11px] px-2 py-0.5">
+                <ShieldCheck className="h-3.5 w-3.5" /> SUPER ADMIN
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="font-bold gap-1 text-[11px] px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                <User className="h-3.5 w-3.5" /> ADMIN
+              </Badge>
+            )}
+            <span className="text-xs font-semibold text-foreground hidden sm:inline-block max-w-[160px] truncate">
+              {currentUser.email}
+            </span>
+          </div>
+        )}
+
         {/* Dark / Light mode toggle */}
         {mounted && (
           <button
