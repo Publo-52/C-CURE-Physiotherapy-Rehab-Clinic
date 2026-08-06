@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { useState, useMemo, useTransition, useEffect } from 'react'
+import { useState, useMemo, useTransition } from 'react'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, User, Clock, Plus, X, GripVertical, Trash2, Search, Video, Home, Building, FileText, CheckCircle2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -89,11 +89,21 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
   
   const [filterType, setFilterType] = useState('All')
   const [view, setView] = useState<'month' | 'week' | 'list'>('month')
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
   
-  // States for dynamic rendering
+  const [prevVisits, setPrevVisits] = useState(visits)
   const [optimisticVisits, setOptimisticVisits] = useState<VisitItem[]>(visits)
+  if (prevVisits !== visits) {
+    setPrevVisits(visits)
+    setOptimisticVisits(visits)
+  }
+
+  const [prevEvents, setPrevEvents] = useState(events)
   const [optimisticEvents, setOptimisticEvents] = useState<EventItem[]>(events)
+  if (prevEvents !== events) {
+    setPrevEvents(events)
+    setOptimisticEvents(events)
+  }
 
   // Modals / Schedule Form States
   const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -126,13 +136,6 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
   
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  
-  useEffect(() => {
-    // eslint-disable-next-line
-    setOptimisticVisits(visits)
-    // eslint-disable-next-line
-    setOptimisticEvents(events)
-  }, [visits, events])
 
   // Combine and unify visits + events for rendering
   const unifiedItems = useMemo(() => {
@@ -590,6 +593,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                   <div className={`w-1.5 self-stretch rounded-full ${st.dot}`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
+                      <IconComponent className="h-4 w-4 shrink-0 opacity-70" />
                       <span className="font-bold text-base text-foreground truncate">{item.title}</span>
                       <Badge variant="outline" className={`text-[10px] ${st.bg} ${st.text} ${st.border} font-bold px-2 py-0.5`}>
                         {item.type}

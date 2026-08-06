@@ -62,7 +62,6 @@ export default function NewPatientPage() {
   })
 
   // Watch all values for auto-save
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   // eslint-disable-next-line react-hooks/incompatible-library
   const formValues = watch()
 

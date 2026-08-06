@@ -202,7 +202,7 @@ export function parseDeviceInfo(
     } else if (/android/i.test(ua)) {
       // Extract model token from UA if available
       const match = ua.match(/\;\s*([^;]+)\s+Build\//i)
-      let modelToken = match?.[1]?.trim() || ''
+      const modelToken = match?.[1]?.trim() || ''
 
       if (modelToken && !/android|linux|wv|mobile/i.test(modelToken)) {
         deviceName = getFriendlyDeviceModel(modelToken)

@@ -17,7 +17,7 @@ export async function proxy(req: NextRequest) {
 
   const sessionCookie = req.cookies.get('session')?.value
 
-  let session: any = null
+  let session: Record<string, unknown> | null = null
   let isSessionValidInDb = false
 
   if (sessionCookie) {

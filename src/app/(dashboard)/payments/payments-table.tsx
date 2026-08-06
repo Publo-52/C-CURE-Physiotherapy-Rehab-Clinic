@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
 import { useState } from 'react'
@@ -88,7 +86,7 @@ Thank you for visiting us! 🙏`
           title: `Payment Receipt - ${payment.invoiceNumber}`,
           text: paymentText,
         })
-      } catch (e) {
+      } catch {
         // User cancelled
       }
       setOpen(false)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+
 import { useTheme } from "next-themes"
 import { Moon, Sun, Stethoscope, ShieldCheck, User } from "lucide-react"
 import Image from "next/image"
