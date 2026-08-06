@@ -48,10 +48,11 @@ export async function login(formData: FormData) {
   const ipAddress = rawIp === '::1' || rawIp === '::ffff:127.0.0.1' ? '127.0.0.1 (Localhost)' : rawIp
 
   const userAgent = reqHeaders.get('user-agent') || 'Unknown Browser'
-  const clientDeviceHint = (formData.get('clientDeviceName') as string)?.trim()
+  const secChModel = reqHeaders.get('sec-ch-ua-model')?.replace(/"/g, '')?.trim()
+  const clientDeviceHint = (formData.get('clientDeviceName') as string)?.trim() || secChModel
 
-  const parsedInfo = parseDeviceInfo(userAgent)
-  const deviceType = clientDeviceHint || parsedInfo.fullLabel
+  const parsedInfo = parseDeviceInfo(userAgent, clientDeviceHint)
+  const deviceType = parsedInfo.fullLabel
 
   // createSession enforces device limits and saves device metadata
   const result = await createSession(admin.id, { ipAddress, userAgent, deviceType })
