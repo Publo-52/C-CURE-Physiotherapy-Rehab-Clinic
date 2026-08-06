@@ -9,14 +9,17 @@ export function OpeningSplashScreen() {
   const [fading, setFading] = useState(false)
 
   useEffect(() => {
-    // Only show splash screen once per browser session
-    const hasSeenSplash = sessionStorage.getItem('c_cure_splash_seen')
-    if (hasSeenSplash) {
-      setVisible(false)
-      return
+    // Only show splash screen once EVER on this device/browser
+    try {
+      const hasSeenSplash = localStorage.getItem('c_cure_splash_seen_v1')
+      if (hasSeenSplash) {
+        setVisible(false)
+        return
+      }
+      localStorage.setItem('c_cure_splash_seen_v1', 'true')
+    } catch {
+      // Safe fallback
     }
-
-    sessionStorage.setItem('c_cure_splash_seen', 'true')
 
     const timer1 = setTimeout(() => {
       setFading(true)
