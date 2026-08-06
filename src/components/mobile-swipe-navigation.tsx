@@ -24,6 +24,14 @@ export function MobileSwipeNavigation({ children }: { children: React.ReactNode 
   }, [router])
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    // Ignore swipe gesture if touching interactive form fields, modals, or buttons
+    const target = e.target as HTMLElement | null
+    if (target?.closest('input, textarea, select, form, button, [role="dialog"], .no-swipe')) {
+      touchStartX.current = null
+      touchStartY.current = null
+      return
+    }
+
     if (e.touches.length === 1) {
       touchStartX.current = e.touches[0].clientX
       touchStartY.current = e.touches[0].clientY
@@ -40,8 +48,8 @@ export function MobileSwipeNavigation({ children }: { children: React.ReactNode 
     const deltaX = currentX - touchStartX.current
     const deltaY = currentY - touchStartY.current
 
-    // Trigger instant switch as soon as finger moves > 55px horizontally
-    if (Math.abs(deltaX) > 55 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4) {
+    // Require deliberate horizontal movement (> 85px & 2.2x vertical distance)
+    if (Math.abs(deltaX) > 85 && Math.abs(deltaX) > Math.abs(deltaY) * 2.2) {
       const currentIndex = routes.findIndex(r => r === pathname || (r !== '/' && pathname.startsWith(r)))
       if (currentIndex === -1) return
 
