@@ -1,9 +1,20 @@
+require('dotenv').config()
 const { PrismaClient } = require('@prisma/client')
 const bcrypt = require('bcryptjs')
 
 const prisma = new PrismaClient()
 
 async function main() {
+  // Permanently delete legacy admin accounts
+  const deleted = await prisma.admin.deleteMany({
+    where: {
+      email: {
+        in: ['admin@phisiyo.com', 'admin@c-cure.com'],
+      },
+    },
+  })
+  console.log(`Permanently removed ${deleted.count} legacy account(s): admin@phisiyo.com, admin@c-cure.com`)
+
   const adminPassword = bcrypt.hashSync('manna@#$4321S', 10)
   const superAdminPassword = bcrypt.hashSync('phisiyo123ADMIN@$', 10)
 
@@ -22,7 +33,7 @@ async function main() {
       role: 'Admin',
     },
   })
-  console.log('Admin seeded: sanatan54@gmail.com')
+  console.log('Admin verified: sanatan54@gmail.com')
 
   // 2. Super Admin account (Unlimited devices)
   await prisma.admin.upsert({
@@ -39,7 +50,7 @@ async function main() {
       role: 'Super Admin',
     },
   })
-  console.log('Super Admin seeded: superadmin@gmail.com')
+  console.log('Super Admin verified: superadmin@gmail.com')
 }
 
 main()
