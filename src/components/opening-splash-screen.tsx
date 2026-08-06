@@ -5,33 +5,32 @@ import Image from 'next/image'
 import { Stethoscope } from 'lucide-react'
 
 export function OpeningSplashScreen() {
-  const [visible, setVisible] = useState(true)
+  const [visible, setVisible] = useState(false)
   const [fading, setFading] = useState(false)
 
   useEffect(() => {
-    // Only show splash screen once EVER on this device/browser
     try {
       const hasSeenSplash = localStorage.getItem('c_cure_splash_seen_v1')
-      if (hasSeenSplash) {
-        setVisible(false)
-        return
+      if (!hasSeenSplash) {
+        // Only show on very first visit
+        setVisible(true)
+        localStorage.setItem('c_cure_splash_seen_v1', 'true')
+
+        const timer1 = setTimeout(() => {
+          setFading(true)
+        }, 1100)
+
+        const timer2 = setTimeout(() => {
+          setVisible(false)
+        }, 1500)
+
+        return () => {
+          clearTimeout(timer1)
+          clearTimeout(timer2)
+        }
       }
-      localStorage.setItem('c_cure_splash_seen_v1', 'true')
     } catch {
       // Safe fallback
-    }
-
-    const timer1 = setTimeout(() => {
-      setFading(true)
-    }, 1100)
-
-    const timer2 = setTimeout(() => {
-      setVisible(false)
-    }, 1500)
-
-    return () => {
-      clearTimeout(timer1)
-      clearTimeout(timer2)
     }
   }, [])
 
