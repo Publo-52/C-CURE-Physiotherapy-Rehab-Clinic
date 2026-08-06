@@ -33,25 +33,25 @@ export function MobileBottomNav() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center flex-1 gap-0.5 px-1 py-2 transition-all duration-200 relative",
+                "flex flex-col items-center justify-center flex-1 gap-0.5 px-1 py-2 transition-all duration-200 relative active-press",
                 isActive
-                  ? "text-primary"
+                  ? "text-primary font-bold"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               {isActive && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary" />
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-9 h-1 rounded-b-full bg-primary shadow-xs transition-all duration-300 animate-in fade-in zoom-in-75" />
               )}
               <item.icon
                 className={cn(
-                  "h-5 w-5 transition-transform duration-200",
-                  isActive ? "scale-110" : "scale-100"
+                  "h-5 w-5 transition-transform duration-200 ease-out",
+                  isActive ? "scale-110 -translate-y-0.5 text-primary" : "scale-100"
                 )}
                 aria-hidden="true"
               />
               <span className={cn(
-                "text-[10px] font-semibold leading-none",
-                isActive ? "text-primary" : "text-muted-foreground"
+                "text-[10px] leading-none transition-all duration-200",
+                isActive ? "text-primary font-extrabold" : "text-muted-foreground font-medium"
               )}>
                 {item.name}
               </span>

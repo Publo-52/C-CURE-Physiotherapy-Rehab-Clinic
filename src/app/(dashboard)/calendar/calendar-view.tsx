@@ -638,7 +638,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
             onClick={() => setSelectedDetail(null)}
           >
             <div
-              className="bg-card border rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4.5 relative max-h-[90vh] overflow-y-auto"
+              className="bg-card border rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4.5 relative max-h-[90vh] overflow-y-auto animate-modal-pop"
               onClick={e => e.stopPropagation()}
             >
               <button
@@ -736,7 +736,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
           onClick={() => setIsCreateOpen(false)}
         >
           <div
-            className="bg-card border rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 relative overflow-y-auto max-h-[90vh]"
+            className="bg-card border rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 relative overflow-y-auto max-h-[90vh] animate-modal-pop"
             onClick={e => e.stopPropagation()}
           >
             <button
