@@ -43,9 +43,8 @@ export default function LoginPage() {
         toast.error(result.error)
         setLoading(false)
       } else if (result?.success) {
-        // Session cookie is set — navigate to dashboard
-        router.push('/')
-        router.refresh()
+        // Session cookie is set — navigate straight to Dashboard Overview
+        window.location.href = '/'
       }
     } catch (error: any) {
       toast.error(error.message || 'An unexpected error occurred during login.')
