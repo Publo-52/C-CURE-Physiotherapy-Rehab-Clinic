@@ -5,19 +5,20 @@ import Image from 'next/image'
 import { Stethoscope } from 'lucide-react'
 
 export function OpeningSplashScreen() {
-  const [visible, setVisible] = useState(() => {
-    if (typeof window === 'undefined') return false
+  const [mounted, setMounted] = useState(false)
+  const [visible, setVisible] = useState(false)
+  const [fading, setFading] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
     try {
       const hasSeen = localStorage.getItem('c_cure_splash_seen_v1')
       if (!hasSeen) {
         localStorage.setItem('c_cure_splash_seen_v1', 'true')
-        return true
+        setVisible(true)
       }
     } catch {}
-    return false
-  })
-
-  const [fading, setFading] = useState(false)
+  }, [])
 
   useEffect(() => {
     if (!visible) return
@@ -36,7 +37,7 @@ export function OpeningSplashScreen() {
     }
   }, [visible])
 
-  if (!visible) return null
+  if (!mounted || !visible) return null
 
   return (
     <div
