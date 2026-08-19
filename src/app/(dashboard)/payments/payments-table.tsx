@@ -290,13 +290,23 @@ Thank you for visiting us! 🙏`
       const pdfBytes = await pdfDoc.save()
       const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `Receipt_${payment.invoiceNumber}_${payment.patient.name.replace(/\s+/g, '_')}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      const fileName = `Receipt_${payment.invoiceNumber}_${payment.patient.name.replace(/\s+/g, '_')}.pdf`
+      const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+      if (isMobile) {
+        const win = window.open(url, '_blank')
+        if (!win) {
+          window.location.href = url
+        }
+      } else {
+        const a = document.createElement('a')
+        a.href = url
+        a.download = fileName
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        setTimeout(() => URL.revokeObjectURL(url), 10000)
+      }
 
       toast.success('PDF downloaded!', { id: 'pdf-toast' })
     } catch (err) {

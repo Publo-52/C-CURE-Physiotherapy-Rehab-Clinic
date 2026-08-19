@@ -43,36 +43,36 @@ export function InvoiceActions({ patient, profile, visitsCount = 0 }: InvoiceAct
   }
 
   return (
-    <div className="print:hidden flex items-center justify-between flex-wrap gap-3 mb-8 pb-6 border-b">
+    <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-8 pb-4 sm:pb-6 border-b">
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
       >
         <ArrowLeft className="h-4 w-4" /> Back to Patient
       </button>
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="grid grid-cols-2 xs:flex xs:flex-wrap items-center gap-2 w-full sm:w-auto">
         <button
           onClick={handleDownload}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm"
+          className="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm"
         >
           <Download className="h-4 w-4" /> Download PDF
         </button>
         <button
           onClick={handleWhatsApp}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-green-500/10 text-green-600 border border-green-500/20 hover:bg-green-500/20 transition-all"
+          className="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-all"
         >
-          <MessageCircle className="h-4 w-4" /> Share on WhatsApp
+          <MessageCircle className="h-4 w-4" /> WhatsApp
         </button>
         <button
           onClick={handleCopyLink}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-muted border border-border hover:bg-muted/80 transition-all"
+          className="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium bg-muted border border-border hover:bg-muted/80 transition-all"
         >
           {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-          {copied ? 'Link Copied!' : 'Copy Link'}
+          {copied ? 'Copied!' : 'Copy Link'}
         </button>
         <button
           onClick={handlePrint}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all"
+          className="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all"
         >
           <Printer className="h-4 w-4" /> Print
         </button>

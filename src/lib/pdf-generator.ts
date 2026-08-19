@@ -316,13 +316,23 @@ export async function downloadPatientInvoicePDF(patientInput: any, profileInput?
   const pdfBytes = await pdfDoc.save()
   const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
   const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
   const safeName = (patient.name || 'Patient').replace(/[^a-zA-Z0-9]/g, '_')
-  a.download = `Invoice_${patient.patientId || '001'}_${safeName}.pdf`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  const fileName = `Invoice_${patient.patientId || '001'}_${safeName}.pdf`
+  const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+  if (isMobile) {
+    const win = window.open(url, '_blank')
+    if (!win) {
+      window.location.href = url
+    }
+  } else {
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    setTimeout(() => URL.revokeObjectURL(url), 10000)
+  }
 }
 
