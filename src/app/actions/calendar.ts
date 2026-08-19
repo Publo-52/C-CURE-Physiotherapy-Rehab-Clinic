@@ -2,9 +2,15 @@
 'use server'
 
 import prisma from '@/lib/prisma'
+import { verifySession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 
 export async function updateVisitDate(visitId: string, newDateStr: string) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   try {
     const newDate = new Date(newDateStr)
     // Try to update standard visit first
@@ -52,6 +58,11 @@ export async function createScheduledVisit(data: {
   exerciseGiven?: string
   notes?: string
 }) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   try {
     const { patientId, date, type, duration = 30, treatmentGiven, exerciseGiven, notes } = data
     if (!patientId || !date || !type) {
@@ -98,6 +109,11 @@ export async function createScheduledVisit(data: {
 }
 
 export async function deleteVisit(visitId: string) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   try {
     await prisma.visit.delete({
       where: { id: visitId }
@@ -118,6 +134,11 @@ export async function createEvent(data: {
   duration?: number
   description?: string
 }) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   try {
     const { title, date, type, duration = 30, description } = data
     if (!title || !date || !type) {
@@ -144,6 +165,11 @@ export async function createEvent(data: {
 }
 
 export async function deleteEvent(eventId: string) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   try {
     await prisma.event.delete({
       where: { id: eventId }

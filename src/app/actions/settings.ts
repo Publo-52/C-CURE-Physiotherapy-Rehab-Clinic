@@ -6,6 +6,16 @@ import { verifySession } from '@/lib/session'
 import bcrypt from 'bcryptjs'
 import { revalidatePath } from 'next/cache'
 
+function validatePasswordStrength(password: string): string | null {
+  if (password.length < 8) {
+    return 'New password must be at least 8 characters long.'
+  }
+  if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+    return 'New password must contain at least one letter and one number.'
+  }
+  return null
+}
+
 export async function updateAdminPassword(formData: FormData) {
   const session = await verifySession()
   if (!session || !session.userId) {
@@ -24,8 +34,9 @@ export async function updateAdminPassword(formData: FormData) {
     return { error: 'New passwords do not match.' }
   }
 
-  if (newPassword.length < 6) {
-    return { error: 'New password must be at least 6 characters.' }
+  const passwordError = validatePasswordStrength(newPassword)
+  if (passwordError) {
+    return { error: passwordError }
   }
 
   try {
@@ -195,8 +206,9 @@ export async function updateUserAccount(targetId: string, formData: FormData) {
     }
 
     if (password) {
-      if (password.length < 6) {
-        return { error: 'Password must be at least 6 characters.' }
+      const passwordError = validatePasswordStrength(password)
+      if (passwordError) {
+        return { error: passwordError }
       }
       updateData.password = await bcrypt.hash(password, 10)
     }
@@ -265,8 +277,9 @@ export async function updateOwnAccount(formData: FormData) {
       if (newPassword !== confirmPassword) {
         return { error: 'New passwords do not match.' }
       }
-      if (newPassword.length < 6) {
-        return { error: 'New password must be at least 6 characters.' }
+      const passwordError = validatePasswordStrength(newPassword)
+      if (passwordError) {
+        return { error: passwordError }
       }
       // Replaces old password with new hashed password in DB
       updateData.password = await bcrypt.hash(newPassword, 10)

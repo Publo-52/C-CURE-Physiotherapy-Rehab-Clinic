@@ -28,6 +28,11 @@ export const metadata: Metadata = {
   description: "C-CURE Physiotherapy & Rehab Clinic - Patient Management System",
   keywords: ["Physiotherapy", "Rehab", "Clinic", "Patient Management", "Healthcare", "C-CURE"],
   authors: [{ name: "Sanatan Manna" }],
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/mobile-logo.png",
+    apple: "/mobile-logo.png",
+  },
   openGraph: {
     title: "C-CURE Physiotherapy & Rehab Clinic",
     description: "Advanced Physiotherapy & Rehab Clinic Patient Management System",

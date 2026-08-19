@@ -2,6 +2,7 @@
 'use server'
 
 import prisma from '@/lib/prisma'
+import { verifySession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 
 function safeInt(val: any): number | null {
@@ -11,6 +12,11 @@ function safeInt(val: any): number | null {
 }
 
 export async function createPatient(formData: FormData) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   const name = (formData.get('name') as string)?.trim()
   const phone = (formData.get('phone') as string)?.trim()
   const age = safeInt(formData.get('age'))
@@ -33,19 +39,27 @@ export async function createPatient(formData: FormData) {
     return { error: 'Name and Phone are required.' }
   }
 
-  // Auto-generate Patient ID (e.g., P-0001)
-  const lastPatient = await prisma.patient.findFirst({
-    orderBy: { createdAt: 'desc' },
-  })
-  
-  let nextIdNum = 1
-  if (lastPatient && lastPatient.patientId.startsWith('P-')) {
-    const lastNum = parseInt(lastPatient.patientId.replace('P-', ''), 10)
-    if (!isNaN(lastNum)) {
-      nextIdNum = lastNum + 1
+  // Auto-generate Patient ID (e.g., P-0001) with concurrency collision handling
+  let patientId = ''
+  let attempts = 0
+  while (attempts < 5) {
+    const lastPatient = await prisma.patient.findFirst({
+      orderBy: { createdAt: 'desc' },
+    })
+    
+    let nextIdNum = 1 + attempts
+    if (lastPatient && lastPatient.patientId.startsWith('P-')) {
+      const lastNum = parseInt(lastPatient.patientId.replace('P-', ''), 10)
+      if (!isNaN(lastNum)) {
+        nextIdNum = lastNum + 1 + attempts
+      }
     }
+    patientId = `P-${nextIdNum.toString().padStart(4, '0')}`
+
+    const existing = await prisma.patient.findUnique({ where: { patientId } })
+    if (!existing) break
+    attempts++
   }
-  const patientId = `P-${nextIdNum.toString().padStart(4, '0')}`
 
   try {
     const patient = await prisma.patient.create({
@@ -81,6 +95,11 @@ export async function createPatient(formData: FormData) {
 }
 
 export async function updatePatient(id: string, formData: FormData) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   const name = (formData.get('name') as string)?.trim()
   const phone = (formData.get('phone') as string)?.trim()
   const age = safeInt(formData.get('age'))
@@ -138,6 +157,11 @@ export async function updatePatient(id: string, formData: FormData) {
 }
 
 export async function deletePatient(id: string) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   try {
     // Delete all child relations explicitly first to prevent foreign key errors in SQLite
     await prisma.treatmentPlan.deleteMany({ where: { patientId: id } })
@@ -159,6 +183,11 @@ export async function deletePatient(id: string) {
 }
 
 export async function togglePresentStatus(id: string, status: boolean) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   try {
     const patient = await prisma.patient.update({
       where: { id },
@@ -177,6 +206,11 @@ export async function togglePresentStatus(id: string, status: boolean) {
 }
 
 export async function markVisitDone(id: string) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   try {
     const todayStart = new Date()
     todayStart.setHours(0, 0, 0, 0)
@@ -239,6 +273,11 @@ export async function markVisitDone(id: string) {
 }
 
 export async function getPatientPDFData(id: string) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { patient: null, profile: null }
+  }
+
   try {
     const [patient, profile] = await Promise.all([
       prisma.patient.findUnique({

@@ -2,6 +2,7 @@
 'use server'
 
 import prisma from '@/lib/prisma'
+import { verifySession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 
 function safeFloat(val: any, fallback = 0): number {
@@ -17,6 +18,11 @@ function safeDate(val: any, fallback = new Date()): Date {
 }
 
 export async function createPayment(patientId: string, formData: FormData) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   const consultationFee = safeFloat(formData.get('consultationFee'))
   const visitFee = safeFloat(formData.get('visitFee'))
   const extraCharges = safeFloat(formData.get('extraCharges'))
@@ -46,19 +52,27 @@ export async function createPayment(patientId: string, formData: FormData) {
   const paymentNotes = (formData.get('paymentNotes') as string)?.trim() || null
   const transactionId = (formData.get('transactionId') as string)?.trim() || null
 
-  // Auto-generate Invoice ID
-  const lastPayment = await prisma.payment.findFirst({
-    orderBy: { createdAt: 'desc' },
-  })
-  
-  let nextInvNum = 1
-  if (lastPayment && lastPayment.invoiceNumber.startsWith('INV-')) {
-    const lastNum = parseInt(lastPayment.invoiceNumber.replace('INV-', ''))
-    if (!isNaN(lastNum)) {
-      nextInvNum = lastNum + 1
+  // Auto-generate Invoice ID with collision retry logic
+  let invoiceNumber = ''
+  let attempts = 0
+  while (attempts < 5) {
+    const lastPayment = await prisma.payment.findFirst({
+      orderBy: { createdAt: 'desc' },
+    })
+    
+    let nextInvNum = 1 + attempts
+    if (lastPayment && lastPayment.invoiceNumber.startsWith('INV-')) {
+      const lastNum = parseInt(lastPayment.invoiceNumber.replace('INV-', ''))
+      if (!isNaN(lastNum)) {
+        nextInvNum = lastNum + 1 + attempts
+      }
     }
+    invoiceNumber = `INV-${nextInvNum.toString().padStart(5, '0')}`
+
+    const existing = await prisma.payment.findUnique({ where: { invoiceNumber } })
+    if (!existing) break
+    attempts++
   }
-  const invoiceNumber = `INV-${nextInvNum.toString().padStart(5, '0')}`
 
   try {
     const payment = await prisma.payment.create({
@@ -95,6 +109,11 @@ export async function createPayment(patientId: string, formData: FormData) {
 }
 
 export async function updatePayment(paymentId: string, formData: FormData) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   const consultationFee = safeFloat(formData.get('consultationFee'))
   const visitFee = safeFloat(formData.get('visitFee'))
   const extraCharges = safeFloat(formData.get('extraCharges'))
@@ -161,6 +180,11 @@ export async function updatePayment(paymentId: string, formData: FormData) {
 }
 
 export async function deletePayment(paymentId: string) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
   try {
     const existing = await prisma.payment.findUnique({ where: { id: paymentId } })
     if (!existing) return { error: 'Payment record not found' }

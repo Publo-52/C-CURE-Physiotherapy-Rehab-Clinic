@@ -1,0 +1,21 @@
+{
+  "name": "C-CURE Physiotherapy & Rehab Clinic Management Portal",
+  "short_name": "C-CURE Clinic",
+  "description": "Patient management, appointment queueing, and billing system for C-CURE Physiotherapy Clinic.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {
+      "src": "/mobile-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/mobile-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

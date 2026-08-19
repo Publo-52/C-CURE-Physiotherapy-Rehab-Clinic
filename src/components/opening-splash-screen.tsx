@@ -10,14 +10,16 @@ export function OpeningSplashScreen() {
   const [fading, setFading] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
-    try {
-      const hasSeen = localStorage.getItem('c_cure_splash_seen_v1')
-      if (!hasSeen) {
-        localStorage.setItem('c_cure_splash_seen_v1', 'true')
-        setVisible(true)
-      }
-    } catch {}
+    queueMicrotask(() => {
+      setMounted(true)
+      try {
+        const hasSeen = localStorage.getItem('c_cure_splash_seen_v1')
+        if (!hasSeen) {
+          localStorage.setItem('c_cure_splash_seen_v1', 'true')
+          setVisible(true)
+        }
+      } catch {}
+    })
   }, [])
 
   useEffect(() => {

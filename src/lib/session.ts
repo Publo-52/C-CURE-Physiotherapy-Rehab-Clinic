@@ -5,6 +5,9 @@ import prisma from '@/lib/prisma'
 import { randomUUID } from 'crypto'
 
 const secretKey = process.env.JWT_SECRET || 'super-secret-phisiyo-key'
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.warn('⚠️ WARNING: JWT_SECRET is not set in environment variables! Using fallback key.')
+}
 const key = new TextEncoder().encode(secretKey)
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 const MAX_DEVICES = 3

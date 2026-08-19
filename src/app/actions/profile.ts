@@ -4,6 +4,7 @@
 
 import { cache } from 'react'
 import prisma from '@/lib/prisma'
+import { verifySession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 
 export const getClinicProfile = cache(async () => {
@@ -30,6 +31,10 @@ export const getClinicProfile = cache(async () => {
 })
 
 export async function updateClinicProfile(formData: FormData) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
   try {
     const practitionerName = (formData.get('practitionerName') as string)?.trim()
     const clinicName = (formData.get('clinicName') as string)?.trim()

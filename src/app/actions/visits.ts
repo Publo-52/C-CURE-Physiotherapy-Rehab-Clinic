@@ -2,6 +2,7 @@
 'use server'
 
 import prisma from '@/lib/prisma'
+import { verifySession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 
 function safeInt(val: any, fallback: number | null = null): number | null {
@@ -11,6 +12,10 @@ function safeInt(val: any, fallback: number | null = null): number | null {
 }
 
 export async function createVisit(patientId: string, formData: FormData) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
   const type = (formData.get('type') as string) || 'Clinic Visit'
   const dateStr = formData.get('date') as string
   const date = dateStr && !isNaN(Date.parse(dateStr)) ? new Date(dateStr) : new Date()
