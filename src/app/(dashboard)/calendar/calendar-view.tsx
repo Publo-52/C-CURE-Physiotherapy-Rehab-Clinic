@@ -196,6 +196,10 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
     if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1) }
     else setCurrentMonth(m => m + 1)
   }
+  const gotoToday = () => {
+    setCurrentYear(today.getFullYear())
+    setCurrentMonth(today.getMonth())
+  }
 
   const daysInMonth = getDaysInMonth(currentYear, currentMonth)
   const firstDay   = getFirstDayOfMonth(currentYear, currentMonth)
@@ -361,38 +365,61 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Clinic Scheduler</h1>
-          <p className="text-muted-foreground text-sm">Add and organize treatment sessions, staff meetings, and professional reminders effectively.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Clinic Scheduler</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">Add and organize treatment sessions, staff meetings, and professional reminders effectively.</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)} className="shadow-lg hover:shadow-primary/20 transition-all font-semibold">
+        <Button onClick={() => setIsCreateOpen(true)} className="w-full sm:w-auto shadow-md hover:shadow-primary/20 transition-all font-semibold active:scale-[0.98]">
           <Plus className="mr-2 h-4 w-4" /> Add to Schedule
         </Button>
       </div>
 
       {/* Filter / Category Selector Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-card p-3.5 rounded-2xl border shadow-sm">
-        <div className="flex items-center gap-3">
-          <CalendarIcon className="h-5 w-5 text-primary" />
-          <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground">View Filter:</span>
-          <div className="flex flex-wrap gap-1.5 text-xs">
-            {['All', 'Visits', 'Events/Meetings', 'Clinic Visit', 'Home Visit', 'Meeting', 'Task', 'Reminder'].map((type) => (
+      <div className="bg-card p-3 sm:p-3.5 rounded-2xl border shadow-sm space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
+        <div className="flex items-center justify-between sm:justify-start gap-3">
+          <div className="flex items-center gap-2 shrink-0">
+            <CalendarIcon className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
+            <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground">View Filter</span>
+          </div>
+
+          {/* View Mode Switcher on Mobile */}
+          <div className="flex sm:hidden gap-1 bg-muted p-1 rounded-xl text-xs shrink-0">
+            {(['month', 'week', 'list'] as const).map(v => (
               <button
-                key={type}
-                onClick={() => setFilterType(type)}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                  filterType === type
-                    ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20'
-                    : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                key={v}
+                onClick={() => setView(v)}
+                className={`px-2.5 py-1 rounded-lg font-bold capitalize transition-all active:scale-95 ${
+                  view === v
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {type}
+                {v}
               </button>
             ))}
           </div>
         </div>
-        <div className="flex gap-1 bg-muted p-1 rounded-xl text-xs">
+
+        {/* Horizontal Scrollable Filter Chips */}
+        <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [::-webkit-scrollbar]:hidden py-0.5 -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap">
+          {['All', 'Visits', 'Events/Meetings', 'Clinic Visit', 'Home Visit', 'Meeting', 'Task', 'Reminder'].map((type) => (
+            <button
+              key={type}
+              onClick={() => setFilterType(type)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 whitespace-nowrap transition-all active:scale-95 ${
+                filterType === type
+                  ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20'
+                  : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+              }`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+
+        {/* View Mode Switcher on Desktop */}
+        <div className="hidden sm:flex gap-1 bg-muted p-1 rounded-xl text-xs shrink-0">
           {(['month', 'week', 'list'] as const).map(v => (
             <button
               key={v}
@@ -412,31 +439,42 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
       {/* Calendar Shell */}
       <div className="bg-card border rounded-2xl shadow-xl overflow-hidden">
         {/* Navigation Bar */}
-        <div className="flex items-center justify-between px-6 py-4.5 border-b bg-muted/10">
-          <button
-            onClick={prevMonth}
-            className="p-2 rounded-xl hover:bg-muted transition-colors border shadow-sm bg-background"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <h2 className="text-xl font-extrabold tracking-tight">
+        <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4.5 border-b bg-muted/10">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <button
+              onClick={prevMonth}
+              aria-label="Previous month"
+              className="p-1.5 sm:p-2 rounded-xl hover:bg-muted transition-colors border shadow-sm bg-background active:scale-95"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={nextMonth}
+              aria-label="Next month"
+              className="p-1.5 sm:p-2 rounded-xl hover:bg-muted transition-colors border shadow-sm bg-background active:scale-95"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            <button
+              onClick={gotoToday}
+              className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold border shadow-sm bg-background hover:bg-muted transition-colors active:scale-95"
+            >
+              Today
+            </button>
+          </div>
+          <h2 className="text-base sm:text-xl font-extrabold tracking-tight">
             {MONTHS[currentMonth]} {currentYear}
           </h2>
-          <button
-            onClick={nextMonth}
-            className="p-2 rounded-xl hover:bg-muted transition-colors border shadow-sm bg-background"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
         </div>
 
         {/* Month View Grid */}
         {view === 'month' && (
           <div>
-            <div className="grid grid-cols-7 border-b bg-muted/5 font-semibold text-xs tracking-wider uppercase text-muted-foreground">
+            <div className="grid grid-cols-7 border-b bg-muted/5 font-semibold text-[10px] sm:text-xs tracking-wider uppercase text-muted-foreground">
               {DAYS.map(d => (
-                <div key={d} className="py-3 text-center border-r last:border-r-0">
-                  {d}
+                <div key={d} className="py-2 sm:py-3 text-center border-r last:border-r-0">
+                  <span className="sm:hidden">{d.slice(0, 3)}</span>
+                  <span className="hidden sm:inline">{d}</span>
                 </div>
               ))}
             </div>
@@ -455,15 +493,15 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                     key={i}
                     onDragOver={handleDragOver}
                     onDrop={isValid ? (e) => handleDrop(e, cellDate) : undefined}
-                    className={`min-h-[75px] sm:min-h-[110px] p-1.5 sm:p-2 border-b border-r last:border-r-0 transition-all ${
+                    className={`min-h-[68px] sm:min-h-[110px] p-1 sm:p-2 border-b border-r last:border-r-0 transition-all ${
                       !isValid ? 'bg-muted/15' : 'hover:bg-muted/20 bg-background'
                     }`}
                   >
                     {isValid && (
                       <>
-                        <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center justify-between mb-1 sm:mb-1.5">
                           <span
-                            className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+                            className={`inline-flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full text-[11px] sm:text-xs font-bold ${
                               isToday
                                 ? 'bg-primary text-primary-foreground shadow-md'
                                 : 'text-muted-foreground/80'
@@ -472,7 +510,31 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                             {dayNum}
                           </span>
                         </div>
-                        <div className="space-y-1">
+
+                        {/* Mobile Compact Items */}
+                        <div className="space-y-1 sm:hidden">
+                          {dayItems.slice(0, 2).map(item => {
+                            const st = styleFor(item.colorKey)
+                            return (
+                              <button
+                                key={item.id}
+                                onClick={() => setSelectedDetail({ type: item.itemType, data: item.original })}
+                                className={`w-full text-left px-1 py-0.5 rounded text-[9px] font-bold truncate border ${st.bg} ${st.text} ${st.border} flex items-center gap-1 active:scale-95`}
+                              >
+                                <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${st.dot}`} />
+                                <span className="truncate flex-1 leading-tight">{item.title}</span>
+                              </button>
+                            )
+                          })}
+                          {dayItems.length > 2 && (
+                            <div className="text-[8px] font-extrabold text-primary px-0.5">
+                              +{dayItems.length - 2} more
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Desktop Detailed Items */}
+                        <div className="hidden sm:block space-y-1">
                           {dayItems.slice(0, 3).map(item => {
                             const st = styleFor(item.colorKey)
                             const IconComponent = st.icon
@@ -482,10 +544,9 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                                 draggable={true}
                                 onDragStart={(e) => handleDragStart(e, item.id)}
                                 onClick={() => setSelectedDetail({ type: item.itemType, data: item.original })}
-                                className={`w-full text-left px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg text-[9px] sm:text-[10px] font-bold truncate cursor-grab active:cursor-grabbing border ${st.bg} ${st.text} ${st.border} hover:scale-[1.01] transition-all flex items-center justify-center sm:justify-between gap-1 shadow-sm`}
+                                className={`w-full text-left px-2 py-1 rounded-lg text-[10px] font-bold truncate cursor-grab active:cursor-grabbing border ${st.bg} ${st.text} ${st.border} hover:scale-[1.01] transition-all flex items-center justify-between gap-1 shadow-sm`}
                               >
-                                <span className={`sm:hidden block h-1.5 w-1.5 rounded-full ${st.dot}`} />
-                                <span className="hidden sm:inline-flex items-center gap-1.5 w-full min-w-0">
+                                <span className="inline-flex items-center gap-1.5 w-full min-w-0">
                                   <IconComponent className="h-3 w-3 flex-shrink-0 opacity-80" />
                                   <span className="truncate flex-1">{item.title}</span>
                                   <GripVertical className="h-3 w-3 opacity-30 flex-shrink-0" />
@@ -518,53 +579,55 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
             return d
           })
           return (
-            <div>
-              <div className="grid grid-cols-7 border-b bg-muted/5">
-                {weekDays.map((d, i) => (
-                  <div key={i} className={`py-3.5 text-center border-r last:border-r-0 ${isSameDay(d, today) ? 'bg-primary/5' : ''}`}>
-                    <div className="text-xs uppercase tracking-wider font-bold text-muted-foreground">{DAYS[i]}</div>
-                    <div className={`text-base font-black mt-1 mx-auto h-8 w-8 flex items-center justify-center rounded-full ${isSameDay(d, today) ? 'bg-primary text-primary-foreground shadow-md' : ''}`}>
-                      {d.getDate()}
+            <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [::-webkit-scrollbar]:hidden">
+              <div className="min-w-[620px] sm:min-w-full">
+                <div className="grid grid-cols-7 border-b bg-muted/5">
+                  {weekDays.map((d, i) => (
+                    <div key={i} className={`py-2.5 sm:py-3.5 text-center border-r last:border-r-0 ${isSameDay(d, today) ? 'bg-primary/5' : ''}`}>
+                      <div className="text-[10px] sm:text-xs uppercase tracking-wider font-bold text-muted-foreground">{DAYS[i]}</div>
+                      <div className={`text-sm sm:text-base font-black mt-1 mx-auto h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center rounded-full ${isSameDay(d, today) ? 'bg-primary text-primary-foreground shadow-md' : ''}`}>
+                        {d.getDate()}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-              <div className="grid grid-cols-7 min-h-[420px] bg-background">
-                {weekDays.map((d, i) => {
-                  const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
-                  const dayItems = itemsByDay[key] ?? []
-                  return (
-                    <div 
-                      key={i} 
-                      onDragOver={handleDragOver}
-                      onDrop={(e) => handleDrop(e, d)}
-                      className={`p-2 border-r last:border-r-0 min-h-[420px] space-y-2 ${isSameDay(d, today) ? 'bg-primary/5' : ''}`}
-                    >
-                      {dayItems.map(item => {
-                        const st = styleFor(item.colorKey)
-                        const IconComponent = st.icon
-                        return (
-                          <button
-                            key={item.id}
-                            draggable={true}
-                            onDragStart={(e) => handleDragStart(e, item.id)}
-                            onClick={() => setSelectedDetail({ type: item.itemType, data: item.original })}
-                            className={`w-full text-left p-2 rounded-xl text-[10px] font-bold leading-snug cursor-grab active:cursor-grabbing border ${st.bg} ${st.text} ${st.border} hover:shadow transition-all relative group flex flex-col gap-1`}
-                          >
-                            <GripVertical className="absolute right-2 top-2 h-3.5 w-3.5 opacity-0 group-hover:opacity-40 transition-opacity" />
-                            <div className="flex items-center gap-1 font-black truncate pr-4">
-                              <IconComponent className="h-3 w-3 opacity-70" />
-                              <span className="truncate">{item.title}</span>
-                            </div>
-                            <div className="opacity-80 text-[9px] font-medium">
-                              {item.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )
-                })}
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 min-h-[380px] sm:min-h-[420px] bg-background">
+                  {weekDays.map((d, i) => {
+                    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+                    const dayItems = itemsByDay[key] ?? []
+                    return (
+                      <div 
+                        key={i} 
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, d)}
+                        className={`p-1.5 sm:p-2 border-r last:border-r-0 min-h-[380px] sm:min-h-[420px] space-y-1.5 sm:space-y-2 ${isSameDay(d, today) ? 'bg-primary/5' : ''}`}
+                      >
+                        {dayItems.map(item => {
+                          const st = styleFor(item.colorKey)
+                          const IconComponent = st.icon
+                          return (
+                            <button
+                              key={item.id}
+                              draggable={true}
+                              onDragStart={(e) => handleDragStart(e, item.id)}
+                              onClick={() => setSelectedDetail({ type: item.itemType, data: item.original })}
+                              className={`w-full text-left p-1.5 sm:p-2 rounded-xl text-[10px] font-bold leading-snug cursor-grab active:cursor-grabbing border ${st.bg} ${st.text} ${st.border} hover:shadow transition-all relative group flex flex-col gap-1 active:scale-95`}
+                            >
+                              <GripVertical className="absolute right-2 top-2 h-3.5 w-3.5 opacity-0 group-hover:opacity-40 transition-opacity hidden sm:block" />
+                              <div className="flex items-center gap-1 font-black truncate sm:pr-4">
+                                <IconComponent className="h-3 w-3 opacity-70 shrink-0" />
+                                <span className="truncate">{item.title}</span>
+                              </div>
+                              <div className="opacity-80 text-[9px] font-medium">
+                                {item.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           )
@@ -574,7 +637,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
         {view === 'list' && (
           <div className="divide-y bg-background">
             {upcomingItems.length === 0 && (
-              <div className="py-20 text-center text-muted-foreground text-sm">No upcoming appointments or meetings scheduled.</div>
+              <div className="py-16 sm:py-20 text-center text-muted-foreground text-sm">No upcoming appointments or meetings scheduled.</div>
             )}
             {upcomingItems.map(item => {
               const st = styleFor(item.colorKey)
@@ -583,27 +646,27 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                 <button
                   key={item.id}
                   onClick={() => setSelectedDetail({ type: item.itemType, data: item.original })}
-                  className="w-full text-left px-6 py-4.5 hover:bg-muted/30 transition-all flex items-center gap-5 border-b last:border-b-0"
+                  className="w-full text-left px-3 sm:px-6 py-3 sm:py-4.5 hover:bg-muted/30 transition-all flex items-center gap-3 sm:gap-5 border-b last:border-b-0 active:bg-muted/40"
                 >
-                  <div className="text-center min-w-[55px] border rounded-xl py-1.5 px-2 bg-muted/10 shadow-sm font-sans">
-                    <div className="text-[10px] uppercase font-bold text-muted-foreground">{MONTHS[item.date.getMonth()].slice(0,3)}</div>
-                    <div className="text-xl font-extrabold leading-none text-foreground">{item.date.getDate()}</div>
-                    <div className="text-[9px] font-mono text-muted-foreground mt-0.5">{item.date.getFullYear()}</div>
+                  <div className="text-center min-w-[48px] sm:min-w-[55px] border rounded-xl py-1 sm:py-1.5 px-1.5 sm:px-2 bg-muted/10 shadow-sm font-sans shrink-0">
+                    <div className="text-[9px] sm:text-[10px] uppercase font-bold text-muted-foreground">{MONTHS[item.date.getMonth()].slice(0,3)}</div>
+                    <div className="text-lg sm:text-xl font-extrabold leading-none text-foreground">{item.date.getDate()}</div>
+                    <div className="text-[8px] sm:text-[9px] font-mono text-muted-foreground mt-0.5">{item.date.getFullYear()}</div>
                   </div>
-                  <div className={`w-1.5 self-stretch rounded-full ${st.dot}`} />
+                  <div className={`w-1.5 self-stretch rounded-full shrink-0 ${st.dot}`} />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <IconComponent className="h-4 w-4 shrink-0 opacity-70" />
-                      <span className="font-bold text-base text-foreground truncate">{item.title}</span>
-                      <Badge variant="outline" className={`text-[10px] ${st.bg} ${st.text} ${st.border} font-bold px-2 py-0.5`}>
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap">
+                      <IconComponent className="h-3.5 sm:h-4 w-3.5 sm:w-4 shrink-0 opacity-70" />
+                      <span className="font-bold text-sm sm:text-base text-foreground truncate">{item.title}</span>
+                      <Badge variant="outline" className={`text-[9px] sm:text-[10px] ${st.bg} ${st.text} ${st.border} font-bold px-1.5 sm:px-2 py-0.5 shrink-0 ml-auto sm:ml-0`}>
                         {item.type}
                       </Badge>
                     </div>
                     {item.subtitle && (
-                      <div className="text-xs text-muted-foreground font-mono mt-0.5">{item.subtitle}</div>
+                      <div className="text-[11px] sm:text-xs text-muted-foreground font-mono mt-0.5 truncate">{item.subtitle}</div>
                     )}
                   </div>
-                  <div className="text-xs font-bold text-muted-foreground font-mono bg-muted/40 px-3 py-1.5 rounded-lg">
+                  <div className="text-[10px] sm:text-xs font-bold text-muted-foreground font-mono bg-muted/40 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg shrink-0">
                     {item.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </button>
@@ -614,14 +677,16 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-4 text-xs text-muted-foreground px-2 py-1.5 border rounded-xl bg-card">
-        <span className="font-bold uppercase text-[10px] tracking-wider text-muted-foreground">Legend:</span>
-        {Object.entries(ITEM_STYLES).map(([type, c]) => (
-          <div key={type} className="flex items-center gap-1.5 font-bold">
-            <span className={`h-2.5 w-2.5 rounded-full ${c.dot}`} />
-            {type}
-          </div>
-        ))}
+      <div className="flex items-center gap-2 text-xs text-muted-foreground p-3 border rounded-xl bg-card overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [::-webkit-scrollbar]:hidden">
+        <span className="font-bold uppercase text-[10px] tracking-wider text-muted-foreground shrink-0">Legend:</span>
+        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          {Object.entries(ITEM_STYLES).map(([type, c]) => (
+            <div key={type} className="flex items-center gap-1.5 font-bold shrink-0 text-[11px] sm:text-xs">
+              <span className={`h-2.5 w-2.5 rounded-full ${c.dot}`} />
+              {type}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Unified Details Modal (Visit or Event) */}
@@ -634,48 +699,48 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
 
         return (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4"
             onClick={() => setSelectedDetail(null)}
           >
             <div
-              className="bg-card border rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4.5 relative max-h-[90vh] overflow-y-auto animate-modal-pop"
+              className="bg-card border rounded-2xl shadow-2xl w-full max-w-md p-4 sm:p-6 space-y-4 relative max-h-[92vh] sm:max-h-[85vh] overflow-y-auto animate-modal-pop"
               onClick={e => e.stopPropagation()}
             >
               <button
                 onClick={() => setSelectedDetail(null)}
-                className="absolute top-4 right-4 p-1 rounded-lg hover:bg-muted transition-colors"
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 rounded-lg hover:bg-muted transition-colors border bg-background"
               >
                 <X className="h-4 w-4" />
               </button>
 
               {/* Title Block */}
-              <div className="flex items-center gap-3">
-                <div className={`h-11 w-11 rounded-full ${st.bg} ${st.text} border ${st.border} flex items-center justify-center shadow-inner`}>
+              <div className="flex items-center gap-3 pr-6">
+                <div className={`h-10 w-10 sm:h-11 sm:w-11 rounded-full shrink-0 ${st.bg} ${st.text} border ${st.border} flex items-center justify-center shadow-inner`}>
                   <st.icon className="h-5 w-5" />
                 </div>
-                <div>
-                  <div className="font-extrabold text-lg tracking-tight leading-snug">
+                <div className="min-w-0 flex-1">
+                  <div className="font-extrabold text-base sm:text-lg tracking-tight leading-snug truncate">
                     {isVisit ? data.patient.name : data.title}
                   </div>
-                  <div className="text-xs text-muted-foreground font-mono mt-0.5">
-                    {isVisit ? `Patient ID: ${data.patient.patientId}` : `Event Category: ${data.type}`}
+                  <div className="text-[11px] sm:text-xs text-muted-foreground font-mono mt-0.5 truncate">
+                    {isVisit ? `Patient ID: ${data.patient.patientId}` : `Category: ${data.type}`}
                   </div>
                 </div>
-                <Badge variant="outline" className={`ml-auto font-bold ${st.bg} ${st.text} ${st.border}`}>{data.type}</Badge>
+                <Badge variant="outline" className={`shrink-0 font-bold text-[10px] sm:text-xs ${st.bg} ${st.text} ${st.border}`}>{data.type}</Badge>
               </div>
 
               {/* Time and Info Grid */}
-              <div className="border-y py-3.5 space-y-2.5 text-sm font-medium">
+              <div className="border-y py-3 space-y-2 text-xs sm:text-sm font-medium">
                 <div className="flex items-center gap-2.5 text-muted-foreground">
-                  <Clock className="h-4.5 w-4.5 text-primary" />
+                  <Clock className="h-4 w-4 text-primary shrink-0" />
                   <span className="font-bold text-foreground">
-                    {dateObj.toLocaleString([], { dateStyle: 'long', timeStyle: 'short' })}
+                    {dateObj.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
                   </span>
                   <span className="text-xs font-bold text-muted-foreground">({data.duration} mins)</span>
                 </div>
                 {isVisit && (
                   <div className="flex items-center gap-2.5 text-muted-foreground">
-                    <User className="h-4.5 w-4.5 text-primary" />
+                    <User className="h-4 w-4 text-primary shrink-0" />
                     <span>Phone: {data.patient.phone}</span>
                   </div>
                 )}
@@ -683,44 +748,44 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
 
               {/* Description or Clinical detail blocks */}
               {isVisit ? (
-                <div className="space-y-3.5">
+                <div className="space-y-3">
                   {data.treatmentGiven && (
                     <div>
-                      <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Treatment Program</div>
-                      <p className="bg-muted/50 border rounded-xl p-3 text-sm font-semibold">{data.treatmentGiven}</p>
+                      <div className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Treatment Program</div>
+                      <p className="bg-muted/50 border rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm font-semibold">{data.treatmentGiven}</p>
                     </div>
                   )}
                   {data.notes && (
                     <div>
-                      <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Clinician Notes</div>
-                      <p className="bg-muted/50 border rounded-xl p-3 text-sm text-muted-foreground font-semibold">{data.notes}</p>
+                      <div className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Clinician Notes</div>
+                      <p className="bg-muted/50 border rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm text-muted-foreground font-semibold">{data.notes}</p>
                     </div>
                   )}
                 </div>
               ) : (
                 data.description && (
                   <div>
-                    <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Description / Details</div>
-                    <p className="bg-muted/50 border rounded-xl p-3 text-sm font-semibold text-muted-foreground">{data.description}</p>
+                    <div className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Description / Details</div>
+                    <p className="bg-muted/50 border rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm font-semibold text-muted-foreground">{data.description}</p>
                   </div>
                 )
               )}
 
               {/* Footer Actions */}
-              <div className="flex justify-between items-center pt-2 gap-2 border-t">
+              <div className="flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center pt-3 gap-2 border-t">
                 <Button 
                   variant="destructive" 
                   size="sm"
                   onClick={handleDeleteItem}
                   disabled={isDeleting}
-                  className="font-bold"
+                  className="font-bold w-full sm:w-auto active:scale-95"
                 >
                   <Trash2 className="h-4 w-4 mr-1.5" />
                   {isDeleting ? 'Deleting...' : isVisit ? 'Cancel Appointment' : 'Delete Event'}
                 </Button>
                 {isVisit && (
-                  <Link href={`/patients/${data.patient.id}`}>
-                    <Button size="sm" className="font-bold">Patient Profile</Button>
+                  <Link href={`/patients/${data.patient.id}`} className="w-full sm:w-auto">
+                    <Button size="sm" className="font-bold w-full active:scale-95">Patient Profile</Button>
                   </Link>
                 )}
               </div>
@@ -732,23 +797,23 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
       {/* Unified Creation Modal */}
       {isCreateOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4"
           onClick={() => setIsCreateOpen(false)}
         >
           <div
-            className="bg-card border rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 relative overflow-y-auto max-h-[90vh] animate-modal-pop"
+            className="bg-card border rounded-2xl shadow-2xl w-full max-w-lg p-4 sm:p-6 space-y-4 relative overflow-y-auto max-h-[92vh] sm:max-h-[85vh] animate-modal-pop"
             onClick={e => e.stopPropagation()}
           >
             <button
               onClick={() => setIsCreateOpen(false)}
-              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-muted transition-colors border"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 rounded-lg hover:bg-muted transition-colors border bg-background"
             >
               <X className="h-4 w-4" />
             </button>
 
             {/* Modal Header */}
             <div>
-              <h2 className="text-2xl font-black tracking-tight">Schedule Builder</h2>
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight">Schedule Builder</h2>
               <p className="text-xs text-muted-foreground mt-0.5">Select a category and fill in the details.</p>
             </div>
 
@@ -757,24 +822,24 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
               <button
                 type="button"
                 onClick={() => setScheduleMode('visit')}
-                className={`py-2 rounded-lg transition-all ${
+                className={`py-2 rounded-lg transition-all active:scale-95 ${
                   scheduleMode === 'visit'
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Patient Treatment Visit
+                Patient Visit
               </button>
               <button
                 type="button"
                 onClick={() => setScheduleMode('event')}
-                className={`py-2 rounded-lg transition-all ${
+                className={`py-2 rounded-lg transition-all active:scale-95 ${
                   scheduleMode === 'event'
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Meeting / Task / Reminder
+                Meeting / Task
               </button>
             </div>
 
@@ -782,10 +847,10 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
               
               {/* PATIENT VISIT FIELDS */}
               {scheduleMode === 'visit' && (
-                <div className="space-y-4">
+                <div className="space-y-3.5">
                   {/* Search Patient */}
-                  <div className="space-y-2 relative">
-                    <Label htmlFor="patientSearch">Search Patient *</Label>
+                  <div className="space-y-1.5 relative">
+                    <Label htmlFor="patientSearch" className="text-xs font-bold">Search Patient *</Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -796,7 +861,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                           setPatientSearch(e.target.value)
                           if (selectedPatient) setSelectedPatient(null)
                         }}
-                        className="pl-9 font-semibold"
+                        className="pl-9 font-semibold text-sm"
                         required
                       />
                       {selectedPatient && (
@@ -815,7 +880,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
 
                     {/* Auto Complete Dropdown */}
                     {searchedPatients.length > 0 && !selectedPatient && (
-                      <div className="absolute z-10 w-full bg-popover border rounded-xl shadow-lg mt-1 overflow-hidden divide-y">
+                      <div className="absolute z-20 w-full bg-popover border rounded-xl shadow-xl mt-1 overflow-hidden divide-y max-h-48 overflow-y-auto">
                         {searchedPatients.map(p => (
                           <button
                             key={p.id}
@@ -824,10 +889,10 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                               setSelectedPatient(p)
                               setPatientSearch(`${p.name} (${p.patientId})`)
                             }}
-                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted flex items-center justify-between transition-colors"
+                            className="w-full text-left px-3.5 py-2.5 text-xs sm:text-sm hover:bg-muted flex items-center justify-between transition-colors"
                           >
-                            <span className="font-bold">{p.name}</span>
-                            <span className="text-xs text-muted-foreground font-mono font-bold">{p.patientId}</span>
+                            <span className="font-bold truncate pr-2">{p.name}</span>
+                            <span className="text-xs text-muted-foreground font-mono font-bold shrink-0">{p.patientId}</span>
                           </button>
                         ))}
                       </div>
@@ -835,26 +900,26 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                   </div>
 
                   {/* Visit Time grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="visitDate">Date &amp; Time *</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="visitDate" className="text-xs font-bold">Date &amp; Time *</Label>
                       <Input
                         id="visitDate"
                         type="datetime-local"
                         value={visitDate}
                         onChange={(e) => setVisitDate(e.target.value)}
                         required
-                        className="font-semibold"
+                        className="font-semibold text-xs sm:text-sm"
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="visitType">Visit Type *</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="visitType" className="text-xs font-bold">Visit Type *</Label>
                       <select
                         id="visitType"
                         value={visitType}
                         onChange={(e) => setVisitType(e.target.value)}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs sm:text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold"
                         required
                       >
                         <option value="Clinic Visit">Clinic Visit</option>
@@ -863,8 +928,8 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                       </select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="duration">Duration (minutes)</Label>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label htmlFor="duration" className="text-xs font-bold">Duration (minutes)</Label>
                       <Input
                         id="duration"
                         type="number"
@@ -872,41 +937,41 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                         onChange={(e) => setDuration(Number(e.target.value))}
                         min="5"
                         required
-                        className="font-semibold"
+                        className="font-semibold text-xs sm:text-sm"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="treatment">Planned Treatment Program</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="treatment" className="text-xs font-bold">Planned Treatment Program</Label>
                     <Textarea
                       id="treatment"
                       placeholder="Enter planned treatment program"
                       value={treatmentGiven}
                       onChange={(e) => setTreatmentGiven(e.target.value)}
-                      className="font-semibold"
+                      className="font-semibold text-xs sm:text-sm min-h-[60px]"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="exercises">Exercises</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="exercises" className="text-xs font-bold">Exercises</Label>
                     <Textarea
                       id="exercises"
                       placeholder="Enter home exercise plan"
                       value={exerciseGiven}
                       onChange={(e) => setExerciseGiven(e.target.value)}
-                      className="font-semibold"
+                      className="font-semibold text-xs sm:text-sm min-h-[60px]"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="notes">Physiotherapist Notes</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="notes" className="text-xs font-bold">Physiotherapist Notes</Label>
                     <Textarea
                       id="notes"
                       placeholder="Enter physiotherapist notes and observations..."
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="font-semibold"
+                      className="font-semibold text-xs sm:text-sm min-h-[60px]"
                     />
                   </div>
                 </div>
@@ -914,39 +979,39 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
 
               {/* GENERAL EVENT FIELDS */}
               {scheduleMode === 'event' && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="eventTitle">Event Title / Task *</Label>
+                <div className="space-y-3.5">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="eventTitle" className="text-xs font-bold">Event Title / Task *</Label>
                     <Input
                       id="eventTitle"
                       placeholder="Enter event title or task name"
                       value={eventTitle}
                       onChange={(e) => setEventTitle(e.target.value)}
                       required
-                      className="font-semibold"
+                      className="font-semibold text-xs sm:text-sm"
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="eventDate">Date &amp; Time *</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="eventDate" className="text-xs font-bold">Date &amp; Time *</Label>
                       <Input
                         id="eventDate"
                         type="datetime-local"
                         value={eventDate}
                         onChange={(e) => setEventDate(e.target.value)}
                         required
-                        className="font-semibold"
+                        className="font-semibold text-xs sm:text-sm"
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="eventType">Event Type *</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="eventType" className="text-xs font-bold">Event Type *</Label>
                       <select
                         id="eventType"
                         value={eventType}
                         onChange={(e) => setEventType(e.target.value)}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs sm:text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold"
                         required
                       >
                         <option value="Meeting">Meeting</option>
@@ -956,8 +1021,8 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                       </select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="eventDuration">Duration (minutes)</Label>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label htmlFor="eventDuration" className="text-xs font-bold">Duration (minutes)</Label>
                       <Input
                         id="eventDuration"
                         type="number"
@@ -965,35 +1030,35 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                         onChange={(e) => setEventDuration(Number(e.target.value))}
                         min="5"
                         required
-                        className="font-semibold"
+                        className="font-semibold text-xs sm:text-sm"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="eventDescription">Description / Notes</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="eventDescription" className="text-xs font-bold">Description / Notes</Label>
                     <Textarea
                       id="eventDescription"
                       placeholder="Details of the meeting agenda or chore requirements..."
                       value={eventDescription}
                       onChange={(e) => setEventDescription(e.target.value)}
-                      className="font-semibold"
+                      className="font-semibold text-xs sm:text-sm min-h-[70px]"
                     />
                   </div>
                 </div>
               )}
 
               {/* Form Footer */}
-              <div className="flex justify-end gap-3 pt-4 border-t">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-3 border-t">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setIsCreateOpen(false)}
-                  className="font-bold"
+                  className="font-bold w-full sm:w-auto active:scale-95"
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting} className="font-bold">
+                <Button type="submit" disabled={isSubmitting} className="font-bold w-full sm:w-auto active:scale-95">
                   {isSubmitting ? 'Scheduling...' : 'Add to Schedule'}
                 </Button>
               </div>
