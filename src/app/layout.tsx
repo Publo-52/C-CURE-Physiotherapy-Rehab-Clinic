@@ -43,8 +43,6 @@ export const metadata: Metadata = {
 };
 
 import { OpeningSplashScreen } from "@/components/opening-splash-screen";
-import { OfflineIndicator } from "@/components/offline-indicator";
-import { ServiceWorkerRegister } from "@/components/sw-register";
 
 export default function RootLayout({
   children,
@@ -63,9 +61,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <ServiceWorkerRegister />
           <OpeningSplashScreen />
-          <OfflineIndicator />
           {children}
           <Toaster position="top-right" />
         </ThemeProvider>
