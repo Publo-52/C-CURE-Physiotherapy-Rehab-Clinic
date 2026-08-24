@@ -47,5 +47,7 @@ next-env.d.ts
 *.db-shm
 *.db-wal
 
-# Temp files
+# Temp files & scratch scripts
 calendar.html
+*.pdf
+/scratch/
