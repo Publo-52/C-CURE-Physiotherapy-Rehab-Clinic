@@ -9,7 +9,6 @@ export function NetworkStatusToast() {
   const [toast, setToast] = useState<ToastType>(null)
   const isOnlineRef = useRef<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const isMountedRef = useRef<boolean>(false)
 
   const showToast = useCallback((type: 'offline' | 'online') => {
     if (timeoutRef.current) {
@@ -25,8 +24,8 @@ export function NetworkStatusToast() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
+    // Initialize state
     isOnlineRef.current = navigator.onLine
-    isMountedRef.current = true
 
     const handleOffline = () => {
       if (isOnlineRef.current) {
@@ -42,10 +41,11 @@ export function NetworkStatusToast() {
       }
     }
 
+    // Direct Window Event Listeners (Instant 0ms trigger)
     window.addEventListener('offline', handleOffline)
     window.addEventListener('online', handleOnline)
 
-    // Fast 1.5s check for OS-buffered connectivity state transitions
+    // Ultra-fast 300ms heartbeat check for instant mobile OS detection
     const interval = setInterval(() => {
       const currentStatus = navigator.onLine
       if (currentStatus !== isOnlineRef.current) {
@@ -57,7 +57,7 @@ export function NetworkStatusToast() {
           showToast('online')
         }
       }
-    }, 1500)
+    }, 300)
 
     return () => {
       window.removeEventListener('offline', handleOffline)
@@ -99,7 +99,7 @@ export function NetworkStatusToast() {
         <div className="bg-slate-900/95 dark:bg-slate-900/95 text-slate-100 border border-emerald-500/40 rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-md flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
-              <Wifi className="h-4 w-4" />
+              <Wifi className="h-5 w-5" />
             </div>
             <div className="min-w-0">
               <p className="text-xs font-bold leading-tight truncate text-emerald-400">Back Online!</p>
