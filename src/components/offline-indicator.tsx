@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Image from 'next/image'
-import { WifiOff, Wifi, RefreshCw, AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react'
+import { WifiOff, Wifi, RefreshCw, AlertCircle, CheckCircle2, ShieldCheck, Activity } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function OfflineIndicator() {
@@ -17,7 +16,7 @@ export function OfflineIndicator() {
     if (!navigator.onLine) {
       setTimeout(() => {
         setIsChecking(false)
-      }, 500)
+      }, 400)
       return
     }
 
@@ -81,28 +80,23 @@ export function OfflineIndicator() {
           role="dialog"
           aria-modal="true"
           aria-label="Offline Mode"
-          className="fixed inset-0 z-[99999] bg-slate-950/95 dark:bg-slate-950/95 text-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 backdrop-blur-xl animate-modal-pop overflow-y-auto"
+          className="fixed inset-0 z-[99999] bg-slate-950/90 dark:bg-slate-950/95 text-slate-100 flex items-center justify-center p-4 sm:p-6 backdrop-blur-xl animate-modal-pop overflow-y-auto"
         >
           {/* Ambient Glows */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 sm:w-96 h-80 sm:h-96 bg-primary/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-12 right-12 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 sm:w-96 h-72 sm:h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-10 right-10 w-60 sm:w-72 h-60 sm:h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 text-center shadow-2xl backdrop-blur-md relative z-10 space-y-5">
-            {/* Centered Glowing Logo & Icon */}
+          <div className="w-full max-w-sm sm:max-w-md bg-slate-900/95 border border-slate-800 rounded-3xl p-6 sm:p-8 text-center shadow-2xl backdrop-blur-md relative z-10 space-y-5">
+            {/* Inline SVG Emblem (Guaranteed to NEVER break offline) */}
             <div className="flex flex-col items-center justify-center">
               <div className="relative mb-3">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-tr from-primary/20 via-primary/5 to-transparent border border-primary/30 flex items-center justify-center shadow-xl">
-                  <Image
-                    src="/mobile-logo.png"
-                    alt="C-CURE Physiotherapy & Rehab Clinic"
-                    width={56}
-                    height={56}
-                    className="drop-shadow-lg"
-                    priority
-                  />
+                <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-3xl bg-gradient-to-tr from-cyan-500/20 via-primary/10 to-transparent border border-cyan-500/30 flex items-center justify-center shadow-xl">
+                  <div className="h-10 w-10 rounded-2xl bg-cyan-500/20 flex items-center justify-center text-cyan-400">
+                    <Activity className="h-6 w-6 animate-pulse" />
+                  </div>
                 </div>
-                <div className="absolute -bottom-1.5 -right-1.5 h-8 w-8 sm:h-9 sm:w-9 rounded-2xl bg-amber-500 text-amber-950 flex items-center justify-center shadow-lg border-2 border-slate-900">
-                  <WifiOff className="h-4 w-4 sm:h-4.5 sm:w-4.5 animate-pulse" />
+                <div className="absolute -bottom-1.5 -right-1.5 h-8 w-8 rounded-2xl bg-amber-500 text-amber-950 flex items-center justify-center shadow-lg border-2 border-slate-900">
+                  <WifiOff className="h-4 w-4" />
                 </div>
               </div>
 
@@ -115,7 +109,7 @@ export function OfflineIndicator() {
             </div>
 
             {/* Diagnostic helper tips card */}
-            <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 text-left space-y-2.5 text-xs text-slate-300 font-medium">
+            <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 text-left space-y-2.5 text-xs text-slate-300 font-medium">
               <div className="flex items-start gap-2.5">
                 <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
                 <span>Check your <strong>Wi-Fi</strong> or <strong>Mobile Data</strong> switch.</span>
@@ -125,7 +119,7 @@ export function OfflineIndicator() {
                 <span>Your opened patient records and session data remain safe.</span>
               </div>
               <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <CheckCircle2 className="h-4 w-4 text-cyan-400 shrink-0 mt-0.5" />
                 <span>Auto-reconnect will trigger as soon as internet is back.</span>
               </div>
             </div>
@@ -135,10 +129,10 @@ export function OfflineIndicator() {
               <Button
                 onClick={checkConnection}
                 disabled={isChecking}
-                className="flex-1 font-bold py-2.5 h-auto shadow-lg hover:shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 font-bold py-2.5 h-auto bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-600/20 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <RefreshCw className={`h-4 w-4 ${isChecking ? 'animate-spin' : ''}`} />
-                {isChecking ? 'Checking Connection...' : 'Retry Connection'}
+                {isChecking ? 'Checking...' : 'Retry Connection'}
               </Button>
               <Button
                 variant="outline"
