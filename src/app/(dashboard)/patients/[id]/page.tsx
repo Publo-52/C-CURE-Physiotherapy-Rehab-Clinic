@@ -89,17 +89,15 @@ export default async function PatientProfilePage({ params }: Props) {
         </div>
       </div>
 
-      {/* Tabs - Mobile friendly horizontal scroll navigation */}
+      {/* Tabs - Wrapped grid navigation for mobile & desktop (no swipe/scroll) */}
       <Tabs defaultValue="overview" className="w-full">
-        <div className="overflow-x-auto pb-1 scrollbar-none">
-          <TabsList className="flex w-max min-w-full sm:grid sm:grid-cols-5 sm:max-w-3xl">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="medical">Medical History</TabsTrigger>
-            <TabsTrigger value="treatment">Treatment Plan</TabsTrigger>
-            <TabsTrigger value="visits">Visits ({patient.visits.length})</TabsTrigger>
-            <TabsTrigger value="payments">Financials ({patient.payments.length})</TabsTrigger>
-          </TabsList>
-        </div>
+        <TabsList className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 h-auto p-1.5 bg-muted/80 rounded-xl w-full max-w-4xl">
+          <TabsTrigger value="overview" className="py-2 text-xs font-bold active:scale-95">Overview</TabsTrigger>
+          <TabsTrigger value="medical" className="py-2 text-xs font-bold active:scale-95">Medical History</TabsTrigger>
+          <TabsTrigger value="treatment" className="py-2 text-xs font-bold active:scale-95">Treatment Plan</TabsTrigger>
+          <TabsTrigger value="visits" className="py-2 text-xs font-bold active:scale-95">Visits ({patient.visits.length})</TabsTrigger>
+          <TabsTrigger value="payments" className="py-2 text-xs font-bold col-span-2 sm:col-span-1 active:scale-95">Financials ({patient.payments.length})</TabsTrigger>
+        </TabsList>
 
         <div className="mt-6">
           <TabsContent value="overview" className="space-y-6 m-0">

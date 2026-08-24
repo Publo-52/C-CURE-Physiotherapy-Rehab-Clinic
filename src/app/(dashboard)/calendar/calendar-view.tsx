@@ -401,15 +401,15 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
           </div>
         </div>
 
-        {/* Horizontal Scrollable Filter Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [::-webkit-scrollbar]:hidden py-0.5 -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap">
+        {/* Wrapped Filter Chips (No horizontal swipe/scroll) */}
+        <div className="flex flex-wrap items-center gap-1.5 text-xs py-0.5">
           {['All', 'Visits', 'Events/Meetings', 'Clinic Visit', 'Home Visit', 'Meeting', 'Task', 'Reminder'].map((type) => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 whitespace-nowrap transition-all active:scale-95 ${
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95 ${
                 filterType === type
-                  ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20'
+                  ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20 font-bold'
                   : 'bg-muted hover:bg-muted/80 text-muted-foreground'
               }`}
             >
