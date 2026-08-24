@@ -43,6 +43,7 @@ export const metadata: Metadata = {
 };
 
 import { OpeningSplashScreen } from "@/components/opening-splash-screen";
+import { OfflineIndicator } from "@/components/offline-indicator";
 
 export default function RootLayout({
   children,
@@ -62,6 +63,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <OpeningSplashScreen />
+          <OfflineIndicator />
           {children}
           <Toaster position="top-right" />
         </ThemeProvider>
