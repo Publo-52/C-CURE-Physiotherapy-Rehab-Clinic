@@ -370,13 +370,13 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Clinic Scheduler</h1>
           <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">Add and organize treatment sessions, staff meetings, and professional reminders effectively.</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)} className="w-full sm:w-auto shadow-md hover:shadow-primary/20 transition-all font-semibold active:scale-[0.98]">
+        <Button onClick={() => setIsCreateOpen(true)} className="w-full sm:w-auto shadow-md hover:shadow-primary/20 transition-all font-semibold active:scale-95">
           <Plus className="mr-2 h-4 w-4" /> Add to Schedule
         </Button>
       </div>
 
       {/* Filter / Category Selector Bar */}
-      <div className="bg-card p-3 sm:p-3.5 rounded-2xl border shadow-sm space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
+      <div className="bg-card p-3 sm:p-3.5 rounded-2xl border shadow-xs space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
         <div className="flex items-center justify-between sm:justify-start gap-3">
           <div className="flex items-center gap-2 shrink-0">
             <CalendarIcon className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
@@ -391,7 +391,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                 onClick={() => setView(v)}
                 className={`px-2.5 py-1 rounded-lg font-bold capitalize transition-all active:scale-95 ${
                   view === v
-                    ? 'bg-background text-foreground shadow-sm'
+                    ? 'bg-background text-foreground shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -407,12 +407,13 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95 ${
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95 ${
                 filterType === type
-                  ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20 font-bold'
+                  ? 'bg-primary text-primary-foreground shadow-xs font-bold'
                   : 'bg-muted hover:bg-muted/80 text-muted-foreground'
               }`}
             >
+              {filterType === type && <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground shrink-0" />}
               {type}
             </button>
           ))}
@@ -426,7 +427,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
               onClick={() => setView(v)}
               className={`px-4 py-1.5 rounded-lg font-bold capitalize transition-all ${
                 view === v
-                  ? 'bg-background text-foreground shadow-sm'
+                  ? 'bg-background text-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -439,30 +440,30 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
       {/* Calendar Shell */}
       <div className="bg-card border rounded-2xl shadow-xl overflow-hidden">
         {/* Navigation Bar */}
-        <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4.5 border-b bg-muted/10">
-          <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b bg-muted/10 gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={prevMonth}
               aria-label="Previous month"
-              className="p-1.5 sm:p-2 rounded-xl hover:bg-muted transition-colors border shadow-sm bg-background active:scale-95"
+              className="p-1.5 sm:p-2 rounded-xl hover:bg-muted transition-colors border shadow-xs bg-background active:scale-95"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={nextMonth}
               aria-label="Next month"
-              className="p-1.5 sm:p-2 rounded-xl hover:bg-muted transition-colors border shadow-sm bg-background active:scale-95"
+              className="p-1.5 sm:p-2 rounded-xl hover:bg-muted transition-colors border shadow-xs bg-background active:scale-95"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
             <button
               onClick={gotoToday}
-              className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold border shadow-sm bg-background hover:bg-muted transition-colors active:scale-95"
+              className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold border shadow-xs bg-background hover:bg-muted transition-colors active:scale-95"
             >
               Today
             </button>
           </div>
-          <h2 className="text-base sm:text-xl font-extrabold tracking-tight">
+          <h2 className="text-sm sm:text-xl font-extrabold tracking-tight truncate text-right">
             {MONTHS[currentMonth]} {currentYear}
           </h2>
         </div>
@@ -473,7 +474,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
             <div className="grid grid-cols-7 border-b bg-muted/5 font-semibold text-[10px] sm:text-xs tracking-wider uppercase text-muted-foreground">
               {DAYS.map(d => (
                 <div key={d} className="py-2 sm:py-3 text-center border-r last:border-r-0">
-                  <span className="sm:hidden">{d.slice(0, 3)}</span>
+                  <span className="sm:hidden">{d.slice(0, 2)}</span>
                   <span className="hidden sm:inline">{d}</span>
                 </div>
               ))}
