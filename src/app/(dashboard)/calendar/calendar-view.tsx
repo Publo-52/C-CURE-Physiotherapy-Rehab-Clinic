@@ -677,17 +677,15 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
         )}
       </div>
 
-      {/* Legend */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground p-3 border rounded-xl bg-card overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [::-webkit-scrollbar]:hidden">
+      {/* Legend (No horizontal swipe/scroll) */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground p-3 border rounded-xl bg-card">
         <span className="font-bold uppercase text-[10px] tracking-wider text-muted-foreground shrink-0">Legend:</span>
-        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-          {Object.entries(ITEM_STYLES).map(([type, c]) => (
-            <div key={type} className="flex items-center gap-1.5 font-bold shrink-0 text-[11px] sm:text-xs">
-              <span className={`h-2.5 w-2.5 rounded-full ${c.dot}`} />
-              {type}
-            </div>
-          ))}
-        </div>
+        {Object.entries(ITEM_STYLES).map(([type, c]) => (
+          <div key={type} className="flex items-center gap-1.5 font-bold text-[11px] sm:text-xs">
+            <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${c.dot}`} />
+            <span className="whitespace-nowrap">{type}</span>
+          </div>
+        ))}
       </div>
 
       {/* Unified Details Modal (Visit or Event) */}
