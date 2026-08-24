@@ -26,18 +26,18 @@ export function PatientInvoiceButton({ patient, profile, visitsCount = 0 }: Pati
   }
 
   return (
-    <div className="inline-flex items-center gap-1">
+    <div className="flex items-center gap-1 w-full sm:w-auto">
       <Button
         onClick={handleDownload}
         variant="outline"
         size="sm"
-        className="border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 font-semibold"
+        className="flex-1 sm:flex-initial border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 font-semibold active:scale-95"
       >
-        <Download className="h-4 w-4 mr-1.5" /> Download Invoice PDF
+        <Download className="h-4 w-4 mr-1.5 shrink-0" /> Download Invoice PDF
       </Button>
       <Link href={`/patients/${patient.id}/invoice`}>
-        <Button variant="ghost" size="sm" title="View Full Web Invoice" className="text-xs text-muted-foreground px-2">
-          <FileText className="h-4 w-4" />
+        <Button variant="outline" size="sm" title="View Full Web Invoice" className="text-xs text-muted-foreground px-2.5 shrink-0 active:scale-95">
+          <FileText className="h-4 w-4 shrink-0" />
         </Button>
       </Link>
     </div>

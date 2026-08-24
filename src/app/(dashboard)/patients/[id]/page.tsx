@@ -68,35 +68,39 @@ export default async function PatientProfilePage({ params }: Props) {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
-          <Link href={`/patients/${patient.id}/visits/new`} className="flex-1 sm:flex-initial">
-            <Button variant="outline" size="sm" className="w-full">
-              <CalendarDays className="h-4 w-4 mr-1.5" /> Record Visit
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-border">
+          <Link href={`/patients/${patient.id}/visits/new`} className="col-span-1">
+            <Button variant="outline" size="sm" className="w-full font-semibold active:scale-95">
+              <CalendarDays className="h-4 w-4 mr-1.5 shrink-0" /> Record Visit
             </Button>
           </Link>
-          <Link href={`/patients/${patient.id}/payments/new`} className="flex-1 sm:flex-initial">
-            <Button variant="default" size="sm" className="w-full">
-              <IndianRupee className="h-4 w-4 mr-1.5" /> Record Payment
+          <Link href={`/patients/${patient.id}/payments/new`} className="col-span-1">
+            <Button variant="default" size="sm" className="w-full font-semibold active:scale-95">
+              <IndianRupee className="h-4 w-4 mr-1.5 shrink-0" /> Record Payment
             </Button>
           </Link>
-          <PatientInvoiceButton patient={patient} profile={profile} visitsCount={patient.visits.length} />
-          <Link href={`/patients/${patient.id}/edit`}>
-            <Button variant="outline" size="sm">
-              <Edit className="h-4 w-4 mr-1.5" /> Edit
+          <div className="col-span-2 sm:col-span-1">
+            <PatientInvoiceButton patient={patient} profile={profile} visitsCount={patient.visits.length} />
+          </div>
+          <Link href={`/patients/${patient.id}/edit`} className="col-span-1 sm:col-span-1">
+            <Button variant="outline" size="sm" className="w-full font-semibold active:scale-95">
+              <Edit className="h-4 w-4 mr-1.5 shrink-0" /> Edit
             </Button>
           </Link>
-          <DeletePatientButton patientId={patient.id} patientName={patient.name} />
+          <div className="col-span-1 sm:col-span-1">
+            <DeletePatientButton patientId={patient.id} patientName={patient.name} />
+          </div>
         </div>
       </div>
 
-      {/* Tabs - Wrapped grid navigation for mobile & desktop (no swipe/scroll) */}
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 h-auto p-1.5 bg-muted/80 rounded-xl w-full max-w-4xl">
-          <TabsTrigger value="overview" className="py-2 text-xs font-bold active:scale-95">Overview</TabsTrigger>
-          <TabsTrigger value="medical" className="py-2 text-xs font-bold active:scale-95">Medical History</TabsTrigger>
-          <TabsTrigger value="treatment" className="py-2 text-xs font-bold active:scale-95">Treatment Plan</TabsTrigger>
-          <TabsTrigger value="visits" className="py-2 text-xs font-bold active:scale-95">Visits ({patient.visits.length})</TabsTrigger>
-          <TabsTrigger value="payments" className="py-2 text-xs font-bold col-span-2 sm:col-span-1 active:scale-95">Financials ({patient.payments.length})</TabsTrigger>
+      {/* Tabs Navigation */}
+      <Tabs defaultValue="overview" className="w-full space-y-4">
+        <TabsList className="flex flex-wrap items-center justify-start gap-1.5 h-auto p-1.5 bg-muted/80 rounded-xl w-full border shadow-xs">
+          <TabsTrigger value="overview" className="flex-1 min-w-[110px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Overview</TabsTrigger>
+          <TabsTrigger value="medical" className="flex-1 min-w-[125px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Medical History</TabsTrigger>
+          <TabsTrigger value="treatment" className="flex-1 min-w-[125px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Treatment Plan</TabsTrigger>
+          <TabsTrigger value="visits" className="flex-1 min-w-[100px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Visits ({patient.visits.length})</TabsTrigger>
+          <TabsTrigger value="payments" className="flex-1 min-w-[110px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Financials ({patient.payments.length})</TabsTrigger>
         </TabsList>
 
         <div className="mt-6">
