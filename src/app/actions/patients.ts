@@ -404,54 +404,60 @@ export async function markVisitDone(id: string) {
       visitRecordId = newVisit.id
     }
 
-    // Link or generate auto-billing for completed visit
+    // Link or generate auto-billing for completed visit ONLY if this visit doesn't already have an invoice
     if (visitRecordId) {
-      const schedulePaymentToday = await prisma.payment.findFirst({
-        where: {
-          patientId: id,
-          visitId: null,
-          paymentDate: { gte: todayStart, lt: todayEnd },
-          paymentNotes: { contains: 'Auto-billed' }
-        }
+      const existingPaymentForVisit = await prisma.payment.findUnique({
+        where: { visitId: visitRecordId }
       })
 
-      if (schedulePaymentToday) {
-        await prisma.payment.update({
-          where: { id: schedulePaymentToday.id },
-          data: { visitId: visitRecordId }
-        })
-      } else if (patient.perVisitFee > 0) {
-        const pastPayments = await prisma.payment.findMany({
-          where: { patientId: id },
-          select: { totalBill: true, amountPaidToday: true }
-        })
-        const pastBilled = pastPayments.reduce((s, p) => s + p.totalBill, 0)
-        const pastPaid = pastPayments.reduce((s, p) => s + p.amountPaidToday, 0)
-        const previousDue = Math.max(0, pastBilled - pastPaid)
-
-        const visitFee = patient.perVisitFee
-        const totalBill = visitFee
-        const totalDue = previousDue + totalBill
-        const remainingDue = totalDue
-
-        const invoiceNumber = await generateInvoiceNumber()
-        await prisma.payment.create({
-          data: {
-            invoiceNumber,
+      if (!existingPaymentForVisit) {
+        const schedulePaymentToday = await prisma.payment.findFirst({
+          where: {
             patientId: id,
-            visitId: visitRecordId,
-            visitFee,
-            totalBill,
-            amountPaidToday: 0,
-            previousDue,
-            remainingDue,
-            totalDue,
-            status: 'Due',
-            paymentMode: 'Cash',
-            paymentDate: new Date(),
-            paymentNotes: `Auto-billed for visit on ${new Date().toLocaleDateString('en-GB')}`
+            visitId: null,
+            paymentDate: { gte: todayStart, lt: todayEnd },
+            paymentNotes: { contains: 'Auto-billed' }
           }
         })
+
+        if (schedulePaymentToday) {
+          await prisma.payment.update({
+            where: { id: schedulePaymentToday.id },
+            data: { visitId: visitRecordId }
+          })
+        } else if (patient.perVisitFee > 0) {
+          const pastPayments = await prisma.payment.findMany({
+            where: { patientId: id },
+            select: { totalBill: true, amountPaidToday: true }
+          })
+          const pastBilled = pastPayments.reduce((s, p) => s + p.totalBill, 0)
+          const pastPaid = pastPayments.reduce((s, p) => s + p.amountPaidToday, 0)
+          const previousDue = Math.max(0, pastBilled - pastPaid)
+
+          const visitFee = patient.perVisitFee
+          const totalBill = visitFee
+          const totalDue = previousDue + totalBill
+          const remainingDue = totalDue
+
+          const invoiceNumber = await generateInvoiceNumber()
+          await prisma.payment.create({
+            data: {
+              invoiceNumber,
+              patientId: id,
+              visitId: visitRecordId,
+              visitFee,
+              totalBill,
+              amountPaidToday: 0,
+              previousDue,
+              remainingDue,
+              totalDue,
+              status: 'Due',
+              paymentMode: 'Cash',
+              paymentDate: new Date(),
+              paymentNotes: `Auto-billed for visit on ${new Date().toLocaleDateString('en-GB')}`
+            }
+          })
+        }
       }
     }
 
