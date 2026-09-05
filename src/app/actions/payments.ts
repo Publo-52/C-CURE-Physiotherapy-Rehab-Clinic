@@ -18,27 +18,29 @@ function safeDate(val: any, fallback = new Date()): Date {
 }
 
 export async function generateInvoiceNumber(): Promise<string> {
-  let invoiceNumber = ''
   let attempts = 0
-  while (attempts < 5) {
+  while (attempts < 10) {
     const lastPayment = await prisma.payment.findFirst({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { invoiceNumber: 'desc' },
+      select: { invoiceNumber: true },
     })
     
-    let nextInvNum = 1 + attempts
+    let maxNum = 0
     if (lastPayment && lastPayment.invoiceNumber.startsWith('INV-')) {
-      const lastNum = parseInt(lastPayment.invoiceNumber.replace('INV-', ''))
-      if (!isNaN(lastNum)) {
-        nextInvNum = lastNum + 1 + attempts
-      }
+      const parsed = parseInt(lastPayment.invoiceNumber.replace('INV-', ''), 10)
+      if (!isNaN(parsed)) maxNum = parsed
     }
-    invoiceNumber = `INV-${nextInvNum.toString().padStart(5, '0')}`
+    
+    const totalCount = await prisma.payment.count()
+    const base = Math.max(maxNum, totalCount)
+    const candidateNum = base + 1 + attempts
+    const invoiceNumber = `INV-${candidateNum.toString().padStart(5, '0')}`
 
     const existing = await prisma.payment.findUnique({ where: { invoiceNumber } })
-    if (!existing) break
+    if (!existing) return invoiceNumber
     attempts++
   }
-  return invoiceNumber
+  return `INV-${Date.now().toString().slice(-5)}`
 }
 
 export async function createPayment(patientId: string, formData: FormData) {
@@ -223,16 +225,17 @@ export async function getPatientPaymentDefaults(patientId: string) {
       select: {
         perVisitFee: true,
         payments: {
-          orderBy: { paymentDate: 'desc' },
-          take: 1,
-          select: { remainingDue: true }
+          select: { totalBill: true, amountPaidToday: true }
         }
       }
     })
     if (!patient) return null
+    const totalBilled = patient.payments.reduce((s, p) => s + p.totalBill, 0)
+    const totalPaid = patient.payments.reduce((s, p) => s + p.amountPaidToday, 0)
+    const previousDue = Math.max(0, totalBilled - totalPaid)
     return {
       perVisitFee: patient.perVisitFee || 0,
-      previousDue: patient.payments[0]?.remainingDue || 0
+      previousDue
     }
   } catch (error: any) {
     console.error('Error fetching payment defaults:', error?.message || error)

@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma"
 import PaymentsTable from "./payments-table"
 
 export default async function PaymentsPage() {
-  const [payments, totalCollectedRes, totalDuesRes, pendingCount] = await Promise.all([
+  const [payments, financialAggregates, pendingAccounts] = await Promise.all([
     prisma.payment.findMany({
       take: 100,
       select: {
@@ -22,13 +22,17 @@ export default async function PaymentsPage() {
       },
       orderBy: { paymentDate: 'desc' },
     }),
-    prisma.payment.aggregate({ _sum: { amountPaidToday: true } }),
-    prisma.payment.aggregate({ _sum: { remainingDue: true } }),
-    prisma.payment.count({ where: { status: { in: ['Due', 'Partially Paid'] } } }),
+    prisma.payment.aggregate({ _sum: { totalBill: true, amountPaidToday: true } }),
+    prisma.payment.groupBy({
+      by: ['patientId'],
+      where: { status: { in: ['Due', 'Partially Paid'] } },
+    }),
   ])
 
-  const totalCollected = totalCollectedRes._sum.amountPaidToday || 0
-  const totalDues = totalDuesRes._sum.remainingDue || 0
+  const totalCollected = financialAggregates._sum.amountPaidToday || 0
+  const totalBilled = financialAggregates._sum.totalBill || 0
+  const totalDues = Math.max(0, totalBilled - totalCollected)
+  const pendingCount = pendingAccounts.length
 
   return (
     <div className="space-y-4 sm:space-y-6">

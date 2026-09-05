@@ -115,10 +115,25 @@ export async function deleteVisit(visitId: string) {
   }
 
   try {
-    await prisma.visit.delete({
-      where: { id: visitId }
+    const visit = await prisma.visit.findUnique({
+      where: { id: visitId },
+      select: { id: true, patientId: true, payment: { select: { id: true, amountPaidToday: true } } }
     })
+
+    if (!visit) return { error: 'Visit not found' }
+
+    await prisma.$transaction(async (tx) => {
+      // If the visit has an unpaid auto-billed payment, remove it so the patient isn't billed for a cancelled visit
+      if (visit.payment && visit.payment.amountPaidToday === 0) {
+        await tx.payment.delete({ where: { id: visit.payment.id } })
+      }
+      await tx.visit.delete({ where: { id: visitId } })
+    })
+
     revalidatePath('/calendar')
+    revalidatePath('/payments')
+    revalidatePath(`/patients/${visit.patientId}`)
+    revalidatePath('/patients')
     revalidatePath('/')
     return { success: true }
   } catch (error: any) {

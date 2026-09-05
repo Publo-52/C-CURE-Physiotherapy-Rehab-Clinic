@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma'
 import { verifySession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 import { generateInvoiceNumber } from './payments'
+import { getISTDayBounds } from '@/lib/date-utils'
 
 function safeInt(val: any): number | null {
   if (val === null || val === undefined || val === '') return null
@@ -50,18 +51,20 @@ export async function createPatient(formData: FormData) {
   // Auto-generate Patient ID (e.g., P-0001) with concurrency collision handling
   let patientId = ''
   let attempts = 0
-  while (attempts < 5) {
+  while (attempts < 10) {
     const lastPatient = await prisma.patient.findFirst({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { patientId: 'desc' },
+      select: { patientId: true },
     })
     
-    let nextIdNum = 1 + attempts
+    let maxNum = 0
     if (lastPatient && lastPatient.patientId.startsWith('P-')) {
       const lastNum = parseInt(lastPatient.patientId.replace('P-', ''), 10)
-      if (!isNaN(lastNum)) {
-        nextIdNum = lastNum + 1 + attempts
-      }
+      if (!isNaN(lastNum)) maxNum = lastNum
     }
+    const totalCount = await prisma.patient.count()
+    const base = Math.max(maxNum, totalCount)
+    const nextIdNum = base + 1 + attempts
     patientId = `P-${nextIdNum.toString().padStart(4, '0')}`
 
     const existing = await prisma.patient.findUnique({ where: { patientId } })
@@ -224,13 +227,13 @@ export async function deletePatient(id: string) {
   }
 
   try {
-    // Delete all child relations explicitly first to prevent foreign key errors in SQLite
-    await prisma.treatmentPlan.deleteMany({ where: { patientId: id } })
-    await prisma.payment.deleteMany({ where: { patientId: id } })
-    await prisma.visit.deleteMany({ where: { patientId: id } })
-    await prisma.patient.delete({
-      where: { id }
-    })
+    // Delete all child relations atomically inside a transaction
+    await prisma.$transaction([
+      prisma.treatmentPlan.deleteMany({ where: { patientId: id } }),
+      prisma.payment.deleteMany({ where: { patientId: id } }),
+      prisma.visit.deleteMany({ where: { patientId: id } }),
+      prisma.patient.delete({ where: { id } }),
+    ])
 
     revalidatePath('/patients')
     revalidatePath('/payments')
@@ -250,10 +253,7 @@ export async function togglePresentStatus(id: string, status: boolean) {
   }
 
   try {
-    const todayStart = new Date()
-    todayStart.setHours(0, 0, 0, 0)
-    const todayEnd = new Date(todayStart)
-    todayEnd.setDate(todayEnd.getDate() + 1)
+    const { todayStart, todayEnd } = getISTDayBounds()
 
     const patient = await prisma.patient.update({
       where: { id },
@@ -266,18 +266,20 @@ export async function togglePresentStatus(id: string, status: boolean) {
     if (status) {
       // Checked / Scheduled for visit today: add visit fee if perVisitFee is configured
       if (patient.perVisitFee > 0) {
-        // Prevent duplicate billing for today
-        const existingPaymentToday = await prisma.payment.findFirst({
+        // Prevent duplicate schedule billing for today (check unlinked schedule bill specifically)
+        const existingSchedulePaymentToday = await prisma.payment.findFirst({
           where: {
             patientId: id,
+            visitId: null,
             paymentDate: {
               gte: todayStart,
               lt: todayEnd
-            }
+            },
+            paymentNotes: { contains: 'Auto-billed for scheduled visit' }
           }
         })
 
-        if (!existingPaymentToday) {
+        if (!existingSchedulePaymentToday) {
           const pastPayments = await prisma.payment.findMany({
             where: { patientId: id },
             select: { totalBill: true, amountPaidToday: true }
@@ -311,22 +313,24 @@ export async function togglePresentStatus(id: string, status: boolean) {
         }
       }
     } else {
-      // Unchecked / Removed from visit: reverse unpaid auto-billed payment for today
-      const autoBilledPayment = await prisma.payment.findFirst({
+      // Unchecked / Removed from visit: reverse ONLY unpaid auto-billed SCHEDULE payment (where visitId is null)
+      // This guarantees real recorded visits (which have a non-null visitId) are NEVER deleted!
+      const autoBilledSchedulePayment = await prisma.payment.findFirst({
         where: {
           patientId: id,
+          visitId: null,
           paymentDate: {
             gte: todayStart,
             lt: todayEnd
           },
           amountPaidToday: 0,
-          paymentNotes: { contains: 'Auto-billed' }
+          paymentNotes: { contains: 'Auto-billed for scheduled visit' }
         }
       })
 
-      if (autoBilledPayment) {
+      if (autoBilledSchedulePayment) {
         await prisma.payment.delete({
-          where: { id: autoBilledPayment.id }
+          where: { id: autoBilledSchedulePayment.id }
         })
       }
     }
@@ -350,10 +354,7 @@ export async function markVisitDone(id: string) {
   }
 
   try {
-    const todayStart = new Date()
-    todayStart.setHours(0, 0, 0, 0)
-    const todayEnd = new Date(todayStart)
-    todayEnd.setDate(todayEnd.getDate() + 1)
+    const { todayStart, todayEnd } = getISTDayBounds()
 
     const patient = await prisma.patient.update({
       where: { id },
@@ -405,19 +406,21 @@ export async function markVisitDone(id: string) {
 
     // Link or generate auto-billing for completed visit
     if (visitRecordId) {
-      const paymentToday = await prisma.payment.findFirst({
+      const schedulePaymentToday = await prisma.payment.findFirst({
         where: {
           patientId: id,
-          paymentDate: { gte: todayStart, lt: todayEnd }
+          visitId: null,
+          paymentDate: { gte: todayStart, lt: todayEnd },
+          paymentNotes: { contains: 'Auto-billed' }
         }
       })
 
-      if (paymentToday && !paymentToday.visitId) {
+      if (schedulePaymentToday) {
         await prisma.payment.update({
-          where: { id: paymentToday.id },
+          where: { id: schedulePaymentToday.id },
           data: { visitId: visitRecordId }
         })
-      } else if (!paymentToday && patient.perVisitFee > 0) {
+      } else if (patient.perVisitFee > 0) {
         const pastPayments = await prisma.payment.findMany({
           where: { patientId: id },
           select: { totalBill: true, amountPaidToday: true }

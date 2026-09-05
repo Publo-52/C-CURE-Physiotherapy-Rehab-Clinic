@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma'
 import { verifySession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 import { generateInvoiceNumber } from './payments'
+import { getISTDayBounds } from '@/lib/date-utils'
 
 function safeInt(val: any, fallback: number | null = null): number | null {
   if (val === null || val === undefined || val === '') return fallback
@@ -62,18 +63,15 @@ export async function createVisit(patientId: string, formData: FormData) {
 
     // 2. Automatically add visit fee payment invoice
     if (patient.perVisitFee > 0) {
-      const todayStart = new Date(date)
-      todayStart.setHours(0, 0, 0, 0)
-      const todayEnd = new Date(todayStart)
-      todayEnd.setDate(todayEnd.getDate() + 1)
+      const { todayStart, todayEnd } = getISTDayBounds(date)
 
-      // Check if there was an unlinked auto-billed payment created today (e.g. from the schedule tick)
+      // Check if there was an unlinked auto-billed payment created today from schedule tick
       const unlinkedTodayPayment = await prisma.payment.findFirst({
         where: {
           patientId,
           visitId: null,
           paymentDate: { gte: todayStart, lt: todayEnd },
-          paymentNotes: { contains: 'Auto-billed' }
+          paymentNotes: { contains: 'Auto-billed for scheduled visit' }
         }
       })
 

@@ -7,16 +7,13 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import DashboardChart from "./dashboard-chart"
 import { VisitQueue } from "./visit-queue"
+import { getISTDayBounds } from "@/lib/date-utils"
 
 export default async function DashboardPage() {
-  const todayStart = new Date()
-  todayStart.setHours(0, 0, 0, 0)
-  const todayEnd = new Date(todayStart)
-  todayEnd.setDate(todayEnd.getDate() + 1)
+  const { todayStart, todayEnd } = getISTDayBounds()
 
-  const sevenDaysAgo = new Date()
+  const sevenDaysAgo = new Date(todayStart)
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
-  sevenDaysAgo.setHours(0, 0, 0, 0)
 
   const [
     paymentAggregates,
@@ -29,7 +26,7 @@ export default async function DashboardPage() {
     rawEvents,
     scheduledVisits,
   ] = await Promise.all([
-    prisma.payment.aggregate({ _sum: { amountPaidToday: true, remainingDue: true } }),
+    prisma.payment.aggregate({ _sum: { totalBill: true, amountPaidToday: true } }),
     prisma.patient.count({ where: { status: 'Active' } }),
     prisma.patient.count({ where: { createdAt: { gte: todayStart, lt: todayEnd } } }),
     prisma.patient.findMany({
@@ -66,7 +63,8 @@ export default async function DashboardPage() {
   const todaysVisits = todaysVisitsData.length
   const presentPatients = queuePatients.length
   const totalRevenue = paymentAggregates._sum.amountPaidToday || 0
-  const totalOutstandingDues = paymentAggregates._sum.remainingDue || 0
+  const totalBilled = paymentAggregates._sum.totalBill || 0
+  const totalOutstandingDues = Math.max(0, totalBilled - totalRevenue)
   const todaysCompletedSessions = todaysVisitsData.filter(v => v.status === 'Completed').length
   const absentPatients = todaysVisitsData.filter(v => !v.patient.presentStatus).length
 
