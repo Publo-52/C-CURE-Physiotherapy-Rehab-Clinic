@@ -66,7 +66,7 @@ export default async function DashboardPage() {
   const totalBilled = paymentAggregates._sum.totalBill || 0
   const totalOutstandingDues = Math.max(0, totalBilled - totalRevenue)
   const todaysCompletedSessions = todaysVisitsData.filter(v => v.status === 'Completed').length
-  const absentPatients = todaysVisitsData.filter(v => !v.patient.presentStatus).length
+  const absentPatients = todaysVisitsData.filter(v => v.status !== 'Completed' && !v.patient.presentStatus).length
 
   // Merge general events + scheduled patient visits
   const upcomingEvents = [
