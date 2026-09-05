@@ -7,7 +7,7 @@ import { Plus } from "lucide-react"
 import { PatientsTable } from "./patients-table"
 
 export default async function PatientsPage() {
-  const patients = await prisma.patient.findMany({
+  const patientsRaw = await prisma.patient.findMany({
     select: {
       id: true,
       patientId: true,
@@ -18,8 +18,36 @@ export default async function PatientsPage() {
       presentStatus: true,
       visitDoneToday: true,
       registrationDate: true,
+      perVisitFee: true,
+      payments: {
+        select: {
+          totalBill: true,
+          amountPaidToday: true,
+        }
+      }
     },
     orderBy: { createdAt: 'desc' }
+  })
+
+  const patients = patientsRaw.map(p => {
+    const totalBilled = p.payments.reduce((s, x) => s + x.totalBill, 0)
+    const totalPaid = p.payments.reduce((s, x) => s + x.amountPaidToday, 0)
+    const totalDue = Math.max(0, totalBilled - totalPaid)
+    return {
+      id: p.id,
+      patientId: p.patientId,
+      name: p.name,
+      phone: p.phone,
+      disease: p.disease,
+      status: p.status,
+      presentStatus: p.presentStatus,
+      visitDoneToday: p.visitDoneToday,
+      registrationDate: p.registrationDate,
+      perVisitFee: p.perVisitFee || 0,
+      totalBilled,
+      totalPaid,
+      totalDue,
+    }
   })
 
   return (

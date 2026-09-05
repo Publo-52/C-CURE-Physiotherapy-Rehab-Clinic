@@ -4,11 +4,18 @@
 import prisma from '@/lib/prisma'
 import { verifySession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
+import { generateInvoiceNumber } from './payments'
 
 function safeInt(val: any): number | null {
   if (val === null || val === undefined || val === '') return null
   const parsed = parseInt(String(val), 10)
   return isNaN(parsed) ? null : parsed
+}
+
+function safeFloat(val: any, fallback = 0): number {
+  if (val === null || val === undefined || val === '') return fallback
+  const parsed = parseFloat(String(val))
+  return isNaN(parsed) ? fallback : parsed
 }
 
 export async function createPatient(formData: FormData) {
@@ -34,6 +41,7 @@ export async function createPatient(formData: FormData) {
   const emerContactName = (formData.get('emerContactName') as string)?.trim() || null
   const emerContactPhone = (formData.get('emerContactPhone') as string)?.trim() || null
   const status = (formData.get('status') as string) || 'Active'
+  const perVisitFee = safeFloat(formData.get('perVisitFee'), 0)
 
   if (!name || !phone) {
     return { error: 'Name and Phone are required.' }
@@ -82,6 +90,7 @@ export async function createPatient(formData: FormData) {
         emerContactName,
         emerContactPhone,
         status,
+        perVisitFee,
       }
     })
 
@@ -117,6 +126,7 @@ export async function updatePatient(id: string, formData: FormData) {
   const emerContactName = (formData.get('emerContactName') as string)?.trim() || null
   const emerContactPhone = (formData.get('emerContactPhone') as string)?.trim() || null
   const status = (formData.get('status') as string) || 'Active'
+  const perVisitFee = safeFloat(formData.get('perVisitFee'), 0)
 
   if (!name || !phone) {
     return { error: 'Name and Phone are required.' }
@@ -143,13 +153,64 @@ export async function updatePatient(id: string, formData: FormData) {
         emerContactName,
         emerContactPhone,
         status,
+        perVisitFee,
       }
     })
 
+    let unbilledCount = 0
+
+    // If perVisitFee is set (> 0), automatically create invoices for any past unbilled visits
+    if (perVisitFee > 0) {
+      const unbilledVisits = await prisma.visit.findMany({
+        where: {
+          patientId: id,
+          payment: null,
+        },
+        orderBy: { date: 'asc' }
+      })
+
+      for (const visit of unbilledVisits) {
+        const currentPayments = await prisma.payment.findMany({
+          where: { patientId: id },
+          select: { totalBill: true, amountPaidToday: true }
+        })
+        const pastBilled = currentPayments.reduce((s, p) => s + p.totalBill, 0)
+        const pastPaid = currentPayments.reduce((s, p) => s + p.amountPaidToday, 0)
+        const previousDue = Math.max(0, pastBilled - pastPaid)
+
+        const visitFee = perVisitFee
+        const totalBill = visitFee
+        const totalDue = previousDue + totalBill
+        const remainingDue = totalDue
+
+        const invoiceNumber = await generateInvoiceNumber()
+        await prisma.payment.create({
+          data: {
+            invoiceNumber,
+            patientId: id,
+            visitId: visit.id,
+            visitFee,
+            totalBill,
+            amountPaidToday: 0,
+            previousDue,
+            remainingDue,
+            totalDue,
+            status: 'Due',
+            paymentMode: 'Cash',
+            paymentDate: visit.date,
+            paymentNotes: `Auto-billed for Visit #${visit.visitNumber} (${new Date(visit.date).toLocaleDateString('en-GB')})`
+          }
+        })
+        unbilledCount++
+      }
+    }
+
     revalidatePath(`/patients/${id}`)
     revalidatePath('/patients')
+    revalidatePath('/payments')
+    revalidatePath('/calendar')
     revalidatePath('/')
-    return { success: true, patientId: patient.id }
+    return { success: true, patientId: patient.id, unbilledCount }
   } catch (error: any) {
     console.error('Error updating patient:', error?.message || error)
     return { error: `Failed to update patient: ${error?.message || 'Database error'}` }
@@ -189,6 +250,11 @@ export async function togglePresentStatus(id: string, status: boolean) {
   }
 
   try {
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+    const todayEnd = new Date(todayStart)
+    todayEnd.setDate(todayEnd.getDate() + 1)
+
     const patient = await prisma.patient.update({
       where: { id },
       data: { 
@@ -196,7 +262,79 @@ export async function togglePresentStatus(id: string, status: boolean) {
         visitDoneToday: false
       }
     })
+
+    if (status) {
+      // Checked / Scheduled for visit today: add visit fee if perVisitFee is configured
+      if (patient.perVisitFee > 0) {
+        // Prevent duplicate billing for today
+        const existingPaymentToday = await prisma.payment.findFirst({
+          where: {
+            patientId: id,
+            paymentDate: {
+              gte: todayStart,
+              lt: todayEnd
+            }
+          }
+        })
+
+        if (!existingPaymentToday) {
+          const pastPayments = await prisma.payment.findMany({
+            where: { patientId: id },
+            select: { totalBill: true, amountPaidToday: true }
+          })
+          const pastBilled = pastPayments.reduce((s, p) => s + p.totalBill, 0)
+          const pastPaid = pastPayments.reduce((s, p) => s + p.amountPaidToday, 0)
+          const previousDue = Math.max(0, pastBilled - pastPaid)
+
+          const visitFee = patient.perVisitFee
+          const totalBill = visitFee
+          const totalDue = previousDue + totalBill
+          const remainingDue = totalDue
+
+          const invoiceNumber = await generateInvoiceNumber()
+          await prisma.payment.create({
+            data: {
+              invoiceNumber,
+              patientId: id,
+              visitFee,
+              totalBill,
+              amountPaidToday: 0,
+              previousDue,
+              remainingDue,
+              totalDue,
+              status: 'Due',
+              paymentMode: 'Cash',
+              paymentDate: new Date(),
+              paymentNotes: `Auto-billed for scheduled visit on ${new Date().toLocaleDateString('en-GB')}`
+            }
+          })
+        }
+      }
+    } else {
+      // Unchecked / Removed from visit: reverse unpaid auto-billed payment for today
+      const autoBilledPayment = await prisma.payment.findFirst({
+        where: {
+          patientId: id,
+          paymentDate: {
+            gte: todayStart,
+            lt: todayEnd
+          },
+          amountPaidToday: 0,
+          paymentNotes: { contains: 'Auto-billed' }
+        }
+      })
+
+      if (autoBilledPayment) {
+        await prisma.payment.delete({
+          where: { id: autoBilledPayment.id }
+        })
+      }
+    }
+
     revalidatePath('/patients')
+    revalidatePath(`/patients/${id}`)
+    revalidatePath('/payments')
+    revalidatePath('/calendar')
     revalidatePath('/')
     return { success: true, presentStatus: patient.presentStatus }
   } catch (error: any) {
@@ -225,6 +363,8 @@ export async function markVisitDone(id: string) {
       }
     })
 
+    let visitRecordId = ''
+
     // Check if visit record for today already exists
     const existingTodayVisit = await prisma.visit.findFirst({
       where: {
@@ -241,6 +381,7 @@ export async function markVisitDone(id: string) {
         where: { id: existingTodayVisit.id },
         data: { status: 'Completed' }
       })
+      visitRecordId = existingTodayVisit.id
     } else {
       const lastVisit = await prisma.visit.findFirst({
         where: { patientId: id },
@@ -248,7 +389,7 @@ export async function markVisitDone(id: string) {
       })
       const visitNumber = lastVisit ? lastVisit.visitNumber + 1 : 1
 
-      await prisma.visit.create({
+      const newVisit = await prisma.visit.create({
         data: {
           patientId: id,
           visitNumber,
@@ -259,10 +400,61 @@ export async function markVisitDone(id: string) {
           notes: 'Completed via Visit Queue'
         }
       })
+      visitRecordId = newVisit.id
+    }
+
+    // Link or generate auto-billing for completed visit
+    if (visitRecordId) {
+      const paymentToday = await prisma.payment.findFirst({
+        where: {
+          patientId: id,
+          paymentDate: { gte: todayStart, lt: todayEnd }
+        }
+      })
+
+      if (paymentToday && !paymentToday.visitId) {
+        await prisma.payment.update({
+          where: { id: paymentToday.id },
+          data: { visitId: visitRecordId }
+        })
+      } else if (!paymentToday && patient.perVisitFee > 0) {
+        const pastPayments = await prisma.payment.findMany({
+          where: { patientId: id },
+          select: { totalBill: true, amountPaidToday: true }
+        })
+        const pastBilled = pastPayments.reduce((s, p) => s + p.totalBill, 0)
+        const pastPaid = pastPayments.reduce((s, p) => s + p.amountPaidToday, 0)
+        const previousDue = Math.max(0, pastBilled - pastPaid)
+
+        const visitFee = patient.perVisitFee
+        const totalBill = visitFee
+        const totalDue = previousDue + totalBill
+        const remainingDue = totalDue
+
+        const invoiceNumber = await generateInvoiceNumber()
+        await prisma.payment.create({
+          data: {
+            invoiceNumber,
+            patientId: id,
+            visitId: visitRecordId,
+            visitFee,
+            totalBill,
+            amountPaidToday: 0,
+            previousDue,
+            remainingDue,
+            totalDue,
+            status: 'Due',
+            paymentMode: 'Cash',
+            paymentDate: new Date(),
+            paymentNotes: `Auto-billed for visit on ${new Date().toLocaleDateString('en-GB')}`
+          }
+        })
+      }
     }
 
     revalidatePath('/patients')
     revalidatePath(`/patients/${id}`)
+    revalidatePath('/payments')
     revalidatePath('/calendar')
     revalidatePath('/')
     return { success: true, visitDoneToday: patient.visitDoneToday }

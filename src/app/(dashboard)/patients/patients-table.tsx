@@ -29,6 +29,10 @@ interface PatientItem {
   presentStatus: boolean
   visitDoneToday: boolean
   registrationDate: Date | string
+  perVisitFee?: number
+  totalBilled?: number
+  totalPaid?: number
+  totalDue?: number
 }
 
 interface PatientsTableProps {
@@ -49,6 +53,11 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
   const [optimisticDone, setOptimisticDone] = useState<Record<string, boolean>>(() => {
     const initialState: Record<string, boolean> = {}
     initialPatients.forEach(p => initialState[p.id] = p.visitDoneToday)
+    return initialState
+  })
+  const [optimisticDue, setOptimisticDue] = useState<Record<string, number>>(() => {
+    const initialState: Record<string, number> = {}
+    initialPatients.forEach(p => initialState[p.id] = p.totalDue ?? 0)
     return initialState
   })
 
@@ -82,11 +91,15 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
   const handleTogglePresent = async (id: string, name: string, currentStatus: boolean) => {
     const nextStatus = !currentStatus
     const originalDone = optimisticDone[id]
+    const patientFee = initialPatients.find(p => p.id === id)?.perVisitFee || 0
+    const originalDue = optimisticDue[id] ?? 0
+    const nextDue = nextStatus ? originalDue + patientFee : Math.max(0, originalDue - patientFee)
     
     setOptimisticPresent(prev => ({ ...prev, [id]: nextStatus }))
     setOptimisticDone(prev => ({ ...prev, [id]: false }))
+    setOptimisticDue(prev => ({ ...prev, [id]: nextDue }))
     
-    toast(nextStatus ? `Scheduled visit for ${name} today` : `Removed ${name} from today's visits`, {
+    toast(nextStatus ? `Scheduled visit for ${name} (Fee added to bill)` : `Removed ${name} from visits (Fee removed)`, {
       icon: nextStatus ? '📅' : '🗑️',
       duration: 2000,
     })
@@ -97,6 +110,7 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
         toast.error(res.error)
         setOptimisticPresent(prev => ({ ...prev, [id]: currentStatus }))
         setOptimisticDone(prev => ({ ...prev, [id]: originalDone }))
+        setOptimisticDue(prev => ({ ...prev, [id]: originalDue }))
       } else {
         router.refresh()
       }
@@ -173,9 +187,19 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
                     <span className="font-semibold text-foreground block">Registered</span>
                     {formatDate(patient.registrationDate)}
                   </div>
-                  <div className="col-span-2">
-                    <span className="font-semibold text-foreground block">Condition</span>
-                    {patient.disease || '—'}
+                  <div className="col-span-2 flex items-center justify-between">
+                    <div>
+                      <span className="font-semibold text-foreground block">Condition</span>
+                      {patient.disease || '—'}
+                    </div>
+                    <div className="text-right">
+                      <span className="font-semibold text-foreground block">Due Bill</span>
+                      {(optimisticDue[patient.id] ?? 0) > 0 ? (
+                        <span className="font-bold text-destructive">₹{(optimisticDue[patient.id] ?? 0).toLocaleString('en-IN')}</span>
+                      ) : (
+                        <span className="text-emerald-600 font-medium">₹0 (Paid)</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -240,6 +264,7 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
               <TableHead>Phone</TableHead>
               <TableHead>Condition</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead className="text-right">Due Bill</TableHead>
               <TableHead>Registered</TableHead>
               <TableHead className="text-center">To Visit Today</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -248,7 +273,7 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
           <TableBody>
             {filteredPatients.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-28 text-center text-muted-foreground">
+                <TableCell colSpan={9} className="h-28 text-center text-muted-foreground">
                   {searchTerm ? 'No patients matching your search criteria.' : 'No patients found.'}
                 </TableCell>
               </TableRow>
@@ -275,6 +300,17 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
                       <Badge variant={patient.status === 'Active' ? 'default' : patient.status === 'Completed' ? 'outline' : 'secondary'}>
                         {patient.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {(optimisticDue[patient.id] ?? 0) > 0 ? (
+                        <span className="font-bold text-xs text-destructive bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded border border-rose-200 dark:border-rose-900">
+                          ₹{(optimisticDue[patient.id] ?? 0).toLocaleString('en-IN')}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-emerald-600 font-medium bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-900">
+                          ₹0
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
                       {formatDate(patient.registrationDate)}

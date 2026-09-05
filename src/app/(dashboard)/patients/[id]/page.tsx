@@ -12,6 +12,7 @@ import { PatientInvoiceButton } from "./patient-invoice-button"
 import { getClinicProfile } from "@/app/actions/profile"
 import { DeletePatientButton } from "./delete-button"
 import { DeletePaymentButton } from "./delete-payment-button"
+import { PatientVisitToggle } from "./patient-visit-toggle"
 import { formatDate } from "@/lib/utils"
 
 interface Props {
@@ -31,7 +32,7 @@ export default async function PatientProfilePage({ params }: Props) {
         },
         payments: {
           orderBy: { paymentDate: 'desc' },
-          take: 20,
+          take: 50,
         },
         treatmentPlans: {
           orderBy: { createdAt: 'desc' },
@@ -46,6 +47,11 @@ export default async function PatientProfilePage({ params }: Props) {
 
   const recentVisits = patient.visits.slice(0, 5)
   const recentPayments = patient.payments.slice(0, 5)
+
+  // Calculate overall financial ledger aggregates for this patient
+  const totalBilled = patient.payments.reduce((s, p) => s + p.totalBill, 0)
+  const totalPaid = patient.payments.reduce((s, p) => s + p.amountPaidToday, 0)
+  const totalDue = Math.max(0, totalBilled - totalPaid)
 
   return (
     <div className="space-y-6">
@@ -64,11 +70,29 @@ export default async function PatientProfilePage({ params }: Props) {
                 {patient.status}
               </Badge>
               {patient.age && <span>• {patient.age} Yrs ({patient.gender || 'N/A'})</span>}
+              {totalDue > 0 ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-destructive border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900">
+                  Due: ₹{totalDue.toLocaleString('en-IN')}
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900">
+                  Bill Cleared
+                </span>
+              )}
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-border">
+          <div className="col-span-2 sm:col-span-auto">
+            <PatientVisitToggle
+              patientId={patient.id}
+              patientName={patient.name}
+              presentStatus={patient.presentStatus}
+              visitDoneToday={patient.visitDoneToday}
+              perVisitFee={patient.perVisitFee || 0}
+            />
+          </div>
           <Link href={`/patients/${patient.id}/visits/new`} className="col-span-1">
             <Button variant="outline" size="sm" className="w-full font-semibold active:scale-95">
               <CalendarDays className="h-4 w-4 mr-1.5 shrink-0" /> Record Visit
@@ -100,11 +124,49 @@ export default async function PatientProfilePage({ params }: Props) {
           <TabsTrigger value="medical" className="flex-1 min-w-[125px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Medical History</TabsTrigger>
           <TabsTrigger value="treatment" className="flex-1 min-w-[125px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Treatment Plan</TabsTrigger>
           <TabsTrigger value="visits" className="flex-1 min-w-[100px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Visits ({patient.visits.length})</TabsTrigger>
-          <TabsTrigger value="payments" className="flex-1 min-w-[110px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Financials ({patient.payments.length})</TabsTrigger>
+          <TabsTrigger value="payments" className="flex-1 min-w-[110px] sm:flex-initial py-2 text-xs font-bold active:scale-95">
+            Financials ({patient.payments.length})
+            {totalDue > 0 && <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500 text-white font-bold">Due</span>}
+          </TabsTrigger>
         </TabsList>
 
         <div className="mt-6">
           <TabsContent value="overview" className="space-y-6 m-0">
+            {/* Financial Ledger Highlights Card Row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <Card className="p-3.5 space-y-1 bg-card">
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                  <IndianRupee className="h-3.5 w-3.5 text-primary" /> Total Bill
+                </p>
+                <p className="text-xl font-bold">₹{totalBilled.toLocaleString('en-IN')}</p>
+                <p className="text-[10px] text-muted-foreground">All visits & services</p>
+              </Card>
+
+              <Card className="p-3.5 space-y-1 bg-card">
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-medium">
+                  <IndianRupee className="h-3.5 w-3.5" /> Total Paid
+                </p>
+                <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">₹{totalPaid.toLocaleString('en-IN')}</p>
+                <p className="text-[10px] text-muted-foreground">Collected</p>
+              </Card>
+
+              <Card className={`p-3.5 space-y-1 border ${totalDue > 0 ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40' : 'bg-card'}`}>
+                <p className={`text-xs flex items-center gap-1.5 font-medium ${totalDue > 0 ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>
+                  <IndianRupee className="h-3.5 w-3.5" /> Due Bill
+                </p>
+                <p className={`text-xl font-bold ${totalDue > 0 ? 'text-destructive' : 'text-emerald-600'}`}>₹{totalDue.toLocaleString('en-IN')}</p>
+                <p className="text-[10px] text-muted-foreground">{totalDue > 0 ? 'Pending payment' : 'All clear'}</p>
+              </Card>
+
+              <Card className="p-3.5 space-y-1 bg-card">
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                  <Activity className="h-3.5 w-3.5 text-primary" /> Per Visit Fee
+                </p>
+                <p className="text-xl font-bold text-primary">₹{patient.perVisitFee || 0}</p>
+                <p className="text-[10px] text-muted-foreground">Auto-charged on tick</p>
+              </Card>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Card>
                 <CardHeader className="pb-2">
@@ -131,7 +193,7 @@ export default async function PatientProfilePage({ params }: Props) {
                 </CardContent>
               </Card>
 
-              <Card className="sm:col-span-2 lg:col-span-1">
+              <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <MapPin className="h-4 w-4" /> Address
@@ -174,10 +236,15 @@ export default async function PatientProfilePage({ params }: Props) {
               </Card>
               
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <IndianRupee className="h-5 w-5 text-primary" /> Recent Payments
-                  </CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between pb-3">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <IndianRupee className="h-5 w-5 text-primary" /> Recent Payments
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Due: <span className={`font-semibold ${totalDue > 0 ? 'text-destructive' : 'text-emerald-600'}`}>₹{totalDue.toLocaleString('en-IN')}</span> | Total: ₹{totalBilled.toLocaleString('en-IN')}
+                    </p>
+                  </div>
                   <Link href={`/patients/${patient.id}/payments/new`}>
                     <Button variant="ghost" size="sm" className="text-xs">+ Add</Button>
                   </Link>
@@ -192,10 +259,11 @@ export default async function PatientProfilePage({ params }: Props) {
                           <div>
                             <p className="font-medium font-mono text-xs">{payment.invoiceNumber}</p>
                             <p className="text-muted-foreground text-xs">{formatDate(payment.paymentDate)}</p>
+                            {payment.paymentNotes && <p className="text-[11px] text-muted-foreground/80 line-clamp-1">{payment.paymentNotes}</p>}
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="text-right">
-                              <p className="font-medium text-green-600">₹{payment.amountPaidToday}</p>
+                              <p className="font-medium text-emerald-600">₹{payment.amountPaidToday}</p>
                               <Badge variant={payment.status === 'Paid' ? 'default' : 'destructive'} className="mt-1 text-[10px]">
                                 {payment.status}
                               </Badge>
@@ -359,6 +427,39 @@ export default async function PatientProfilePage({ params }: Props) {
                 <Button size="sm"><IndianRupee className="h-4 w-4 mr-1.5" /> Record Payment</Button>
               </Link>
             </div>
+            {/* Financial Ledger Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <Card className="bg-card">
+                <CardContent className="p-4 space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground">Total Billed</p>
+                  <p className="text-2xl font-bold">₹{totalBilled.toLocaleString('en-IN')}</p>
+                  <p className="text-[11px] text-muted-foreground">Sum of all treatment & visit charges</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card">
+                <CardContent className="p-4 space-y-1">
+                  <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Total Paid</p>
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">₹{totalPaid.toLocaleString('en-IN')}</p>
+                  <p className="text-[11px] text-muted-foreground">Payments collected to date</p>
+                </CardContent>
+              </Card>
+
+              <Card className={`border ${totalDue > 0 ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40' : 'bg-card'}`}>
+                <CardContent className="p-4 space-y-1">
+                  <p className={`text-xs font-medium ${totalDue > 0 ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>
+                    Total Due Bill
+                  </p>
+                  <p className={`text-2xl font-bold ${totalDue > 0 ? 'text-destructive' : 'text-emerald-600'}`}>
+                    ₹{totalDue.toLocaleString('en-IN')}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {totalDue > 0 ? 'Outstanding balance pending from patient' : 'All accounts settled'}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card>
               <CardContent className="p-0">
                 {patient.payments.length === 0 ? (

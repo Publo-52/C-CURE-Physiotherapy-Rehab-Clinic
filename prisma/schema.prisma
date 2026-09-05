@@ -81,6 +81,7 @@ model Patient {
   status           String          @default("Active")
   presentStatus    Boolean         @default(false)
   visitDoneToday   Boolean         @default(false)
+  perVisitFee      Float           @default(0)
 
   visits           Visit[]
   payments         Payment[]

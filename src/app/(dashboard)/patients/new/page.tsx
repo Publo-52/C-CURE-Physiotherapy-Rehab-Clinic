@@ -31,6 +31,7 @@ const patientSchema = z.object({
   currentMedication: z.string().optional(),
   emerContactName: z.string().optional(),
   emerContactPhone: z.string().optional(),
+  perVisitFee: z.string().optional(),
 })
 
 type PatientFormValues = z.infer<typeof patientSchema>
@@ -56,7 +57,8 @@ export default function NewPatientPage() {
       gender: 'Male', status: 'Active', aadhaar: '', address: '',
       disease: '', chiefComplaint: '', diagnosis: '',
       medicalHistory: '', currentMedication: '',
-      emerContactName: '', emerContactPhone: ''
+      emerContactName: '', emerContactPhone: '',
+      perVisitFee: '500',
     },
     mode: 'onChange'
   })
@@ -234,6 +236,27 @@ export default function NewPatientPage() {
                 <Label htmlFor="currentMedication">Current Medication</Label>
                 <Textarea id="currentMedication" placeholder="Enter ongoing medicines, painkillers, supplements..." {...register('currentMedication')} />
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Fees & Billing Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="perVisitFee">Per Visit Fee (₹)</Label>
+              <Input
+                id="perVisitFee"
+                type="number"
+                min="0"
+                placeholder="e.g. 500"
+                {...register('perVisitFee')}
+              />
+              <p className="text-xs text-muted-foreground">
+                Whenever you tick this patient in the visit schedule, this fee will automatically be added to their bill. If unticked, it will be removed.
+              </p>
             </div>
           </CardContent>
         </Card>

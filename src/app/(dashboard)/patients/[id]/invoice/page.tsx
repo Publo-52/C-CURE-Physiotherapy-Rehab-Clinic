@@ -38,9 +38,7 @@ export default async function PatientInvoicePage({ params }: Props) {
   // ─── Financial aggregates ─────────────────────────────────────────────────
   const totalBilled = patient.payments.reduce((s, p) => s + p.totalBill, 0)
   const totalPaid   = patient.payments.reduce((s, p) => s + p.amountPaidToday, 0)
-  const totalDue    = patient.payments.length > 0
-    ? patient.payments[0].remainingDue   // latest payment carries forward due
-    : 0
+  const totalDue    = Math.max(0, totalBilled - totalPaid)
   const lastVisit   = patient.visits[0] ?? null
   const visitCount  = await prisma.visit.count({ where: { patientId: id } })
 

@@ -31,6 +31,7 @@ const patientSchema = z.object({
   currentMedication: z.string().optional(),
   emerContactName: z.string().optional(),
   emerContactPhone: z.string().optional(),
+  perVisitFee: z.string().optional(),
 })
 
 type PatientFormValues = z.infer<typeof patientSchema>
@@ -55,6 +56,7 @@ interface EditPatientFormProps {
     currentMedication?: string | null
     emerContactName?: string | null
     emerContactPhone?: string | null
+    perVisitFee?: number | null
   }
 }
 
@@ -85,7 +87,8 @@ export default function EditPatientForm({ patient }: EditPatientFormProps) {
       medicalHistory: patient.medicalHistory || '',
       currentMedication: patient.currentMedication || '',
       emerContactName: patient.emerContactName || '',
-      emerContactPhone: patient.emerContactPhone || ''
+      emerContactPhone: patient.emerContactPhone || '',
+      perVisitFee: patient.perVisitFee !== undefined && patient.perVisitFee !== null ? String(patient.perVisitFee) : '0',
     },
     mode: 'onChange'
   })
@@ -103,7 +106,14 @@ export default function EditPatientForm({ patient }: EditPatientFormProps) {
       toast.error(result.error)
       setLoading(false)
     } else if (result.success) {
-      toast.success('Patient updated successfully!')
+      if (result.unbilledCount && result.unbilledCount > 0) {
+        toast.success(`Patient updated! Generated bills for ${result.unbilledCount} past visit${result.unbilledCount > 1 ? 's' : ''} (₹${(result.unbilledCount * Number(data.perVisitFee || 0)).toLocaleString('en-IN')}).`, {
+          duration: 4500,
+          icon: '🧾'
+        })
+      } else {
+        toast.success('Patient updated successfully!')
+      }
       router.push(`/patients/${patient.id}`)
     }
   }
@@ -228,6 +238,27 @@ export default function EditPatientForm({ patient }: EditPatientFormProps) {
               <Label htmlFor="currentMedication">Current Medication</Label>
               <Textarea id="currentMedication" placeholder="Enter ongoing medicines, painkillers, supplements..." {...register('currentMedication')} />
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Fees & Billing Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="perVisitFee">Per Visit Fee (₹)</Label>
+            <Input
+              id="perVisitFee"
+              type="number"
+              min="0"
+              placeholder="e.g. 500"
+              {...register('perVisitFee')}
+            />
+            <p className="text-xs text-muted-foreground">
+              Whenever you tick this patient in the visit schedule, this fee will automatically be added to their bill. If unticked, it will be removed.
+            </p>
           </div>
         </CardContent>
       </Card>

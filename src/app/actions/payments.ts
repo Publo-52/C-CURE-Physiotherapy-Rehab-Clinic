@@ -17,6 +17,30 @@ function safeDate(val: any, fallback = new Date()): Date {
   return isNaN(d.getTime()) ? fallback : d
 }
 
+export async function generateInvoiceNumber(): Promise<string> {
+  let invoiceNumber = ''
+  let attempts = 0
+  while (attempts < 5) {
+    const lastPayment = await prisma.payment.findFirst({
+      orderBy: { createdAt: 'desc' },
+    })
+    
+    let nextInvNum = 1 + attempts
+    if (lastPayment && lastPayment.invoiceNumber.startsWith('INV-')) {
+      const lastNum = parseInt(lastPayment.invoiceNumber.replace('INV-', ''))
+      if (!isNaN(lastNum)) {
+        nextInvNum = lastNum + 1 + attempts
+      }
+    }
+    invoiceNumber = `INV-${nextInvNum.toString().padStart(5, '0')}`
+
+    const existing = await prisma.payment.findUnique({ where: { invoiceNumber } })
+    if (!existing) break
+    attempts++
+  }
+  return invoiceNumber
+}
+
 export async function createPayment(patientId: string, formData: FormData) {
   const session = await verifySession()
   if (!session || !session.userId) {
@@ -52,27 +76,7 @@ export async function createPayment(patientId: string, formData: FormData) {
   const paymentNotes = (formData.get('paymentNotes') as string)?.trim() || null
   const transactionId = (formData.get('transactionId') as string)?.trim() || null
 
-  // Auto-generate Invoice ID with collision retry logic
-  let invoiceNumber = ''
-  let attempts = 0
-  while (attempts < 5) {
-    const lastPayment = await prisma.payment.findFirst({
-      orderBy: { createdAt: 'desc' },
-    })
-    
-    let nextInvNum = 1 + attempts
-    if (lastPayment && lastPayment.invoiceNumber.startsWith('INV-')) {
-      const lastNum = parseInt(lastPayment.invoiceNumber.replace('INV-', ''))
-      if (!isNaN(lastNum)) {
-        nextInvNum = lastNum + 1 + attempts
-      }
-    }
-    invoiceNumber = `INV-${nextInvNum.toString().padStart(5, '0')}`
-
-    const existing = await prisma.payment.findUnique({ where: { invoiceNumber } })
-    if (!existing) break
-    attempts++
-  }
+  const invoiceNumber = await generateInvoiceNumber()
 
   try {
     const payment = await prisma.payment.create({
@@ -96,6 +100,14 @@ export async function createPayment(patientId: string, formData: FormData) {
         transactionId,
       }
     })
+
+    // If visit fee was entered, automatically save as patient's standard per-visit fee for future visits
+    if (visitFee > 0) {
+      await prisma.patient.update({
+        where: { id: patientId },
+        data: { perVisitFee: visitFee }
+      }).catch(err => console.error('Error updating patient perVisitFee:', err))
+    }
 
     revalidatePath(`/patients/${patientId}`)
     revalidatePath(`/payments`)
@@ -201,6 +213,30 @@ export async function deletePayment(paymentId: string) {
   } catch (error: any) {
     console.error('Error deleting payment:', error?.message || error)
     return { error: `Failed to delete payment: ${error?.message || 'Database error'}` }
+  }
+}
+
+export async function getPatientPaymentDefaults(patientId: string) {
+  try {
+    const patient = await prisma.patient.findUnique({
+      where: { id: patientId },
+      select: {
+        perVisitFee: true,
+        payments: {
+          orderBy: { paymentDate: 'desc' },
+          take: 1,
+          select: { remainingDue: true }
+        }
+      }
+    })
+    if (!patient) return null
+    return {
+      perVisitFee: patient.perVisitFee || 0,
+      previousDue: patient.payments[0]?.remainingDue || 0
+    }
+  } catch (error: any) {
+    console.error('Error fetching payment defaults:', error?.message || error)
+    return null
   }
 }
 

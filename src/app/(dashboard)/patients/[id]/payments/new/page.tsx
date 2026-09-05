@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { createPayment } from '@/app/actions/payments'
+import { createPayment, getPatientPaymentDefaults } from '@/app/actions/payments'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,6 +26,22 @@ export default function NewPaymentPage() {
   const [amountPaidToday, setAmountPaidToday] = useState(0)
   const [defaultPaymentDate] = useState(() => new Date().toISOString().slice(0, 16))
   const [previousDue, setPreviousDue] = useState(0)
+
+  useEffect(() => {
+    async function loadDefaults() {
+      if (!patientId) return
+      const defaults = await getPatientPaymentDefaults(patientId)
+      if (defaults) {
+        if (defaults.perVisitFee > 0) {
+          setVisitFee(defaults.perVisitFee)
+        }
+        if (defaults.previousDue > 0) {
+          setPreviousDue(defaults.previousDue)
+        }
+      }
+    }
+    loadDefaults()
+  }, [patientId])
 
   const totalBill = consultationFee + visitFee + extraCharges - discount
   const totalDue = previousDue + totalBill
@@ -93,6 +109,7 @@ export default function NewPaymentPage() {
                 <div className="space-y-2">
                   <Label htmlFor="visitFee">Visit / Therapy Fee (₹)</Label>
                   <Input id="visitFee" name="visitFee" type="number" min="0" placeholder="Enter visit fee" value={visitFee} onChange={(e) => setVisitFee(Number(e.target.value))} />
+                  <p className="text-[11px] text-muted-foreground">Setting or modifying this updates the patient&apos;s auto-billing rate.</p>
                 </div>
 
                 <div className="space-y-2">
