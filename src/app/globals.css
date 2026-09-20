@@ -161,6 +161,15 @@
 }
 
 @layer utilities {
+  /* Utility to completely hide scrollbars while preserving scroll ability */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Handcrafted Elevation & Glassmorphism */
   .glass {
     background: oklch(1 0 0 / 80%);
