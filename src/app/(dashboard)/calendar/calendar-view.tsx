@@ -698,16 +698,16 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
 
         return (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/25 p-3 sm:p-4"
             onClick={() => setSelectedDetail(null)}
           >
             <div
-              className="bg-card border rounded-2xl shadow-2xl w-full max-w-md p-4 sm:p-6 space-y-4 relative max-h-[92vh] sm:max-h-[85vh] overflow-y-auto animate-modal-pop"
+              className="bg-card rounded-2xl shadow-2xl shadow-slate-900/10 dark:shadow-black/60 border border-border/40 w-full max-w-md p-4 sm:p-6 space-y-4 relative max-h-[92vh] sm:max-h-[85vh] overflow-y-auto animate-modal-pop"
               onClick={e => e.stopPropagation()}
             >
               <button
                 onClick={() => setSelectedDetail(null)}
-                className="absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 rounded-lg hover:bg-muted transition-colors border bg-background"
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all active:scale-95"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -729,7 +729,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
               </div>
 
               {/* Time and Info Grid */}
-              <div className="border-y py-3 space-y-2 text-xs sm:text-sm font-medium">
+              <div className="border-y border-border/40 py-3 space-y-2 text-xs sm:text-sm font-medium">
                 <div className="flex items-center gap-2.5 text-muted-foreground">
                   <Clock className="h-4 w-4 text-primary shrink-0" />
                   <span className="font-bold text-foreground">
@@ -751,13 +751,13 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                   {data.treatmentGiven && (
                     <div>
                       <div className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Treatment Program</div>
-                      <p className="bg-muted/50 border rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm font-semibold">{data.treatmentGiven}</p>
+                      <p className="bg-muted/30 border border-border/40 rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm font-semibold">{data.treatmentGiven}</p>
                     </div>
                   )}
                   {data.notes && (
                     <div>
                       <div className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Clinician Notes</div>
-                      <p className="bg-muted/50 border rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm text-muted-foreground font-semibold">{data.notes}</p>
+                      <p className="bg-muted/30 border border-border/40 rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm text-muted-foreground font-semibold">{data.notes}</p>
                     </div>
                   )}
                 </div>
@@ -765,26 +765,26 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                 data.description && (
                   <div>
                     <div className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Description / Details</div>
-                    <p className="bg-muted/50 border rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm font-semibold text-muted-foreground">{data.description}</p>
+                    <p className="bg-muted/30 border border-border/40 rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm font-semibold text-muted-foreground">{data.description}</p>
                   </div>
                 )
               )}
 
               {/* Footer Actions */}
-              <div className="flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center pt-3 gap-2 border-t">
+              <div className="flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center pt-3 gap-2 border-t border-border/40">
                 <Button 
                   variant="destructive" 
                   size="sm"
                   onClick={handleDeleteItem}
                   disabled={isDeleting}
-                  className="font-bold w-full sm:w-auto active:scale-95"
+                  className="font-bold w-full sm:w-auto active:scale-95 rounded-xl"
                 >
                   <Trash2 className="h-4 w-4 mr-1.5" />
                   {isDeleting ? 'Deleting...' : isVisit ? 'Cancel Appointment' : 'Delete Event'}
                 </Button>
                 {isVisit && (
                   <Link href={`/patients/${data.patient.id}`} className="w-full sm:w-auto">
-                    <Button size="sm" className="font-bold w-full active:scale-95">Patient Profile</Button>
+                    <Button size="sm" className="font-bold w-full active:scale-95 rounded-xl">Patient Profile</Button>
                   </Link>
                 )}
               </div>
@@ -796,34 +796,43 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
       {/* Unified Creation Modal */}
       {isCreateOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/25 p-3 sm:p-4"
           onClick={() => setIsCreateOpen(false)}
         >
           <div
-            className="bg-card border rounded-2xl shadow-2xl w-full max-w-lg p-4 sm:p-6 space-y-4 relative overflow-y-auto max-h-[92vh] sm:max-h-[85vh] animate-modal-pop"
+            className="bg-card rounded-2xl shadow-2xl shadow-slate-900/10 dark:shadow-black/60 border border-border/40 w-full max-w-md p-4 sm:p-6 space-y-4 relative overflow-y-auto max-h-[92vh] animate-modal-pop"
             onClick={e => e.stopPropagation()}
           >
             <button
               onClick={() => setIsCreateOpen(false)}
-              className="absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 rounded-lg hover:bg-muted transition-colors border bg-background"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all active:scale-95"
             >
               <X className="h-4 w-4" />
             </button>
 
             {/* Modal Header */}
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight">Schedule Builder</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Select a category and fill in the details.</p>
+            <div className="flex items-center gap-3 pr-6">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-full shrink-0 bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-inner">
+                <CalendarIcon className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base sm:text-lg font-extrabold tracking-tight leading-snug">
+                  {scheduleMode === 'visit' ? 'Schedule Patient Visit' : 'Schedule Event / Task'}
+                </h2>
+                <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                  {scheduleMode === 'visit' ? 'Book appointment slot for patient' : 'Add meeting or reminder to calendar'}
+                </p>
+              </div>
             </div>
 
-            {/* Toggle Category Buttons */}
-            <div className="grid grid-cols-2 p-1 bg-muted rounded-xl text-xs font-bold">
+            {/* Subtle Mode Switcher */}
+            <div className="grid grid-cols-2 p-1 bg-muted/60 rounded-xl text-xs font-bold border border-border/40">
               <button
                 type="button"
                 onClick={() => setScheduleMode('visit')}
-                className={`py-2 rounded-lg transition-all active:scale-95 ${
+                className={`py-1.5 rounded-lg transition-all active:scale-95 ${
                   scheduleMode === 'visit'
-                    ? 'bg-background text-foreground shadow-sm'
+                    ? 'bg-background text-foreground shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -832,9 +841,9 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
               <button
                 type="button"
                 onClick={() => setScheduleMode('event')}
-                className={`py-2 rounded-lg transition-all active:scale-95 ${
+                className={`py-1.5 rounded-lg transition-all active:scale-95 ${
                   scheduleMode === 'event'
-                    ? 'bg-background text-foreground shadow-sm'
+                    ? 'bg-background text-foreground shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -842,13 +851,13 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
               </button>
             </div>
 
-            <form onSubmit={handleScheduleSubmit} className="space-y-4">
+            <form onSubmit={handleScheduleSubmit} className="space-y-3.5">
               
               {/* PATIENT VISIT FIELDS */}
               {scheduleMode === 'visit' && (
-                <div className="space-y-3.5">
+                <div className="space-y-3">
                   {/* Search Patient */}
-                  <div className="space-y-1.5 relative">
+                  <div className="space-y-1 relative">
                     <Label htmlFor="patientSearch" className="text-xs font-bold">Search Patient *</Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -860,7 +869,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                           setPatientSearch(e.target.value)
                           if (selectedPatient) setSelectedPatient(null)
                         }}
-                        className="pl-9 font-semibold text-sm"
+                        className="pl-9 font-semibold text-xs sm:text-sm rounded-xl"
                         required
                       />
                       {selectedPatient && (
@@ -879,7 +888,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
 
                     {/* Auto Complete Dropdown */}
                     {searchedPatients.length > 0 && !selectedPatient && (
-                      <div className="absolute z-20 w-full bg-popover border rounded-xl shadow-xl mt-1 overflow-hidden divide-y max-h-48 overflow-y-auto">
+                      <div className="absolute z-20 w-full bg-popover border border-border/40 rounded-xl shadow-xl mt-1 overflow-hidden divide-y divide-border/40 max-h-48 overflow-y-auto">
                         {searchedPatients.map(p => (
                           <button
                             key={p.id}
@@ -898,9 +907,9 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                     )}
                   </div>
 
-                  {/* Visit Time grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
+                  {/* Visit Time and Type grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="space-y-1">
                       <Label htmlFor="visitDate" className="text-xs font-bold">Date &amp; Time *</Label>
                       <Input
                         id="visitDate"
@@ -908,17 +917,17 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                         value={visitDate}
                         onChange={(e) => setVisitDate(e.target.value)}
                         required
-                        className="font-semibold text-xs sm:text-sm"
+                        className="font-semibold text-xs rounded-xl"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <Label htmlFor="visitType" className="text-xs font-bold">Visit Type *</Label>
                       <select
                         id="visitType"
                         value={visitType}
                         onChange={(e) => setVisitType(e.target.value)}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs sm:text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold"
+                        className="w-full h-9 rounded-xl border border-input bg-background px-3 py-1.5 text-xs ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-semibold"
                         required
                       >
                         <option value="Clinic Visit">Clinic Visit</option>
@@ -926,51 +935,17 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                         <option value="Online Consultation">Online Consultation</option>
                       </select>
                     </div>
-
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="duration" className="text-xs font-bold">Duration (minutes)</Label>
-                      <Input
-                        id="duration"
-                        type="number"
-                        value={duration}
-                        onChange={(e) => setDuration(Number(e.target.value))}
-                        min="5"
-                        required
-                        className="font-semibold text-xs sm:text-sm"
-                      />
-                    </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="treatment" className="text-xs font-bold">Planned Treatment Program</Label>
-                    <Textarea
-                      id="treatment"
-                      placeholder="Enter planned treatment program"
-                      value={treatmentGiven}
-                      onChange={(e) => setTreatmentGiven(e.target.value)}
-                      className="font-semibold text-xs sm:text-sm min-h-[60px]"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="exercises" className="text-xs font-bold">Exercises</Label>
-                    <Textarea
-                      id="exercises"
-                      placeholder="Enter home exercise plan"
-                      value={exerciseGiven}
-                      onChange={(e) => setExerciseGiven(e.target.value)}
-                      className="font-semibold text-xs sm:text-sm min-h-[60px]"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="notes" className="text-xs font-bold">Physiotherapist Notes</Label>
-                    <Textarea
+                  {/* Optional Note field */}
+                  <div className="space-y-1">
+                    <Label htmlFor="notes" className="text-xs font-bold text-muted-foreground">Notes / Purpose (optional)</Label>
+                    <Input
                       id="notes"
-                      placeholder="Enter physiotherapist notes and observations..."
+                      placeholder="e.g. Follow-up physiotherapy, cervical traction..."
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="font-semibold text-xs sm:text-sm min-h-[60px]"
+                      className="font-medium text-xs sm:text-sm rounded-xl"
                     />
                   </div>
                 </div>
@@ -978,8 +953,8 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
 
               {/* GENERAL EVENT FIELDS */}
               {scheduleMode === 'event' && (
-                <div className="space-y-3.5">
-                  <div className="space-y-1.5">
+                <div className="space-y-3">
+                  <div className="space-y-1">
                     <Label htmlFor="eventTitle" className="text-xs font-bold">Event Title / Task *</Label>
                     <Input
                       id="eventTitle"
@@ -987,12 +962,12 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                       value={eventTitle}
                       onChange={(e) => setEventTitle(e.target.value)}
                       required
-                      className="font-semibold text-xs sm:text-sm"
+                      className="font-semibold text-xs sm:text-sm rounded-xl"
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="space-y-1">
                       <Label htmlFor="eventDate" className="text-xs font-bold">Date &amp; Time *</Label>
                       <Input
                         id="eventDate"
@@ -1000,17 +975,17 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                         value={eventDate}
                         onChange={(e) => setEventDate(e.target.value)}
                         required
-                        className="font-semibold text-xs sm:text-sm"
+                        className="font-semibold text-xs rounded-xl"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <Label htmlFor="eventType" className="text-xs font-bold">Event Type *</Label>
                       <select
                         id="eventType"
                         value={eventType}
                         onChange={(e) => setEventType(e.target.value)}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs sm:text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 font-semibold"
+                        className="w-full h-9 rounded-xl border border-input bg-background px-3 py-1.5 text-xs ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-semibold"
                         required
                       >
                         <option value="Meeting">Meeting</option>
@@ -1019,45 +994,38 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                         <option value="Other">Other</option>
                       </select>
                     </div>
-
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <Label htmlFor="eventDuration" className="text-xs font-bold">Duration (minutes)</Label>
-                      <Input
-                        id="eventDuration"
-                        type="number"
-                        value={eventDuration}
-                        onChange={(e) => setEventDuration(Number(e.target.value))}
-                        min="5"
-                        required
-                        className="font-semibold text-xs sm:text-sm"
-                      />
-                    </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="eventDescription" className="text-xs font-bold">Description / Notes</Label>
-                    <Textarea
+                  <div className="space-y-1">
+                    <Label htmlFor="eventDescription" className="text-xs font-bold text-muted-foreground">Description / Notes (optional)</Label>
+                    <Input
                       id="eventDescription"
-                      placeholder="Details of the meeting agenda or chore requirements..."
+                      placeholder="Details of the meeting or task..."
                       value={eventDescription}
                       onChange={(e) => setEventDescription(e.target.value)}
-                      className="font-semibold text-xs sm:text-sm min-h-[70px]"
+                      className="font-medium text-xs sm:text-sm rounded-xl"
                     />
                   </div>
                 </div>
               )}
 
               {/* Form Footer */}
-              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-3 border-t">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/40">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setIsCreateOpen(false)}
-                  className="font-bold w-full sm:w-auto active:scale-95"
+                  className="font-bold rounded-xl active:scale-95 text-muted-foreground hover:text-foreground"
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting} className="font-bold w-full sm:w-auto active:scale-95">
+                <Button 
+                  type="submit" 
+                  size="sm"
+                  disabled={isSubmitting} 
+                  className="font-bold rounded-xl active:scale-95 shadow-sm shadow-primary/20"
+                >
                   {isSubmitting ? 'Scheduling...' : 'Add to Schedule'}
                 </Button>
               </div>

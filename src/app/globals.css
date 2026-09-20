@@ -132,16 +132,24 @@
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior-y: none;
     -webkit-overflow-scrolling: touch;
-    transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  header, aside, main, [data-slot="card"], .glass {
-    transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+  }
+
+  /* ── Ultra-Smooth Global Theme Transition ── */
+  html.theme-transition,
+  html.theme-transition *,
+  html.theme-transition *::before,
+  html.theme-transition *::after {
+    transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                fill 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                stroke 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition-delay: 0s !important;
   }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
