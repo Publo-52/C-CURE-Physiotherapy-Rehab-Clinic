@@ -1,10 +1,9 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
+---
+name: no-delete-without-permission
+description: Strict safety rule prohibiting any deletion of files, code, or data without explicit user permission
+trigger: always_on
+---
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
-
-<!-- BEGIN:strict-safety-rules -->
 # CRITICAL SAFETY RULE: NO DELETION WITHOUT EXPLICIT USER PERMISSION
 
 **Mandatory User Directive:**
@@ -22,4 +21,3 @@ This version has breaking changes — APIs, conventions, and file structure may 
    - Do NOT delete existing features, components, utilities, routes, comments, or data models during refactoring without explicitly asking and receiving confirmation first.
 5. **Always Request Permission First**:
    - If any action, cleanup, or refactor might lead to data loss or deletion of any resource, you MUST stop and ask for the user's explicit consent first.
-<!-- END:strict-safety-rules -->

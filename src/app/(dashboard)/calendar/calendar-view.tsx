@@ -363,20 +363,20 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 fade-in-up">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pb-1">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Clinic Scheduler</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">Add and organize treatment sessions, staff meetings, and professional reminders effectively.</p>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight gradient-text">Clinic Scheduler</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5 font-medium">Add and organize treatment sessions, staff meetings, and professional reminders effectively.</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)} className="w-full sm:w-auto shadow-md hover:shadow-primary/20 transition-all font-semibold active:scale-95">
+        <Button onClick={() => setIsCreateOpen(true)} className="w-full sm:w-auto shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/35 transition-all font-bold rounded-xl active-press">
           <Plus className="mr-2 h-4 w-4" /> Add to Schedule
         </Button>
       </div>
 
       {/* Filter / Category Selector Bar */}
-      <div className="bg-card p-3 sm:p-3.5 rounded-2xl border shadow-xs space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
+      <div className="card-handmade p-3.5 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
         <div className="flex items-center justify-between sm:justify-start gap-3">
           <div className="flex items-center gap-2 shrink-0">
             <CalendarIcon className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
@@ -384,14 +384,14 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
           </div>
 
           {/* View Mode Switcher on Mobile */}
-          <div className="flex sm:hidden gap-1 bg-muted p-1 rounded-xl text-xs shrink-0">
+          <div className="flex sm:hidden gap-1 bg-muted/60 p-1 rounded-xl text-xs shrink-0 border border-border/60">
             {(['month', 'week', 'list'] as const).map(v => (
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className={`px-2.5 py-1 rounded-lg font-bold capitalize transition-all active:scale-95 ${
+                className={`px-2.5 py-1 rounded-lg font-bold capitalize transition-all active-press ${
                   view === v
-                    ? 'bg-background text-foreground shadow-xs'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -407,10 +407,10 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95 ${
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 active-press ${
                 filterType === type
-                  ? 'bg-primary text-primary-foreground shadow-xs font-bold'
-                  : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  : 'bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground'
               }`}
             >
               {filterType === type && <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground shrink-0" />}
@@ -420,14 +420,14 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
         </div>
 
         {/* View Mode Switcher on Desktop */}
-        <div className="hidden sm:flex gap-1 bg-muted p-1 rounded-xl text-xs shrink-0">
+        <div className="hidden sm:flex gap-1 bg-muted/60 p-1 rounded-xl text-xs shrink-0 border border-border/60">
           {(['month', 'week', 'list'] as const).map(v => (
             <button
               key={v}
               onClick={() => setView(v)}
-              className={`px-4 py-1.5 rounded-lg font-bold capitalize transition-all ${
+              className={`px-4 py-1.5 rounded-lg font-bold capitalize transition-all active-press ${
                 view === v
-                  ? 'bg-background text-foreground shadow-xs'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -438,7 +438,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
       </div>
 
       {/* Calendar Shell */}
-      <div className="bg-card border rounded-2xl shadow-xl overflow-hidden">
+      <div className="card-handmade overflow-hidden">
         {/* Navigation Bar */}
         <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b bg-muted/10 gap-2">
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">

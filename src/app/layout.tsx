@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
@@ -16,11 +16,13 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-export const viewport = {
+export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
+  minimumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
 }
 
 export const metadata: Metadata = {
@@ -44,6 +46,7 @@ export const metadata: Metadata = {
 
 import { OpeningSplashScreen } from "@/components/opening-splash-screen";
 import { NetworkStatusToast } from "@/components/network-status-toast";
+import { MobileAntiZoom } from "@/components/mobile-anti-zoom";
 
 export default function RootLayout({
   children,
@@ -60,8 +63,8 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="light"
           enableSystem={false}
-          disableTransitionOnChange
         >
+          <MobileAntiZoom />
           <OpeningSplashScreen />
           <NetworkStatusToast />
           {children}

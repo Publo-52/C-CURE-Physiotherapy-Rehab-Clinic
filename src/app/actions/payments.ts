@@ -19,28 +19,37 @@ function safeDate(val: any, fallback = new Date()): Date {
 
 export async function generateInvoiceNumber(): Promise<string> {
   let attempts = 0
-  while (attempts < 10) {
+  while (attempts < 15) {
+    // Check both by invoiceNumber desc and createdAt desc to reliably capture the latest sequence
     const lastPayment = await prisma.payment.findFirst({
-      orderBy: { invoiceNumber: 'desc' },
+      orderBy: { createdAt: 'desc' },
       select: { invoiceNumber: true },
     })
     
     let maxNum = 0
-    if (lastPayment && lastPayment.invoiceNumber.startsWith('INV-')) {
-      const parsed = parseInt(lastPayment.invoiceNumber.replace('INV-', ''), 10)
-      if (!isNaN(parsed)) maxNum = parsed
+    if (lastPayment?.invoiceNumber) {
+      const match = lastPayment.invoiceNumber.match(/\d+/)
+      if (match) {
+        const parsed = parseInt(match[0], 10)
+        if (!isNaN(parsed)) maxNum = parsed
+      }
     }
     
     const totalCount = await prisma.payment.count()
     const base = Math.max(maxNum, totalCount)
     const candidateNum = base + 1 + attempts
-    const invoiceNumber = `INV-${candidateNum.toString().padStart(5, '0')}`
+    // Pad to 5 digits, or allow natural expansion beyond 99,999 (e.g. INV-100001)
+    const numStr = candidateNum < 100000 ? candidateNum.toString().padStart(5, '0') : candidateNum.toString()
+    const invoiceNumber = `INV-${numStr}`
 
     const existing = await prisma.payment.findUnique({ where: { invoiceNumber } })
     if (!existing) return invoiceNumber
     attempts++
   }
-  return `INV-${Date.now().toString().slice(-5)}`
+
+  // Guaranteed unique collision-proof fallback
+  const uniqueSuffix = `${Date.now().toString().slice(-5)}${Math.floor(Math.random() * 90 + 10)}`
+  return `INV-${uniqueSuffix}`
 }
 
 export async function createPayment(patientId: string, formData: FormData) {

@@ -18,11 +18,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const value = payload[0].value
     return (
-      <div className="bg-popover/95 backdrop-blur-md border border-border px-3 py-2 rounded-xl shadow-xl text-xs space-y-1">
-        <p className="font-bold text-popover-foreground">{label}</p>
-        <p className="text-sky-600 dark:text-sky-400 font-extrabold text-sm">
+      <div className="bg-popover/95 backdrop-blur-xl border border-border/80 px-3.5 py-2.5 rounded-2xl shadow-xl text-xs space-y-1 ring-1 ring-black/5 dark:ring-white/10">
+        <p className="font-semibold text-muted-foreground">{label}</p>
+        <p className="text-primary font-black text-base tabular-num">
           ₹{Number(value).toLocaleString('en-IN')}
         </p>
+        <p className="text-[10px] text-muted-foreground/80">Daily Collections</p>
       </div>
     )
   }
@@ -40,7 +41,7 @@ export default function DashboardChart({ data }: DashboardChartProps) {
   const maxRevenue = Math.max(...data.map(d => d.revenue), 100)
 
   if (!mounted) {
-    return <div className="h-[260px] w-full bg-muted/10 animate-pulse rounded-xl" />
+    return <div className="h-[260px] w-full bg-muted/10 animate-pulse rounded-2xl" />
   }
 
   return (
@@ -48,41 +49,40 @@ export default function DashboardChart({ data }: DashboardChartProps) {
       <ResponsiveContainer width="99%" height="100%">
         <BarChart data={data} margin={{ top: 15, right: 10, left: -15, bottom: 0 }}>
           <defs>
-            <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#0ea5e9" stopOpacity={1} />
-              <stop offset="100%" stopColor="#0284c7" stopOpacity={0.7} />
+            <linearGradient id="artisanRevenueGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="oklch(0.58 0.16 192)" stopOpacity={1} />
+              <stop offset="100%" stopColor="oklch(0.46 0.15 220)" stopOpacity={0.75} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.15} />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.12} />
           <XAxis 
             dataKey="day" 
             tickLine={false} 
             axisLine={false} 
             tick={{ fontSize: 11, fill: 'currentColor' }}
-            className="text-muted-foreground font-medium"
+            className="text-muted-foreground font-semibold"
             dy={8}
           />
           <YAxis 
             tickLine={false} 
             axisLine={false} 
             tick={{ fontSize: 11, fill: 'currentColor' }}
-            className="text-muted-foreground font-medium"
+            className="text-muted-foreground font-semibold tabular-num"
             tickFormatter={(val) => val >= 1000 ? `₹${(val / 1000).toFixed(1)}k` : `₹${val}`}
             domain={[0, Math.ceil(maxRevenue * 1.15)]}
           />
           <Tooltip 
-            cursor={{ fill: 'rgba(14, 165, 233, 0.08)' }}
+            cursor={{ fill: 'oklch(0.55 0.16 192 / 8%)' }}
             content={<CustomTooltip />}
           />
           <Bar 
             dataKey="revenue" 
-            fill="url(#revenueGradient)" 
-            radius={[6, 6, 0, 0]} 
-            maxBarSize={40}
+            fill="url(#artisanRevenueGradient)" 
+            radius={[8, 8, 2, 2]} 
+            maxBarSize={38}
           />
         </BarChart>
       </ResponsiveContainer>
     </div>
   )
 }
-

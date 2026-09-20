@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TrendingDown, TrendingUp, AlertCircle } from "lucide-react"
+import { TrendingDown, TrendingUp, AlertCircle, IndianRupee, ShieldAlert, CheckCircle2 } from "lucide-react"
 import prisma from "@/lib/prisma"
 import PaymentsTable from "./payments-table"
 
@@ -35,47 +34,80 @@ export default async function PaymentsPage() {
   const pendingCount = pendingAccounts.length
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Payments & Financial Ledger</h1>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-1">All payment records and outstanding dues</p>
+    <div className="space-y-6 fade-in-up">
+      {/* Header */}
+      <div className="pb-1">
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight gradient-text">
+          Payments &amp; Financial Ledger
+        </h1>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 font-medium flex items-center gap-1.5">
+          <IndianRupee className="h-3.5 w-3.5 text-primary" />
+          Comprehensive transaction logs, patient invoices, and outstanding clinic dues.
+        </p>
       </div>
 
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Collected</CardTitle>
-            <TrendingUp className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">₹{totalCollected.toFixed(0)}</div>
-            <p className="text-xs text-muted-foreground">Total payments received</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Outstanding Dues</CardTitle>
-            <TrendingDown className="h-4 w-4 text-destructive flex-shrink-0" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-destructive">₹{totalDues.toFixed(0)}</div>
-            <p className="text-xs text-muted-foreground">Total pending dues</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Accounts</CardTitle>
-            <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400">{pendingCount}</div>
-            <p className="text-xs text-muted-foreground">patients with pending dues</p>
-          </CardContent>
-        </Card>
+      {/* Financial Overview Cards */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+        
+        {/* Total Collected */}
+        <div className="card-handmade overflow-hidden p-0">
+          <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 to-teal-500" />
+          <div className="p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Collected</span>
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20">
+                <TrendingUp className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black tabular-num text-emerald-600 dark:text-emerald-400">
+              ₹{totalCollected.toLocaleString('en-IN')}
+            </div>
+            <p className="text-[11px] text-muted-foreground font-medium mt-1 flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3 text-emerald-500" /> Lifetime verified collections
+            </p>
+          </div>
+        </div>
+
+        {/* Outstanding Dues */}
+        <div className="card-handmade overflow-hidden p-0">
+          <div className="h-1.5 w-full bg-gradient-to-r from-rose-500 to-amber-500" />
+          <div className="p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Outstanding Dues</span>
+              <div className="p-2 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 ring-1 ring-rose-500/20">
+                <TrendingDown className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black tabular-num text-rose-600 dark:text-rose-400">
+              ₹{totalDues.toLocaleString('en-IN')}
+            </div>
+            <p className="text-[11px] text-muted-foreground font-medium mt-1 flex items-center gap-1">
+              <ShieldAlert className="h-3 w-3 text-rose-500" /> Pending uncollected bills
+            </p>
+          </div>
+        </div>
+
+        {/* Pending Accounts */}
+        <div className="card-handmade overflow-hidden p-0">
+          <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 to-orange-500" />
+          <div className="p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Pending Accounts</span>
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20">
+                <AlertCircle className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black tabular-num text-amber-600 dark:text-amber-400">
+              {pendingCount}
+            </div>
+            <p className="text-[11px] text-muted-foreground font-medium mt-1">
+              Patients with active balances
+            </p>
+          </div>
+        </div>
       </div>
 
       <PaymentsTable payments={payments} />
     </div>
   )
 }
-

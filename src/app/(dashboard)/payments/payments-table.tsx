@@ -9,8 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'react-hot-toast'
 import { formatDate } from '@/lib/utils'
 import { DeletePaymentButton } from '@/app/(dashboard)/patients/[id]/delete-payment-button'
-
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { sanitizeText } from '@/lib/pdf-generator'
 
 interface PaymentItem {
@@ -98,6 +96,7 @@ Thank you for visiting us! 🙏`
   const handleDownloadPDF = async () => {
     toast.loading('Generating PDF receipt...', { id: 'pdf-toast' })
     try {
+      const { PDFDocument, rgb, StandardFonts } = await import('pdf-lib')
       const pdfDoc = await PDFDocument.create()
       const page = pdfDoc.addPage([595.28, 841.89])
       const { width, height } = page.getSize()

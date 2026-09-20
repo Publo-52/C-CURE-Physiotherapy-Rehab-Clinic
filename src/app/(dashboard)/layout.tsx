@@ -28,7 +28,7 @@ export default async function DashboardLayout({
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header profile={profile} currentUser={session.user} />
         <MobileSwipeNavigation>
-          <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 bg-muted/30 pb-20 md:pb-6">
+          <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 bg-muted/20 dark:bg-background/95 pb-20 md:pb-6">
             <PageTransition>{children}</PageTransition>
           </main>
         </MobileSwipeNavigation>

@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import prisma from "@/lib/prisma"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { UserPlus, Users } from "lucide-react"
 import { PatientsTable } from "./patients-table"
 
 export default async function PatientsPage() {
@@ -51,15 +51,26 @@ export default async function PatientsPage() {
   })
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="space-y-6 fade-in-up">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-1">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Patients</h1>
-          <p className="text-muted-foreground">Manage your patients and their treatment records.</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight gradient-text">
+              Patient Directory
+            </h1>
+            <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2.5 py-0.5 rounded-full tabular-num">
+              {patients.length} Total
+            </span>
+          </div>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5 font-medium flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-primary" />
+            Manage clinical profiles, treatment histories, and daily attendance records.
+          </p>
         </div>
         <Link href="/patients/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Add Patient
+          <Button size="sm" className="shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/35 transition-all rounded-xl font-bold active-press">
+            <UserPlus className="mr-1.5 h-4 w-4" /> Add Patient
           </Button>
         </Link>
       </div>
@@ -68,4 +79,3 @@ export default async function PatientsPage() {
     </div>
   )
 }
-

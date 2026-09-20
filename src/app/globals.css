@@ -48,76 +48,75 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* ── Light Mode — C-CURE Teal Brand ─────────────────────────────── */
+/* ── Light Mode — Handcrafted C-CURE Porcelain & Clinical Teal ───── */
 :root {
-  --background: oklch(0.98 0.003 220);
-  --foreground: oklch(0.15 0.02 250);
+  --background: oklch(0.985 0.003 210);
+  --foreground: oklch(0.16 0.02 245);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0.02 250);
+  --card-foreground: oklch(0.16 0.02 245);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.02 250);
-  --primary: oklch(0.52 0.16 195);
+  --popover-foreground: oklch(0.16 0.02 245);
+  --primary: oklch(0.55 0.16 192);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.95 0.01 200);
-  --secondary-foreground: oklch(0.25 0.04 220);
+  --secondary: oklch(0.955 0.01 200);
+  --secondary-foreground: oklch(0.22 0.04 220);
   --muted: oklch(0.96 0.005 210);
-  --muted-foreground: oklch(0.52 0.02 220);
-  --accent: oklch(0.94 0.02 195);
-  --accent-foreground: oklch(0.30 0.07 200);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.91 0.008 210);
-  --input: oklch(0.93 0.006 210);
-  --ring: oklch(0.52 0.16 195);
-  --chart-1: oklch(0.52 0.16 195);
-  --chart-2: oklch(0.65 0.14 175);
+  --muted-foreground: oklch(0.48 0.02 220);
+  --accent: oklch(0.94 0.02 192);
+  --accent-foreground: oklch(0.25 0.07 195);
+  --destructive: oklch(0.58 0.24 27);
+  --border: oklch(0.90 0.008 210);
+  --input: oklch(0.92 0.006 210);
+  --ring: oklch(0.55 0.16 192);
+  --chart-1: oklch(0.55 0.16 192);
+  --chart-2: oklch(0.66 0.14 175);
   --chart-3: oklch(0.72 0.10 200);
-  --chart-4: oklch(0.42 0.12 240);
-  --chart-5: oklch(0.35 0.08 250);
-  --radius: 0.75rem;
+  --chart-4: oklch(0.44 0.12 240);
+  --chart-5: oklch(0.36 0.08 250);
+  --radius: 0.85rem;
   --sidebar: oklch(0.99 0.002 210);
-  --sidebar-foreground: oklch(0.15 0.02 250);
-  --sidebar-primary: oklch(0.52 0.16 195);
+  --sidebar-foreground: oklch(0.16 0.02 245);
+  --sidebar-primary: oklch(0.55 0.16 192);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.94 0.02 195);
-  --sidebar-accent-foreground: oklch(0.25 0.07 200);
-  --sidebar-border: oklch(0.91 0.008 210);
-  --sidebar-ring: oklch(0.52 0.16 195);
+  --sidebar-accent: oklch(0.94 0.02 192);
+  --sidebar-accent-foreground: oklch(0.24 0.07 195);
+  --sidebar-border: oklch(0.90 0.008 210);
+  --sidebar-ring: oklch(0.55 0.16 192);
 }
 
-/* ── Dark Mode ───────────────────────────────────────────────────── */
+/* ── Dark Mode — Handcrafted Midnight Obsidian & Bioluminescent Teal ── */
 .dark {
-  --background: oklch(0.135 0.015 250);
+  --background: oklch(0.12 0.016 250);
   --foreground: oklch(0.95 0.006 210);
-  --card: oklch(0.185 0.016 245);
+  --card: oklch(0.16 0.018 245);
   --card-foreground: oklch(0.95 0.006 210);
-  --popover: oklch(0.185 0.016 245);
+  --popover: oklch(0.16 0.018 245);
   --popover-foreground: oklch(0.95 0.006 210);
-  /* Brighter teal in dark for contrast */
-  --primary: oklch(0.68 0.16 190);
+  --primary: oklch(0.72 0.16 186);
   --primary-foreground: oklch(0.10 0.02 250);
-  --secondary: oklch(0.23 0.02 245);
-  --secondary-foreground: oklch(0.90 0.005 210);
-  --muted: oklch(0.23 0.016 245);
-  --muted-foreground: oklch(0.68 0.02 220);
-  --accent: oklch(0.26 0.03 200);
-  --accent-foreground: oklch(0.92 0.01 200);
+  --secondary: oklch(0.21 0.02 245);
+  --secondary-foreground: oklch(0.92 0.005 210);
+  --muted: oklch(0.20 0.016 245);
+  --muted-foreground: oklch(0.65 0.02 220);
+  --accent: oklch(0.24 0.03 192);
+  --accent-foreground: oklch(0.94 0.01 192);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.68 0.16 190);
-  --chart-1: oklch(0.68 0.16 190);
-  --chart-2: oklch(0.74 0.14 170);
-  --chart-3: oklch(0.62 0.10 210);
-  --chart-4: oklch(0.52 0.14 240);
-  --chart-5: oklch(0.42 0.08 260);
-  --sidebar: oklch(0.165 0.016 248);
+  --input: oklch(1 0 0 / 13%);
+  --ring: oklch(0.72 0.16 186);
+  --chart-1: oklch(0.72 0.16 186);
+  --chart-2: oklch(0.76 0.14 170);
+  --chart-3: oklch(0.64 0.10 210);
+  --chart-4: oklch(0.54 0.14 240);
+  --chart-5: oklch(0.44 0.08 260);
+  --sidebar: oklch(0.14 0.016 248);
   --sidebar-foreground: oklch(0.95 0.006 210);
-  --sidebar-primary: oklch(0.68 0.16 190);
+  --sidebar-primary: oklch(0.72 0.16 186);
   --sidebar-primary-foreground: oklch(0.10 0.02 250);
-  --sidebar-accent: oklch(0.26 0.03 200);
-  --sidebar-accent-foreground: oklch(0.92 0.01 200);
+  --sidebar-accent: oklch(0.24 0.03 192);
+  --sidebar-accent-foreground: oklch(0.94 0.01 192);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.68 0.16 190);
+  --sidebar-ring: oklch(0.72 0.16 186);
 }
 
 @layer base {
@@ -133,64 +132,114 @@
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior-y: none;
     -webkit-overflow-scrolling: touch;
+    transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  header, aside, main, [data-slot="card"], .glass {
+    transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
   html {
     @apply font-sans;
     scroll-behavior: smooth;
   }
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.52 0.16 195 / 35%);
-    border-radius: 99px;
+    background: oklch(0.55 0.16 192 / 30%);
+    border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.52 0.16 195 / 65%);
+    background: oklch(0.55 0.16 192 / 60%);
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: oklch(0.72 0.16 186 / 25%);
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.72 0.16 186 / 50%);
   }
 }
 
 @layer utilities {
-  /* Glassmorphism — light */
+  /* Handcrafted Elevation & Glassmorphism */
   .glass {
-    background: oklch(1 0 0 / 75%);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid oklch(1 0 0 / 25%);
-    will-change: backdrop-filter;
+    background: oklch(1 0 0 / 80%);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    border: 1px solid oklch(1 0 0 / 35%);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
   }
 
-  /* card-hover lift effect - GPU accelerated */
+  .glass-card {
+    background: oklch(1 0 0 / 88%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid oklch(0.90 0.008 210);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 8px 24px -4px rgba(13, 148, 136, 0.05), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+
+  /* Artisanal Handmade Card with Specular Rims */
+  .card-handmade {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 8px 24px -4px rgba(13, 148, 136, 0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease;
+  }
+  .card-handmade:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px -4px rgba(13, 148, 136, 0.12), inset 0 1px 0 rgba(255,255,255,1);
+  }
+
+  /* Card hover lift effect - physics based */
   .card-hover {
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease;
     will-change: transform, box-shadow;
   }
   .card-hover:hover {
-    transform: translate3d(0, -3px, 0);
-    box-shadow: 0 16px 40px oklch(0.52 0.16 195 / 16%);
+    transform: translate3d(0, -2.5px, 0);
+    box-shadow: 0 14px 36px -4px oklch(0.55 0.16 192 / 14%), inset 0 1px 0 rgba(255,255,255,0.8);
   }
 
-  /* Gradient text — teal to blue */
+  /* Gradient text — Clinical Teal to Deep Azure */
   .gradient-text {
-    background: linear-gradient(135deg, oklch(0.52 0.16 195), oklch(0.42 0.14 230));
+    background: linear-gradient(135deg, oklch(0.55 0.16 192), oklch(0.42 0.15 235));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Fade-in animation - GPU accelerated translate3d */
+  /* Tabular numbers for financial precision */
+  .tabular-num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.015em;
+  }
+
+  /* Fade-in animation - GPU accelerated */
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translate3d(0, 12px, 0); }
+    from { opacity: 0; transform: translate3d(0, 10px, 0); }
     to   { opacity: 1; transform: translate3d(0, 0, 0); }
   }
   .fade-in-up { 
-    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; 
+    animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; 
     will-change: transform, opacity;
+  }
+
+  /* Pulsing live radar wave for real-time status */
+  @keyframes radarPulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    70% { transform: scale(2.2); opacity: 0; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+  .radar-wave {
+    animation: radarPulse 2.2s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
   }
 
   /* Pulsing live indicator dot */
   @keyframes pulseDot {
     0%, 100% { opacity: 1; transform: scale3d(1, 1, 1); }
-    50%       { opacity: 0.45; transform: scale3d(0.85, 0.85, 1); }
+    50%       { opacity: 0.4; transform: scale3d(0.85, 0.85, 1); }
   }
   .pulse-dot { 
     animation: pulseDot 2s ease-in-out infinite; 
@@ -206,11 +255,11 @@
 
   /* Mobile Page & Drawer Smooth Keyframes */
   @keyframes mobilePageEnter {
-    from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.99); }
+    from { opacity: 0; transform: translate3d(0, 8px, 0) scale(0.995); }
     to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
   }
   .animate-mobile-page {
-    animation: mobilePageEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: mobilePageEnter 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
     will-change: transform, opacity;
   }
 
@@ -219,62 +268,146 @@
     to   { opacity: 1; transform: translate3d(0, 0, 0); }
   }
   .animate-sheet-up {
-    animation: sheetSlideUp 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: sheetSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
     will-change: transform, opacity;
   }
 
   @keyframes modalPopIn {
-    from { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.95); }
+    from { opacity: 0; transform: translate3d(0, 8px, 0) scale(0.96); }
     to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
   }
   .animate-modal-pop {
-    animation: modalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: modalPopIn 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
     will-change: transform, opacity;
   }
 
   /* Mobile Horizontal Shift-Slide Keyframes */
   @keyframes shiftSlideLeft {
-    from { opacity: 0.4; transform: translate3d(28px, 0, 0); }
+    from { opacity: 0.4; transform: translate3d(24px, 0, 0); }
     to   { opacity: 1; transform: translate3d(0, 0, 0); }
   }
   .animate-shift-left {
-    animation: shiftSlideLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: shiftSlideLeft 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
     will-change: transform, opacity;
   }
 
   @keyframes shiftSlideRight {
-    from { opacity: 0.4; transform: translate3d(-28px, 0, 0); }
+    from { opacity: 0.4; transform: translate3d(-24px, 0, 0); }
     to   { opacity: 1; transform: translate3d(0, 0, 0); }
   }
   .animate-shift-right {
-    animation: shiftSlideRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: shiftSlideRight 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
     will-change: transform, opacity;
   }
 
-  /* Mobile Active Press Feedback */
+  /* Tactile button press physics */
   .active-press {
     transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.4, 1), opacity 0.15s ease;
   }
   .active-press:active {
-    transform: scale3d(0.96, 0.96, 1);
-    opacity: 0.9;
+    transform: scale3d(0.97, 0.97, 1);
   }
 }
 
 /* ── Dark mode overrides ── */
 .dark .glass {
-  background: oklch(0.185 0.016 245 / 80%);
+  background: oklch(0.16 0.018 245 / 82%);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
   border-color: oklch(1 0 0 / 10%);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+.dark .glass-card {
+  background: oklch(0.16 0.018 245 / 85%);
+  border-color: oklch(1 0 0 / 10%);
+  box-shadow: 0 10px 32px -4px rgba(0, 0, 0, 0.55), inset 0 1px 0 oklch(1 0 0 / 8%);
+}
+
+.dark .card-handmade {
+  background-color: var(--card);
+  border: 1px solid oklch(1 0 0 / 10%);
+  box-shadow: 0 10px 32px -4px rgba(0, 0, 0, 0.55), inset 0 1px 0 oklch(1 0 0 / 8%);
+}
+.dark .card-handmade:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.7), 0 0 20px -2px oklch(0.72 0.16 186 / 15%), inset 0 1px 0 oklch(1 0 0 / 12%);
+  border-color: oklch(0.72 0.16 186 / 35%);
 }
 
 .dark .card-hover:hover {
-  transform: translate3d(0, -3px, 0);
-  box-shadow: 0 16px 40px oklch(0.68 0.16 190 / 20%);
+  transform: translate3d(0, -2.5px, 0);
+  box-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.65), 0 0 18px -2px oklch(0.72 0.16 186 / 18%), inset 0 1px 0 oklch(1 0 0 / 12%);
+  border-color: oklch(0.72 0.16 186 / 30%);
 }
 
 .dark .gradient-text {
-  background: linear-gradient(135deg, oklch(0.72 0.16 190), oklch(0.62 0.14 225));
+  background: linear-gradient(135deg, oklch(0.74 0.16 186), oklch(0.64 0.14 225));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ── Mobile Anti-Zoom & Universal Responsiveness across all Phones & Tablets ── */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+body {
+  touch-action: manipulation;
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Prevent iOS Safari / Android auto-zoom on form input focus */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea,
+  button,
+  a {
+    touch-action: manipulation;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="datetime-local"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Universal ultra-compact phone compatibility (under 360px width, e.g. 271px Galaxy Fold cover) */
+@media (max-width: 360px) {
+  :root {
+    --radius: 0.65rem;
+  }
+  
+  .card-handmade {
+    padding: 0.75rem !important;
+  }
+  
+  h1 {
+    font-size: 1.35rem !important;
+  }
+}
+
+/* Tablet viewports (768px - 1024px, e.g. iPad, Galaxy Tab) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .card-handmade {
+    padding: 1.15rem;
+  }
+}

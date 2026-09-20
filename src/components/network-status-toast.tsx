@@ -45,7 +45,7 @@ export function NetworkStatusToast() {
     window.addEventListener('offline', handleOffline)
     window.addEventListener('online', handleOnline)
 
-    // Ultra-fast 300ms heartbeat check for instant mobile OS detection
+    // Relaxed 5000ms fallback check to save mobile battery and CPU while keeping instant event listeners
     const interval = setInterval(() => {
       const currentStatus = navigator.onLine
       if (currentStatus !== isOnlineRef.current) {
@@ -57,7 +57,7 @@ export function NetworkStatusToast() {
           showToast('online')
         }
       }
-    }, 300)
+    }, 5000)
 
     return () => {
       window.removeEventListener('offline', handleOffline)

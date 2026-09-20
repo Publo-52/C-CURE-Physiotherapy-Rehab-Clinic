@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, CheckCircle2 } from 'lucide-react'
+import { Check, CheckCircle2, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { markVisitDone } from '@/app/actions/patients'
 import { toast } from 'react-hot-toast'
@@ -52,35 +52,44 @@ export function VisitQueue({ initialPatients }: VisitQueueProps) {
 
   if (patients.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 px-4 border border-dashed rounded-xl text-muted-foreground text-center bg-card">
-        <CheckCircle2 className="h-8 w-8 text-muted-foreground/30 mb-2" />
-        <p className="text-sm font-medium">No visits queued for today</p>
-        <p className="text-xs text-muted-foreground/60 mt-1">Mark patients &apos;To Visit&apos; in the Patient Directory</p>
+      <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-border/80 rounded-2xl text-muted-foreground text-center bg-card/40">
+        <div className="p-3 rounded-full bg-emerald-500/10 text-emerald-500 mb-2">
+          <CheckCircle2 className="h-7 w-7" />
+        </div>
+        <p className="text-sm font-bold text-foreground">No visits queued for today</p>
+        <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+          All active patients are marked complete or none are in queue. Toggle &apos;To Visit&apos; in the Patients directory anytime.
+        </p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-2.5 max-h-[350px] overflow-y-auto pr-1">
+    <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
       {patients.map(patient => (
-        <div key={patient.id} className="flex items-center justify-between p-3 rounded-xl border bg-card/50 hover:bg-muted/40 transition-colors">
+        <div 
+          key={patient.id} 
+          className="flex items-center justify-between p-3.5 rounded-2xl border border-border/80 bg-card/60 hover:bg-card hover:border-primary/40 transition-all duration-200 shadow-xs hover:shadow-sm"
+        >
           <div className="min-w-0 flex-1 mr-3">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-sm truncate">{patient.name}</span>
-              <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-mono flex-shrink-0">{patient.patientId}</span>
+              <span className="font-extrabold text-sm text-foreground truncate">{patient.name}</span>
+              <span className="text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-md font-mono flex-shrink-0 tabular-num">
+                {patient.patientId}
+              </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1 truncate">
-              {patient.disease || 'General Condition'}
+            <p className="text-xs text-muted-foreground font-medium mt-0.5 truncate flex items-center gap-1.5">
+              <User className="h-3 w-3 text-muted-foreground/60" />
+              {patient.disease || 'General Physiotherapy Treatment'}
             </p>
           </div>
           <Button
             size="sm"
-            variant="outline"
-            className="h-8 border-green-500/30 hover:border-green-500 hover:bg-green-500/10 text-green-600 dark:text-green-400 gap-1.5 flex-shrink-0 shadow-xs"
+            className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1.5 flex-shrink-0 rounded-xl shadow-xs active-press"
             disabled={isPending}
             onClick={() => handleMarkDone(patient.id, patient.name)}
           >
-            <Check className="h-4 w-4" /> Done
+            <Check className="h-3.5 w-3.5" /> Done
           </Button>
         </div>
       ))}

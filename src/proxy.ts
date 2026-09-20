@@ -6,6 +6,26 @@ import prisma from '@/lib/prisma'
 const protectedPrefixes = ['/', '/patients', '/payments', '/calendar', '/settings']
 const publicRoutes = ['/login']
 
+interface CachedSession {
+  valid: boolean
+  cachedUntil: number
+}
+
+// In-memory fast path cache to eliminate redundant PostgreSQL network round-trips (60s TTL)
+const sessionCache = new Map<string, CachedSession>()
+const CACHE_TTL_MS = 60 * 1000
+
+function pruneCache() {
+  if (sessionCache.size > 200) {
+    const now = Date.now()
+    for (const [key, val] of sessionCache.entries()) {
+      if (val.cachedUntil <= now) {
+        sessionCache.delete(key)
+      }
+    }
+  }
+}
+
 export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname
 
@@ -24,14 +44,31 @@ export async function proxy(req: NextRequest) {
     try {
       const payload = await decrypt(sessionCookie)
       if (payload?.sessionToken) {
-        // Verify session token is STILL in DB and user account still exists
-        const dbSession = await prisma.activeSession.findUnique({
-          where: { token: payload.sessionToken },
-          select: { id: true, expiresAt: true, admin: { select: { id: true } } }
-        })
-        if (dbSession && dbSession.expiresAt > new Date() && dbSession.admin) {
-          session = payload
-          isSessionValidInDb = true
+        const now = Date.now()
+        const cached = sessionCache.get(payload.sessionToken)
+
+        if (cached && cached.cachedUntil > now) {
+          isSessionValidInDb = cached.valid
+          if (cached.valid) {
+            session = payload
+          }
+        } else {
+          // Verify session token is STILL in DB and user account still exists
+          const dbSession = await prisma.activeSession.findUnique({
+            where: { token: payload.sessionToken },
+            select: { id: true, expiresAt: true, admin: { select: { id: true } } }
+          })
+          const isValid = Boolean(dbSession && dbSession.expiresAt > new Date() && dbSession.admin)
+          isSessionValidInDb = isValid
+          if (isValid) {
+            session = payload
+          }
+
+          pruneCache()
+          sessionCache.set(payload.sessionToken, {
+            valid: isValid,
+            cachedUntil: now + CACHE_TTL_MS
+          })
         }
       }
     } catch {
