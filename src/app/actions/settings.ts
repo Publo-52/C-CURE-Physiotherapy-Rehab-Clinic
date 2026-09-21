@@ -180,7 +180,7 @@ export async function updateUserAccount(targetId: string, formData: FormData) {
   }
 
   const name = (formData.get('name') as string)?.trim()
-  const email = (formData.get('email') as string)?.trim()
+  const email = (formData.get('email') as string)?.trim().toLowerCase()
   const password = (formData.get('password') as string)?.trim()
   const role = (formData.get('role') as string)?.trim()
 
@@ -191,7 +191,7 @@ export async function updateUserAccount(targetId: string, formData: FormData) {
   try {
     const existing = await prisma.admin.findFirst({
       where: {
-        email,
+        email: { equals: email, mode: 'insensitive' },
         NOT: { id: targetId }
       }
     })
@@ -233,9 +233,9 @@ export async function updateOwnAccount(formData: FormData) {
   }
 
   const name = (formData.get('name') as string)?.trim()
-  const email = (formData.get('email') as string)?.trim()
-  const currentPassword = formData.get('currentPassword') as string
-  const newPassword = formData.get('newPassword') as string
+  const email = (formData.get('email') as string)?.trim().toLowerCase()
+  const currentPassword = (formData.get('currentPassword') as string)?.trim()
+  const newPassword = (formData.get('newPassword') as string)?.trim()
   const confirmPassword = formData.get('confirmPassword') as string
 
   if (!name || !email) {
@@ -252,10 +252,10 @@ export async function updateOwnAccount(formData: FormData) {
     }
 
     // Check if new email is already in use by another account
-    if (email.toLowerCase() !== admin.email.toLowerCase()) {
+    if (email !== admin.email.toLowerCase()) {
       const existing = await prisma.admin.findFirst({
         where: {
-          email,
+          email: { equals: email, mode: 'insensitive' },
           NOT: { id: admin.id }
         }
       })

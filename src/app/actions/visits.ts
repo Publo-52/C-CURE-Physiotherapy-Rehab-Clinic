@@ -131,4 +131,88 @@ export async function createVisit(patientId: string, formData: FormData) {
   }
 }
 
+export async function updateVisit(visitId: string, formData: FormData) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
+  const type = (formData.get('type') as string) || 'Clinic Visit'
+  const dateStr = formData.get('date') as string
+  const date = dateStr && !isNaN(Date.parse(dateStr)) ? new Date(dateStr) : undefined
+  
+  const duration = safeInt(formData.get('duration'), 30)
+  const painBefore = safeInt(formData.get('painBefore'), 0)
+  const painAfter = safeInt(formData.get('painAfter'), 0)
+  const treatmentGiven = (formData.get('treatmentGiven') as string)?.trim() || null
+  const exerciseGiven = (formData.get('exerciseGiven') as string)?.trim() || null
+  const notes = (formData.get('notes') as string)?.trim() || null
+
+  try {
+    const existing = await prisma.visit.findUnique({
+      where: { id: visitId }
+    })
+
+    if (!existing) {
+      return { error: 'Visit record not found.' }
+    }
+
+    const updated = await prisma.visit.update({
+      where: { id: visitId },
+      data: {
+        type,
+        ...(date && { date }),
+        duration,
+        painBefore,
+        painAfter,
+        treatmentGiven,
+        exerciseGiven,
+        notes,
+      }
+    })
+
+    revalidatePath(`/patients/${existing.patientId}`)
+    revalidatePath(`/patients`)
+    revalidatePath(`/payments`)
+    revalidatePath(`/calendar`)
+    revalidatePath(`/`)
+    return { success: true, visitId: updated.id, patientId: existing.patientId }
+  } catch (error: any) {
+    console.error('Error updating visit:', error?.message || error)
+    return { error: `Failed to update visit: ${error?.message || 'Database error'}` }
+  }
+}
+
+export async function deleteVisit(visitId: string) {
+  const session = await verifySession()
+  if (!session || !session.userId) {
+    return { error: 'Unauthorized. Please login again.' }
+  }
+
+  try {
+    const existing = await prisma.visit.findUnique({
+      where: { id: visitId }
+    })
+
+    if (!existing) {
+      return { error: 'Visit record not found.' }
+    }
+
+    await prisma.visit.delete({
+      where: { id: visitId }
+    })
+
+    revalidatePath(`/patients/${existing.patientId}`)
+    revalidatePath(`/patients`)
+    revalidatePath(`/payments`)
+    revalidatePath(`/calendar`)
+    revalidatePath(`/`)
+    return { success: true, patientId: existing.patientId }
+  } catch (error: any) {
+    console.error('Error deleting visit:', error?.message || error)
+    return { error: `Failed to delete visit: ${error?.message || 'Database error'}` }
+  }
+}
+
+
 

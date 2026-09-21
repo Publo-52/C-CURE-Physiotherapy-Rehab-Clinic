@@ -88,8 +88,13 @@ export async function login(formData: FormData) {
     return { error: rateLimitStatus.message }
   }
 
-  const admin = await prisma.admin.findUnique({
-    where: { email },
+  const admin = await prisma.admin.findFirst({
+    where: {
+      email: {
+        equals: email,
+        mode: 'insensitive',
+      },
+    },
   })
 
   if (!admin) {

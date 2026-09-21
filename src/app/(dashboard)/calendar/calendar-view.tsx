@@ -10,7 +10,6 @@ import { toast } from 'react-hot-toast'
 import { updateVisitDate, createScheduledVisit, deleteVisit, createEvent, deleteEvent } from '@/app/actions/calendar'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 
 interface VisitItem {
   id: string
@@ -118,7 +117,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
     d.setHours(10, 0, 0, 0)
     return d.toISOString().slice(0, 16)
   })
-  const [duration, setDuration] = useState(30)
+  const duration = 30
   const [treatmentGiven, setTreatmentGiven] = useState('')
   const [exerciseGiven, setExerciseGiven] = useState('')
   const [notes, setNotes] = useState('')
@@ -131,7 +130,7 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
     d.setHours(11, 0, 0, 0)
     return d.toISOString().slice(0, 16)
   })
-  const [eventDuration, setEventDuration] = useState(30)
+  const eventDuration = 30
   const [eventDescription, setEventDescription] = useState('')
   
   const [isSubmitting, setIsSubmitting] = useState(false)

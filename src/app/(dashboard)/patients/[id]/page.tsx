@@ -12,6 +12,7 @@ import { PatientInvoiceButton } from "./patient-invoice-button"
 import { getClinicProfile } from "@/app/actions/profile"
 import { DeletePatientButton } from "./delete-button"
 import { DeletePaymentButton } from "./delete-payment-button"
+import { DeleteVisitButton } from "./delete-visit-button"
 import { PatientVisitToggle } from "./patient-visit-toggle"
 import { formatDate } from "@/lib/utils"
 
@@ -227,7 +228,17 @@ export default async function PatientProfilePage({ params }: Props) {
                             <p className="text-muted-foreground text-xs">{formatDate(visit.date)}</p>
                             {visit.treatmentGiven && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{visit.treatmentGiven}</p>}
                           </div>
-                          <Badge variant="outline">{visit.type}</Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">{visit.type}</Badge>
+                            <div className="flex items-center gap-1 border-l pl-2">
+                              <Link href={`/patients/${patient.id}/visits/${visit.id}/edit`}>
+                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground" title="Edit Visit">
+                                  <Edit className="h-3.5 w-3.5" />
+                                </Button>
+                              </Link>
+                              <DeleteVisitButton visitId={visit.id} visitNumber={visit.visitNumber} compact />
+                            </div>
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -375,7 +386,17 @@ export default async function PatientProfilePage({ params }: Props) {
                               <p className="font-semibold text-sm">Visit #{visit.visitNumber}</p>
                               <p className="text-xs text-muted-foreground">{formatDate(visit.date)}</p>
                             </div>
-                            <Badge variant="outline">{visit.type}</Badge>
+                            <div className="flex items-center gap-1.5">
+                              <Badge variant="outline">{visit.type}</Badge>
+                              <div className="flex items-center gap-1 border-l pl-1.5">
+                                <Link href={`/patients/${patient.id}/visits/${visit.id}/edit`}>
+                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground" title="Edit Visit">
+                                    <Edit className="h-3.5 w-3.5" />
+                                  </Button>
+                                </Link>
+                                <DeleteVisitButton visitId={visit.id} visitNumber={visit.visitNumber} compact />
+                              </div>
+                            </div>
                           </div>
                           {visit.treatmentGiven && (
                             <p className="text-xs text-muted-foreground line-clamp-2">{visit.treatmentGiven}</p>
@@ -398,6 +419,7 @@ export default async function PatientProfilePage({ params }: Props) {
                             <th className="text-left py-3 px-4 font-medium text-muted-foreground">Pain Scale</th>
                             <th className="text-left py-3 px-4 font-medium text-muted-foreground">Treatment</th>
                             <th className="text-left py-3 px-4 font-medium text-muted-foreground">Notes</th>
+                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -409,6 +431,16 @@ export default async function PatientProfilePage({ params }: Props) {
                               <td className="py-3 px-4">{visit.painBefore ?? 'N/A'} &rarr; {visit.painAfter ?? 'N/A'}</td>
                               <td className="py-3 px-4 max-w-xs truncate">{visit.treatmentGiven || '—'}</td>
                               <td className="py-3 px-4 max-w-xs truncate text-muted-foreground">{visit.notes || '—'}</td>
+                              <td className="py-3 px-4 text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Link href={`/patients/${patient.id}/visits/${visit.id}/edit`}>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground" title="Edit Visit">
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                  </Link>
+                                  <DeleteVisitButton visitId={visit.id} visitNumber={visit.visitNumber} compact />
+                                </div>
+                              </td>
                             </tr>
                           ))}
                         </tbody>

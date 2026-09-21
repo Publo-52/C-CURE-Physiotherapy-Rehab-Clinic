@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { cache } from 'react'
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 import prisma from '@/lib/prisma'
@@ -86,8 +87,6 @@ export async function createSession(
 
   return {}
 }
-
-import { cache } from 'react'
 
 export const verifySession = cache(async () => {
   const cookieStore = await cookies()

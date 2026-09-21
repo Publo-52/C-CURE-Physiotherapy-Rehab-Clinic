@@ -16,7 +16,7 @@ async function main() {
   console.log(`Permanently removed ${deleted.count} legacy account(s): admin@phisiyo.com, admin@c-cure.com`)
 
   const adminPassword = bcrypt.hashSync('manna@#$4321S', 10)
-  const superAdminPassword = bcrypt.hashSync('phisiyo123ADMIN@$', 10)
+  const superAdminPassword = bcrypt.hashSync('phisiyo123ADMIN@$#!D', 10)
 
   // 1. Admin account (Max 3 devices limit)
   await prisma.admin.upsert({

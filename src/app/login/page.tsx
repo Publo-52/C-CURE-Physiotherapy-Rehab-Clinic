@@ -61,24 +61,24 @@ export default function LoginPage() {
       </div>
 
       {/* Ambient background glow orbs */}
-      <div className="absolute top-1/4 left-1/3 -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full bg-primary/10 dark:bg-primary/15 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/3 translate-x-1/2 translate-y-1/2 h-80 w-80 rounded-full bg-cyan-500/10 dark:bg-cyan-500/15 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/3 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-primary/10 dark:bg-primary/15 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/3 translate-x-1/2 translate-y-1/2 h-64 w-64 rounded-full bg-cyan-500/10 dark:bg-cyan-500/15 blur-3xl pointer-events-none" />
 
-      {/* Main Login Card */}
-      <div className="w-full max-w-md relative z-10 card-handmade overflow-hidden shadow-2xl">
-        <div className="h-1.5 w-full bg-gradient-to-r from-teal-500 via-cyan-500 to-indigo-500" />
+      {/* Main Login Card - Compact for Mobile & Desktop */}
+      <div className="w-full max-w-[340px] sm:max-w-[370px] relative z-10 card-handmade overflow-hidden shadow-xl">
+        <div className="h-1 w-full bg-gradient-to-r from-teal-500 via-cyan-500 to-indigo-500" />
         
-        <div className="p-6 sm:p-8 space-y-6">
+        <div className="p-4 sm:p-5 space-y-4">
           {/* Logo container */}
-          <div className="flex flex-col items-center space-y-3 text-center">
-            <div className="bg-white dark:bg-card border border-border/80 rounded-2xl p-2.5 shadow-sm">
+          <div className="flex flex-col items-center space-y-2 text-center">
+            <div className="bg-white dark:bg-card border border-border/80 rounded-xl p-1.5 sm:p-2 shadow-xs">
               {/* Desktop Logo */}
               <Image
                 src="/logo.jpg"
                 alt="C-CURE Logo"
-                width={224}
-                height={112}
-                className="hidden md:block h-20 w-auto object-contain"
+                width={180}
+                height={90}
+                className="hidden md:block h-14 w-auto object-contain"
                 style={{ width: 'auto', height: 'auto' }}
                 priority
               />
@@ -86,29 +86,29 @@ export default function LoginPage() {
               <Image
                 src="/mobile-logo.png"
                 alt="C-CURE Logo"
-                width={224}
-                height={112}
-                className="block md:hidden h-16 w-auto object-contain"
+                width={180}
+                height={90}
+                className="block md:hidden h-12 w-auto object-contain"
                 style={{ width: 'auto', height: 'auto' }}
                 priority
               />
             </div>
 
             <div>
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight gradient-text">
+              <h1 className="text-lg sm:text-xl font-black tracking-tight gradient-text">
                 C-CURE Physiotherapy
               </h1>
-              <p className="text-xs text-muted-foreground font-semibold flex items-center justify-center gap-1.5 mt-1">
-                <Stethoscope className="h-3.5 w-3.5 text-primary" />
+              <p className="text-[11px] sm:text-xs text-muted-foreground font-semibold flex items-center justify-center gap-1.5 mt-0.5">
+                <Stethoscope className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
                 Clinic Management Portal
               </p>
             </div>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-xs font-bold text-foreground">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="email" className="text-[11px] sm:text-xs font-bold text-foreground">
                 Email Address
               </Label>
               <Input 
@@ -118,12 +118,12 @@ export default function LoginPage() {
                 placeholder="Enter doctor or admin email" 
                 required 
                 autoComplete="email"
-                className="h-10 rounded-xl bg-background/80 border-border/80 focus:bg-background"
+                className="h-9 sm:h-9.5 text-xs sm:text-sm rounded-lg sm:rounded-xl bg-background/80 border-border/80 focus:bg-background"
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-xs font-bold text-foreground">
+            <div className="space-y-1">
+              <Label htmlFor="password" className="text-[11px] sm:text-xs font-bold text-foreground">
                 Password
               </Label>
               <PasswordInput 
@@ -132,23 +132,23 @@ export default function LoginPage() {
                 required 
                 autoComplete="current-password"
                 placeholder="Enter password"
-                className="h-10 rounded-xl bg-background/80 border-border/80 focus:bg-background"
+                className="h-9 sm:h-9.5 text-xs sm:text-sm rounded-lg sm:rounded-xl bg-background/80 border-border/80 focus:bg-background"
               />
             </div>
 
             <Button 
               type="submit" 
-              className="w-full h-10 text-sm font-black shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/35 transition-all rounded-xl active-press mt-2" 
+              className="w-full h-9 sm:h-9.5 text-xs sm:text-sm font-bold shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/30 transition-all rounded-lg sm:rounded-xl active-press mt-1" 
               disabled={loading}
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Authenticating...
                 </span>
               ) : (
-                <span className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4" />
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Sign In to Clinic
                 </span>
               )}
@@ -156,9 +156,9 @@ export default function LoginPage() {
           </form>
 
           {/* Security badge */}
-          <div className="pt-2 text-center border-t border-border/60">
-            <p className="text-[11px] text-muted-foreground/80 flex items-center justify-center gap-1 font-medium">
-              <Lock className="h-3 w-3 text-primary/70" />
+          <div className="pt-1 text-center border-t border-border/60">
+            <p className="text-[10px] sm:text-[11px] text-muted-foreground/80 flex items-center justify-center gap-1 font-medium">
+              <Lock className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary/70" />
               Secured Clinical Management System
             </p>
           </div>

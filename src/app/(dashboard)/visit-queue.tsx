@@ -2,7 +2,8 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, CheckCircle2, User } from 'lucide-react'
+import Link from 'next/link'
+import { Check, CheckCircle2, User, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { markVisitDone } from '@/app/actions/patients'
 import { toast } from 'react-hot-toast'
@@ -73,7 +74,14 @@ export function VisitQueue({ initialPatients }: VisitQueueProps) {
         >
           <div className="min-w-0 flex-1 mr-3">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-extrabold text-sm text-foreground truncate">{patient.name}</span>
+              <Link 
+                href={`/patients/${patient.id}`}
+                className="font-extrabold text-sm text-foreground hover:text-primary hover:underline transition-colors truncate flex items-center gap-1 group"
+                title="View Patient Details"
+              >
+                <span>{patient.name}</span>
+                <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+              </Link>
               <span className="text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-md font-mono flex-shrink-0 tabular-num">
                 {patient.patientId}
               </span>
