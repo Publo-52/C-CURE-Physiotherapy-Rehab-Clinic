@@ -20,10 +20,14 @@ export function MobileAntiZoom() {
       e.preventDefault()
     }
 
-    document.addEventListener('gesturestart', handleGestureStart, { passive: false })
-    document.addEventListener('gesturechange', handleGestureChange, { passive: false })
+    // 2. Prevent multi-finger pinch zooming on touch devices (Android & iOS)
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches && e.touches.length > 1) {
+        e.preventDefault()
+      }
+    }
 
-    // 2. Prevent rapid double-tap zooming on iOS Safari / Chrome Mobile
+    // 3. Prevent rapid double-tap zooming on iOS Safari / Chrome Mobile
     let lastTouchEnd = 0
     const handleTouchEnd = (e: TouchEvent) => {
       const now = Date.now()
@@ -38,12 +42,25 @@ export function MobileAntiZoom() {
       lastTouchEnd = now
     }
 
+    // 4. Prevent Ctrl + Wheel zoom on hybrid / mobile devices
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault()
+      }
+    }
+
+    document.addEventListener('gesturestart', handleGestureStart, { passive: false })
+    document.addEventListener('gesturechange', handleGestureChange, { passive: false })
+    document.addEventListener('touchstart', handleTouchStart, { passive: false })
     document.addEventListener('touchend', handleTouchEnd, { passive: false })
+    window.addEventListener('wheel', handleWheel, { passive: false })
 
     return () => {
       document.removeEventListener('gesturestart', handleGestureStart)
       document.removeEventListener('gesturechange', handleGestureChange)
+      document.removeEventListener('touchstart', handleTouchStart)
       document.removeEventListener('touchend', handleTouchEnd)
+      window.removeEventListener('wheel', handleWheel)
     }
   }, [])
 
