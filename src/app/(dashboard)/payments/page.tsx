@@ -3,35 +3,70 @@ export const dynamic = 'force-dynamic'
 import { TrendingDown, TrendingUp, AlertCircle, IndianRupee, ShieldAlert, CheckCircle2 } from "lucide-react"
 import prisma from "@/lib/prisma"
 import PaymentsTable from "./payments-table"
+import { filterValidPayments, calculateLedgerEntries } from "@/lib/billing"
 
 export default async function PaymentsPage() {
-  const [payments, financialAggregates, pendingAccounts] = await Promise.all([
-    prisma.payment.findMany({
-      take: 100,
-      select: {
-        id: true,
-        invoiceNumber: true,
-        paymentDate: true,
-        totalBill: true,
-        amountPaidToday: true,
-        remainingDue: true,
-        status: true,
-        paymentMode: true,
-        patient: { select: { id: true, name: true, patientId: true } }
-      },
-      orderBy: { paymentDate: 'desc' },
-    }),
-    prisma.payment.aggregate({ _sum: { totalBill: true, amountPaidToday: true } }),
-    prisma.payment.groupBy({
-      by: ['patientId'],
-      where: { status: { in: ['Due', 'Partially Paid'] } },
-    }),
-  ])
+  const allPayments = await prisma.payment.findMany({
+    select: {
+      id: true,
+      invoiceNumber: true,
+      paymentDate: true,
+      totalBill: true,
+      amountPaidToday: true,
+      remainingDue: true,
+      status: true,
+      paymentMode: true,
+      paymentNotes: true,
+      visitId: true,
+      patient: { select: { id: true, name: true, patientId: true } },
+      visit: { select: { id: true, status: true } },
+    },
+    orderBy: { paymentDate: 'desc' },
+  })
 
-  const totalCollected = financialAggregates._sum.amountPaidToday || 0
-  const totalBilled = financialAggregates._sum.totalBill || 0
+  const validPayments = filterValidPayments(allPayments)
+  const totalCollected = validPayments.reduce((s, p) => s + (Number(p.amountPaidToday) || 0), 0)
+  const totalBilled = validPayments.reduce((s, p) => s + (Number(p.totalBill) || 0), 0)
   const totalDues = Math.max(0, totalBilled - totalCollected)
-  const pendingCount = pendingAccounts.length
+
+  const patientPaymentsMap = new Map<string, typeof allPayments>()
+  for (const p of validPayments) {
+    const pid = p.patient?.id || 'unknown'
+    const list = patientPaymentsMap.get(pid) || []
+    list.push(p)
+    patientPaymentsMap.set(pid, list)
+  }
+
+  // Calculate accurate running due for each patient's payment rows
+  const enrichedPaymentsMap = new Map<string, { remainingDue: number; computedStatus: string }>()
+  for (const [, pList] of patientPaymentsMap.entries()) {
+    const ledger = calculateLedgerEntries(pList)
+    for (const entry of ledger) {
+      if (entry.id) {
+        enrichedPaymentsMap.set(entry.id, {
+          remainingDue: entry.remainingDue,
+          computedStatus: entry.computedStatus,
+        })
+      }
+    }
+  }
+
+  const enrichedPayments = validPayments.map(p => {
+    const computed = enrichedPaymentsMap.get(p.id)
+    return {
+      ...p,
+      remainingDue: computed ? computed.remainingDue : p.remainingDue,
+      status: computed ? computed.computedStatus : p.status,
+    }
+  })
+
+  const pendingCount = Array.from(patientPaymentsMap.values()).filter(pList => {
+    const b = pList.reduce((s, p) => s + (Number(p.totalBill) || 0), 0)
+    const c = pList.reduce((s, p) => s + (Number(p.amountPaidToday) || 0), 0)
+    return (b - c) > 0
+  }).length
+
+  const payments = enrichedPayments.slice(0, 100)
 
   return (
     <div className="space-y-6 fade-in-up">

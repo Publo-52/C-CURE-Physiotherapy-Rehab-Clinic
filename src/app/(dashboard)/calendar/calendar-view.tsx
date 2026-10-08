@@ -527,9 +527,13 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                             )
                           })}
                           {dayItems.length > 2 && (
-                            <div className="text-[8px] font-extrabold text-primary px-0.5">
-                              +{dayItems.length - 2} more
-                            </div>
+                            <button
+                              onClick={() => setView('list')}
+                              className="text-[8.5px] font-extrabold text-primary px-0.5 hover:underline block text-left active-press"
+                              title="View full day list"
+                            >
+                              +{dayItems.length - 2} more &rarr;
+                            </button>
                           )}
                         </div>
 
@@ -555,9 +559,12 @@ export default function CalendarView({ visits, events, patients }: CalendarViewP
                             )
                           })}
                           {dayItems.length > 3 && (
-                            <span className="text-[9px] text-primary/80 font-bold pl-1.5">
-                              +{dayItems.length - 3} more items
-                            </span>
+                            <button
+                              onClick={() => setView('list')}
+                              className="text-[9.5px] text-primary font-bold pl-1.5 hover:underline block text-left"
+                            >
+                              +{dayItems.length - 3} more items &rarr;
+                            </button>
                           )}
                         </div>
                       </>

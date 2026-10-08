@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { getPatientPDFData } from '@/app/actions/patients'
+import { calculatePatientBilling, calculateLedgerEntries } from '@/lib/billing'
 
 export function sanitizeText(str: any): string {
   if (str === null || str === undefined) return ''
@@ -126,7 +127,9 @@ export async function downloadPatientInvoicePDF(patientInput: any, profileInput?
 
   // 3. Patient Details + Health Summary Grid
   const cardW = (width - 95) / 2
-  const actualVisitsCount = visitsCountInput || (Array.isArray(patient.visits) ? patient.visits.length : 0)
+  const billingSummary = calculatePatientBilling(patient.payments || [], patient.visits || [])
+  const ledgerEntries = calculateLedgerEntries(patient.payments || [])
+  const actualVisitsCount = visitsCountInput || billingSummary.totalVisits
 
   // Patient Card
   page.drawRectangle({
@@ -166,31 +169,11 @@ export async function downloadPatientInvoicePDF(patientInput: any, profileInput?
   y -= 120
 
   // 4. Financial Summary & Outstanding Bill Due
-  const hasPayments = Array.isArray(patient.payments) && patient.payments.length > 0
-
-  let totalBilled = 0
-  let totalPaid = 0
-  let totalDue = 0
-
-  if (hasPayments) {
-    totalBilled = patient.payments.reduce((s: number, p: any) => s + (p.totalBill || 0), 0)
-    totalPaid   = patient.payments.reduce((s: number, p: any) => s + (p.amountPaidToday || 0), 0)
-    const latestPayment = patient.payments[0]
-    totalDue = latestPayment.remainingDue !== undefined ? latestPayment.remainingDue : Math.max(0, totalBilled - totalPaid)
-  } else {
-    totalBilled = 0
-    totalPaid = 0
-    totalDue = 0
-  }
-
-  const statusStr = !hasPayments
-    ? 'NO PAYMENTS RECORDED'
-    : totalDue <= 0
-      ? 'CLEARED'
-      : totalPaid > 0
-        ? 'PARTIALLY PAID'
-        : 'OUTSTANDING DUE'
-
+  const hasPayments = ledgerEntries.length > 0
+  const totalBilled = billingSummary.totalBilled
+  const totalPaid = billingSummary.totalPaid
+  const totalDue = billingSummary.remainingDue
+  const statusStr = billingSummary.statusStr
   const statusColor = !hasPayments ? textMuted : totalDue <= 0 ? greenText : totalPaid > 0 ? orangeText : redText
 
   page.drawRectangle({
@@ -217,7 +200,7 @@ export async function downloadPatientInvoicePDF(patientInput: any, profileInput?
   const rowH = 20
 
   if (hasPayments) {
-    const paymentsCount = Math.min(patient.payments.length, 8)
+    const paymentsCount = Math.min(ledgerEntries.length, 8)
     const tableH = tableHeaderH + paymentsCount * rowH
 
     page.drawRectangle({
@@ -246,10 +229,10 @@ export async function downloadPatientInvoicePDF(patientInput: any, profileInput?
     page.drawText('DUE', { x: 460, y: y - 15, size: 7, font: helveticaBold, color: textMuted })
 
     let currentY = y - tableHeaderH
-    patient.payments.slice(0, 8).forEach((p: any) => {
+    ledgerEntries.slice(0, 8).forEach((p: any) => {
       page.drawText(sanitizeText(p.invoiceNumber), { x: 50, y: currentY - 14, size: 8, font: helveticaBold, color: darkSlate })
       page.drawText(sanitizeText(new Date(p.paymentDate).toLocaleDateString('en-IN')), { x: 150, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
-      page.drawText(sanitizeText(p.paymentMode), { x: 250, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
+      page.drawText(sanitizeText(p.paymentMode || 'Cash'), { x: 250, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
       page.drawText(sanitizeText(`Rs. ${(p.totalBill || 0).toLocaleString('en-IN')}`), { x: 320, y: currentY - 14, size: 8, font: helvetica, color: darkSlate })
       page.drawText(sanitizeText(`Rs. ${(p.amountPaidToday || 0).toLocaleString('en-IN')}`), { x: 390, y: currentY - 14, size: 8, font: helveticaBold, color: greenText })
       page.drawText(sanitizeText(`Rs. ${(p.remainingDue || 0).toLocaleString('en-IN')}`), { x: 460, y: currentY - 14, size: 8, font: helveticaBold, color: (p.remainingDue || 0) > 0 ? redText : greenText })

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import DashboardChart from "./dashboard-chart"
 import { VisitQueue } from "./visit-queue"
 import { getISTDayBounds } from "@/lib/date-utils"
+import { filterValidPayments } from "@/lib/billing"
 
 export default async function DashboardPage() {
   const { todayStart, todayEnd } = getISTDayBounds()
@@ -15,7 +16,7 @@ export default async function DashboardPage() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
 
   const [
-    paymentAggregates,
+    allPayments,
     activePatients,
     todaysRegistered,
     queuePatients,
@@ -25,7 +26,19 @@ export default async function DashboardPage() {
     rawEvents,
     scheduledVisits,
   ] = await Promise.all([
-    prisma.payment.aggregate({ _sum: { totalBill: true, amountPaidToday: true } }),
+    prisma.payment.findMany({
+      select: {
+        id: true,
+        invoiceNumber: true,
+        totalBill: true,
+        amountPaidToday: true,
+        status: true,
+        paymentNotes: true,
+        visitId: true,
+        paymentDate: true,
+        visit: { select: { id: true, status: true } },
+      }
+    }),
     prisma.patient.count({ where: { status: 'Active' } }),
     prisma.patient.count({ where: { createdAt: { gte: todayStart, lt: todayEnd } } }),
     prisma.patient.findMany({
@@ -44,7 +57,16 @@ export default async function DashboardPage() {
     }),
     prisma.payment.findMany({
       where: { paymentDate: { gte: sevenDaysAgo } },
-      select: { amountPaidToday: true, paymentDate: true },
+      select: {
+        id: true,
+        invoiceNumber: true,
+        amountPaidToday: true,
+        paymentDate: true,
+        status: true,
+        paymentNotes: true,
+        visitId: true,
+        visit: { select: { id: true, status: true } },
+      },
     }),
     prisma.event.findMany({ 
       where: { date: { gte: todayStart } },
@@ -67,8 +89,9 @@ export default async function DashboardPage() {
 
   const todaysVisits = todaysVisitsData.length
   const presentPatients = queuePatients.length
-  const totalRevenue = paymentAggregates._sum.amountPaidToday || 0
-  const totalBilled = paymentAggregates._sum.totalBill || 0
+  const validPayments = filterValidPayments(allPayments)
+  const totalRevenue = validPayments.reduce((s, p) => s + (Number(p.amountPaidToday) || 0), 0)
+  const totalBilled = validPayments.reduce((s, p) => s + (Number(p.totalBill) || 0), 0)
   const totalOutstandingDues = Math.max(0, totalBilled - totalRevenue)
   const todaysCompletedSessions = todaysVisitsData.filter(v => v.status === 'Completed').length
   const absentPatients = todaysVisitsData.filter(v => v.status !== 'Completed' && !v.patient?.presentStatus).length
@@ -102,13 +125,15 @@ export default async function DashboardPage() {
     }
   })
 
-  pastPayments.forEach(p => {
+  const validPastPayments = filterValidPayments(pastPayments)
+  validPastPayments.forEach(p => {
+    if (!p.paymentDate) return
     const pDate = new Date(p.paymentDate)
     const matchedDay = last7Days.find(
       d => d.year === pDate.getFullYear() && d.month === pDate.getMonth() && d.date === pDate.getDate()
     )
     if (matchedDay) {
-      matchedDay.revenue += p.amountPaidToday
+      matchedDay.revenue += Number(p.amountPaidToday) || 0
     }
   })
 

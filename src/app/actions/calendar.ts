@@ -25,6 +25,11 @@ export async function updateVisitDate(visitId: string, newDateStr: string) {
         where: { id: visitId },
         data: { date: newDate }
       })
+      // Keep unpaid auto-billed payment date in sync with rescheduled visit date
+      await prisma.payment.updateMany({
+        where: { visitId, amountPaidToday: 0 },
+        data: { paymentDate: newDate }
+      }).catch(() => {})
     } else {
       // If it's a general event
       const originalEvent = await prisma.event.findUnique({
@@ -72,6 +77,7 @@ export async function createScheduledVisit(data: {
     const lastVisit = await prisma.visit.findFirst({
       where: { patientId },
       orderBy: { visitNumber: 'desc' },
+      select: { visitNumber: true },
     })
     const visitNumber = lastVisit ? lastVisit.visitNumber + 1 : 1
 

@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation'
 import { formatDate } from '@/lib/utils'
 import { InvoiceActions } from './invoice-actions'
 import { getClinicProfile } from '@/app/actions/profile'
+import { calculatePatientBilling, calculateLedgerEntries } from '@/lib/billing'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -20,7 +21,7 @@ export default async function PatientInvoicePage({ params }: Props) {
       where: { id },
       include: {
         payments: { orderBy: { paymentDate: 'desc' } },
-        visits: { orderBy: { date: 'desc' }, take: 1 },
+        visits: { orderBy: { date: 'desc' } },
       },
     }),
     getClinicProfile()
@@ -36,11 +37,13 @@ export default async function PatientInvoicePage({ params }: Props) {
   const workingHours = profile?.workingHours || 'Open 24 Hours'
 
   // ─── Financial aggregates ─────────────────────────────────────────────────
-  const totalBilled = patient.payments.reduce((s, p) => s + p.totalBill, 0)
-  const totalPaid   = patient.payments.reduce((s, p) => s + p.amountPaidToday, 0)
-  const totalDue    = Math.max(0, totalBilled - totalPaid)
+  const billing = calculatePatientBilling(patient.payments, patient.visits)
+  const ledgerEntries = calculateLedgerEntries(patient.payments)
+  const totalBilled = billing.totalBilled
+  const totalPaid   = billing.totalPaid
+  const totalDue    = billing.remainingDue
   const lastVisit   = patient.visits[0] ?? null
-  const visitCount  = await prisma.visit.count({ where: { patientId: id } })
+  const visitCount  = billing.totalVisits
 
   const invoiceNo = `INV-${patient.patientId}-${new Date().getFullYear()}`
   const invoiceDate = formatDate(new Date())
@@ -156,11 +159,11 @@ export default async function PatientInvoicePage({ params }: Props) {
             </div>
 
             {/* ── Payment History table ─────────────────────────── */}
-            {patient.payments.length > 0 && (
+            {ledgerEntries.length > 0 && (
               <div className="border rounded-xl overflow-hidden">
                 <div className="px-3.5 sm:px-5 py-2.5 sm:py-3 bg-muted/50 border-b">
                   <h2 className="text-[11px] sm:text-xs uppercase font-bold tracking-widest text-muted-foreground">
-                    Payment History (Last {Math.min(patient.payments.length, 8)} Entries)
+                    Payment History (Last {Math.min(ledgerEntries.length, 8)} Entries)
                   </h2>
                 </div>
                 <div className="overflow-x-auto">
@@ -173,20 +176,20 @@ export default async function PatientInvoicePage({ params }: Props) {
                       </tr>
                     </thead>
                     <tbody>
-                      {patient.payments.slice(0, 8).map((p, i) => (
-                        <tr key={p.id} className={`border-b last:border-0 ${i % 2 === 0 ? '' : 'bg-muted/20'}`}>
+                      {ledgerEntries.slice(0, 8).map((p, i) => (
+                        <tr key={p.id || p.invoiceNumber} className={`border-b last:border-0 ${i % 2 === 0 ? '' : 'bg-muted/20'}`}>
                           <td className="py-2 px-2.5 sm:px-4 font-mono text-[11px] sm:text-xs font-semibold whitespace-nowrap">{p.invoiceNumber}</td>
                           <td className="py-2 px-2.5 sm:px-4 text-muted-foreground whitespace-nowrap">{formatDate(p.paymentDate)}</td>
-                          <td className="py-2 px-2.5 sm:px-4 whitespace-nowrap">{p.paymentMode}</td>
+                          <td className="py-2 px-2.5 sm:px-4 whitespace-nowrap">{p.paymentMode || 'Cash'}</td>
                           <td className="py-2 px-2.5 sm:px-4 font-medium whitespace-nowrap">₹{p.totalBill}</td>
                           <td className="py-2 px-2.5 sm:px-4 font-medium text-green-600 dark:text-green-400 whitespace-nowrap">₹{p.amountPaidToday}</td>
                           <td className={`py-2 px-2.5 sm:px-4 font-medium whitespace-nowrap ${p.remainingDue > 0 ? 'text-destructive' : ''}`}>₹{p.remainingDue}</td>
                           <td className="py-2 px-2.5 sm:px-4 whitespace-nowrap">
                             <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold ${
-                              p.status === 'Paid' ? 'bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-300' :
-                              p.status === 'Partially Paid' ? 'bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-300' :
+                              p.computedStatus === 'Paid' ? 'bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-300' :
+                              p.computedStatus === 'Partially Paid' ? 'bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-300' :
                               'bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-300'
-                            }`}>{p.status}</span>
+                            }`}>{p.computedStatus}</span>
                           </td>
                         </tr>
                       ))}

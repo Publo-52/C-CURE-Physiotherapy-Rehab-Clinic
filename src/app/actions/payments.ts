@@ -4,6 +4,7 @@
 import prisma from '@/lib/prisma'
 import { verifySession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
+import { calculatePatientBilling } from '@/lib/billing'
 
 function safeFloat(val: any, fallback = 0): number {
   if (val === null || val === undefined || val === '') return fallback
@@ -18,33 +19,36 @@ function safeDate(val: any, fallback = new Date()): Date {
 }
 
 export async function generateInvoiceNumber(): Promise<string> {
-  let attempts = 0
-  while (attempts < 15) {
-    // Check both by invoiceNumber desc and createdAt desc to reliably capture the latest sequence
-    const lastPayment = await prisma.payment.findFirst({
+  const [lastPayment, totalCount] = await Promise.all([
+    prisma.payment.findFirst({
       orderBy: { createdAt: 'desc' },
       select: { invoiceNumber: true },
-    })
-    
-    let maxNum = 0
-    if (lastPayment?.invoiceNumber) {
-      const match = lastPayment.invoiceNumber.match(/\d+/)
-      if (match) {
-        const parsed = parseInt(match[0], 10)
-        if (!isNaN(parsed)) maxNum = parsed
-      }
+    }),
+    prisma.payment.count(),
+  ])
+
+  let maxNum = 0
+  if (lastPayment?.invoiceNumber) {
+    const match = lastPayment.invoiceNumber.match(/\d+/)
+    if (match) {
+      const parsed = parseInt(match[0], 10)
+      if (!isNaN(parsed)) maxNum = parsed
     }
-    
-    const totalCount = await prisma.payment.count()
-    const base = Math.max(maxNum, totalCount)
+  }
+
+  const base = Math.max(maxNum, totalCount)
+
+  for (let attempts = 0; attempts < 15; attempts++) {
     const candidateNum = base + 1 + attempts
     // Pad to 5 digits, or allow natural expansion beyond 99,999 (e.g. INV-100001)
     const numStr = candidateNum < 100000 ? candidateNum.toString().padStart(5, '0') : candidateNum.toString()
     const invoiceNumber = `INV-${numStr}`
 
-    const existing = await prisma.payment.findUnique({ where: { invoiceNumber } })
+    const existing = await prisma.payment.findUnique({
+      where: { invoiceNumber },
+      select: { id: true },
+    })
     if (!existing) return invoiceNumber
-    attempts++
   }
 
   // Guaranteed unique collision-proof fallback
@@ -112,12 +116,18 @@ export async function createPayment(patientId: string, formData: FormData) {
       }
     })
 
-    // If visit fee was entered, automatically save as patient's standard per-visit fee for future visits
+    // If patient currently has no per-visit fee set (0) and a visit fee was entered, set it as their initial rate
     if (visitFee > 0) {
-      await prisma.patient.update({
+      const patientRecord = await prisma.patient.findUnique({
         where: { id: patientId },
-        data: { perVisitFee: visitFee }
-      }).catch(err => console.error('Error updating patient perVisitFee:', err))
+        select: { perVisitFee: true },
+      })
+      if (patientRecord && (patientRecord.perVisitFee === 0 || !patientRecord.perVisitFee)) {
+        await prisma.patient.update({
+          where: { id: patientId },
+          data: { perVisitFee: visitFee }
+        }).catch(err => console.error('Error updating initial patient perVisitFee:', err))
+      }
     }
 
     revalidatePath(`/patients/${patientId}`)
@@ -234,17 +244,32 @@ export async function getPatientPaymentDefaults(patientId: string) {
       select: {
         perVisitFee: true,
         payments: {
-          select: { totalBill: true, amountPaidToday: true }
+          select: {
+            id: true,
+            invoiceNumber: true,
+            totalBill: true,
+            amountPaidToday: true,
+            status: true,
+            paymentNotes: true,
+            visitId: true,
+            paymentDate: true,
+            visit: { select: { id: true, status: true } },
+          }
+        },
+        visits: {
+          select: {
+            id: true,
+            status: true,
+            date: true,
+          }
         }
       }
     })
     if (!patient) return null
-    const totalBilled = patient.payments.reduce((s, p) => s + p.totalBill, 0)
-    const totalPaid = patient.payments.reduce((s, p) => s + p.amountPaidToday, 0)
-    const previousDue = Math.max(0, totalBilled - totalPaid)
+    const billing = calculatePatientBilling(patient.payments, patient.visits)
     return {
       perVisitFee: patient.perVisitFee || 0,
-      previousDue
+      previousDue: billing.remainingDue
     }
   } catch (error: any) {
     console.error('Error fetching payment defaults:', error?.message || error)

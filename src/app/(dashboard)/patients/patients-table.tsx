@@ -73,8 +73,8 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
     return matchesSearch && matchesStatus
   })
 
-  // Pagination state (default 25 per page for 60fps rendering)
-  const [pageSize, setPageSize] = useState<number>(25)
+  // Pagination state (default 200 per page as requested, scalable for large directories)
+  const [pageSize, setPageSize] = useState<number>(200)
   const [currentPage, setCurrentPage] = useState<number>(1)
 
   const totalItems = filteredPatients.length
@@ -277,7 +277,8 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
 
       {/* ── Desktop Table View (≥ md) ── */}
       <div className="hidden md:block card-handmade overflow-hidden">
-        <Table>
+        <div className="overflow-x-auto pb-1">
+          <Table className="min-w-[840px]">
           <TableHeader className="bg-muted/40 border-b border-border/80">
             <TableRow className="hover:bg-transparent">
               <TableHead className="font-extrabold text-xs text-foreground uppercase tracking-wider py-3.5">ID</TableHead>
@@ -391,6 +392,7 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* ── Pagination Bar ── */}
@@ -411,10 +413,11 @@ export function PatientsTable({ initialPatients }: PatientsTableProps) {
                 }}
                 className="bg-background border border-border/80 rounded-lg px-2 py-1 text-xs font-bold cursor-pointer outline-none focus:ring-1 focus:ring-primary"
               >
-                <option value={10}>10</option>
-                <option value={25}>25</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
+                <option value={200}>200</option>
+                <option value={500}>500</option>
+                <option value={1000}>1000</option>
               </select>
             </div>
           </div>

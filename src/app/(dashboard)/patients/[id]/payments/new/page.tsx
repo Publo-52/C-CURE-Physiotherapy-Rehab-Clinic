@@ -32,9 +32,8 @@ export default function NewPaymentPage() {
       if (!patientId) return
       const defaults = await getPatientPaymentDefaults(patientId)
       if (defaults) {
-        if (defaults.perVisitFee > 0) {
-          setVisitFee(defaults.perVisitFee)
-        }
+        // Keep visitFee at 0 by default when recording payment for previous dues
+        // to avoid unintended extra bills
         if (defaults.previousDue > 0) {
           setPreviousDue(defaults.previousDue)
         }
@@ -109,7 +108,7 @@ export default function NewPaymentPage() {
                 <div className="space-y-2">
                   <Label htmlFor="visitFee">Visit / Therapy Fee (₹)</Label>
                   <Input id="visitFee" name="visitFee" type="number" min="0" placeholder="Enter visit fee" value={visitFee} onChange={(e) => setVisitFee(Number(e.target.value))} />
-                  <p className="text-[11px] text-muted-foreground">Setting or modifying this updates the patient&apos;s auto-billing rate.</p>
+                  <p className="text-[11px] text-muted-foreground">Default is ₹0 when collecting past dues. Only enter an amount if billing a new session now.</p>
                 </div>
 
                 <div className="space-y-2">

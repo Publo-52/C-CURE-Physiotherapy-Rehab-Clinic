@@ -15,6 +15,7 @@ import { DeletePaymentButton } from "./delete-payment-button"
 import { DeleteVisitButton } from "./delete-visit-button"
 import { PatientVisitToggle } from "./patient-visit-toggle"
 import { formatDate } from "@/lib/utils"
+import { calculatePatientBilling, calculateLedgerEntries } from "@/lib/billing"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -29,11 +30,9 @@ export default async function PatientProfilePage({ params }: Props) {
       include: {
         visits: {
           orderBy: { date: 'desc' },
-          take: 20,
         },
         payments: {
           orderBy: { paymentDate: 'desc' },
-          take: 50,
         },
         treatmentPlans: {
           orderBy: { createdAt: 'desc' },
@@ -49,10 +48,12 @@ export default async function PatientProfilePage({ params }: Props) {
   const recentVisits = patient.visits.slice(0, 5)
   const recentPayments = patient.payments.slice(0, 5)
 
-  // Calculate overall financial ledger aggregates for this patient
-  const totalBilled = patient.payments.reduce((s, p) => s + p.totalBill, 0)
-  const totalPaid = patient.payments.reduce((s, p) => s + p.amountPaidToday, 0)
-  const totalDue = Math.max(0, totalBilled - totalPaid)
+  // Calculate overall financial ledger aggregates for this patient using centralized logic
+  const billing = calculatePatientBilling(patient.payments, patient.visits)
+  const totalBilled = billing.totalBilled
+  const totalPaid = billing.totalPaid
+  const totalDue = billing.remainingDue
+  const ledgerEntries = calculateLedgerEntries(patient.payments)
 
   return (
     <div className="space-y-6">
@@ -124,9 +125,9 @@ export default async function PatientProfilePage({ params }: Props) {
           <TabsTrigger value="overview" className="flex-1 min-w-[110px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Overview</TabsTrigger>
           <TabsTrigger value="medical" className="flex-1 min-w-[125px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Medical History</TabsTrigger>
           <TabsTrigger value="treatment" className="flex-1 min-w-[125px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Treatment Plan</TabsTrigger>
-          <TabsTrigger value="visits" className="flex-1 min-w-[100px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Visits ({patient.visits.length})</TabsTrigger>
+          <TabsTrigger value="visits" className="flex-1 min-w-[100px] sm:flex-initial py-2 text-xs font-bold active:scale-95">Visits ({billing.totalVisits})</TabsTrigger>
           <TabsTrigger value="payments" className="flex-1 min-w-[110px] sm:flex-initial py-2 text-xs font-bold active:scale-95">
-            Financials ({patient.payments.length})
+            Financials ({ledgerEntries.length})
             {totalDue > 0 && <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500 text-white font-bold">Due</span>}
           </TabsTrigger>
         </TabsList>
@@ -409,8 +410,8 @@ export default async function PatientProfilePage({ params }: Props) {
                       ))}
                     </div>
                     {/* Desktop table */}
-                    <div className="hidden md:block overflow-x-auto">
-                      <table className="w-full text-sm">
+                    <div className="hidden md:block overflow-x-auto pb-1">
+                      <table className="w-full text-sm min-w-[680px]">
                         <thead>
                           <tr className="border-b bg-muted/40">
                             <th className="text-left py-3 px-4 font-medium text-muted-foreground">Visit #</th>
@@ -494,81 +495,124 @@ export default async function PatientProfilePage({ params }: Props) {
 
             <Card>
               <CardContent className="p-0">
-                {patient.payments.length === 0 ? (
+                {ledgerEntries.length === 0 ? (
                   <p className="text-muted-foreground text-sm text-center py-8">No payment records found.</p>
                 ) : (
                   <>
-                    {/* Mobile card view */}
-                    <div className="block md:hidden space-y-3 p-3 bg-muted/20">
-                      {patient.payments.map((p) => (
-                        <div key={p.id} className="p-4 space-y-2 bg-background border border-border/70 rounded-2xl shadow-xs">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="font-mono text-xs font-semibold text-primary">{p.invoiceNumber}</p>
-                            <div className="flex items-center gap-1.5">
-                              <Badge variant={p.status === 'Paid' ? 'default' : 'destructive'} className="text-[10px]">{p.status}</Badge>
-                              <Link href={`/patients/${patient.id}/payments/${p.id}/edit`}>
-                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" title="Edit">
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                              </Link>
-                              <DeletePaymentButton paymentId={p.id} invoiceNumber={p.invoiceNumber} compact />
+                    {/* Mobile card view (< md) — Modern banking ledger card style */}
+                    <div className="block md:hidden space-y-3 p-2.5 sm:p-3 bg-muted/20">
+                      {ledgerEntries.map((p) => {
+                        const isPaid = p.computedStatus === 'Paid'
+                        const isPartiallyPaid = p.computedStatus === 'Partially Paid'
+                        return (
+                          <div
+                            key={p.id || p.invoiceNumber}
+                            className="p-3.5 sm:p-4 space-y-3 bg-card border border-border/80 rounded-2xl shadow-xs transition-all hover:border-primary/40 active-press"
+                          >
+                            {/* Top: Invoice No + Mode badge + Status */}
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-mono text-xs font-black text-primary tracking-tight">
+                                    {p.invoiceNumber}
+                                  </span>
+                                  {p.paymentMode && (
+                                    <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground border">
+                                      {p.paymentMode}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[11px] text-muted-foreground font-medium mt-0.5">
+                                  {formatDate(p.paymentDate)}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <span
+                                  className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                                    isPaid
+                                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                                      : isPartiallyPaid
+                                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30'
+                                  }`}
+                                >
+                                  {p.computedStatus}
+                                </span>
+                              </div>
                             </div>
+
+                            {/* 3-Column Financial Grid */}
+                            <div className="grid grid-cols-3 gap-2 text-center bg-muted/30 p-2 rounded-xl border border-border/50">
+                              <div className="p-1">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Billed</p>
+                                <p className="text-xs font-extrabold text-foreground tabular-num mt-0.5">₹{p.totalBill}</p>
+                              </div>
+                              <div className="p-1 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Paid</p>
+                                <p className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 tabular-num mt-0.5">₹{p.amountPaidToday}</p>
+                              </div>
+                              <div className={`p-1 rounded-lg ${p.remainingDue > 0 ? 'bg-rose-500/5 border border-rose-500/10' : ''}`}>
+                                <p className={`text-[10px] font-bold uppercase tracking-wider ${p.remainingDue > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>Due Balance</p>
+                                <p className={`text-xs font-extrabold tabular-num mt-0.5 ${p.remainingDue > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>₹{p.remainingDue}</p>
+                              </div>
+                            </div>
+
+                            {/* Actions bar for Mobile */}
+                            {p.id && (
+                              <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-border/40">
+                                <Link href={`/patients/${patient.id}/payments/${p.id}/edit`}>
+                                  <Button variant="ghost" size="sm" className="h-7 text-xs font-bold text-muted-foreground hover:text-foreground gap-1 px-2">
+                                    <Edit className="h-3 w-3" /> Edit
+                                  </Button>
+                                </Link>
+                                <DeletePaymentButton paymentId={p.id} invoiceNumber={p.invoiceNumber || ''} compact />
+                              </div>
+                            )}
                           </div>
-                          <p className="text-xs text-muted-foreground">{formatDate(p.paymentDate)}</p>
-                          <div className="grid grid-cols-3 gap-2 text-center">
-                            <div className="bg-muted/40 rounded-lg p-1.5">
-                              <p className="text-[10px] text-muted-foreground">Bill</p>
-                              <p className="text-xs font-semibold">₹{p.totalBill}</p>
-                            </div>
-                            <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-1.5">
-                              <p className="text-[10px] text-emerald-600 dark:text-emerald-400">Paid</p>
-                              <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">₹{p.amountPaidToday}</p>
-                            </div>
-                            <div className={`rounded-lg p-1.5 ${p.remainingDue > 0 ? 'bg-rose-50 dark:bg-rose-900/20' : 'bg-muted/40'}`}>
-                              <p className={`text-[10px] ${p.remainingDue > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>Due</p>
-                              <p className={`text-xs font-semibold ${p.remainingDue > 0 ? 'text-destructive' : ''}`}>₹{p.remainingDue}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
-                    {/* Desktop table */}
-                    <div className="hidden md:block overflow-x-auto">
-                      <table className="w-full text-sm">
+                    {/* Desktop / Tablet scrollable table (≥ md) */}
+                    <div className="hidden md:block overflow-x-auto pb-1">
+                      <table className="w-full text-sm min-w-[720px]">
                         <thead>
-                          <tr className="border-b bg-muted/40">
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Invoice</th>
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Date</th>
-                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Total Bill</th>
-                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Paid</th>
-                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Due</th>
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Mode</th>
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
-                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Actions</th>
+                          <tr className="border-b bg-muted/40 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                            <th className="text-left py-3 px-4 font-semibold">Invoice</th>
+                            <th className="text-left py-3 px-4 font-semibold">Date</th>
+                            <th className="text-right py-3 px-4 font-semibold">Total Bill</th>
+                            <th className="text-right py-3 px-4 font-semibold">Paid</th>
+                            <th className="text-right py-3 px-4 font-semibold">Due</th>
+                            <th className="text-left py-3 px-4 font-semibold">Mode</th>
+                            <th className="text-left py-3 px-4 font-semibold">Status</th>
+                            <th className="text-right py-3 px-4 font-semibold">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {patient.payments.map((p) => (
-                            <tr key={p.id} className="border-b last:border-0 hover:bg-muted/20">
-                              <td className="py-3 px-4 font-mono font-medium">{p.invoiceNumber}</td>
-                              <td className="py-3 px-4">{formatDate(p.paymentDate)}</td>
-                              <td className="py-3 px-4 text-right font-medium">₹{p.totalBill}</td>
-                              <td className="py-3 px-4 text-right text-green-600 font-medium">₹{p.amountPaidToday}</td>
-                              <td className={`py-3 px-4 text-right font-medium ${p.remainingDue > 0 ? 'text-destructive' : ''}`}>₹{p.remainingDue}</td>
-                              <td className="py-3 px-4">{p.paymentMode}</td>
+                          {ledgerEntries.map((p) => (
+                            <tr key={p.id || p.invoiceNumber} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
+                              <td className="py-3 px-4 font-mono font-bold text-primary">{p.invoiceNumber}</td>
+                              <td className="py-3 px-4 text-muted-foreground font-medium">{formatDate(p.paymentDate)}</td>
+                              <td className="py-3 px-4 text-right font-bold tabular-num">₹{p.totalBill}</td>
+                              <td className="py-3 px-4 text-right text-emerald-600 dark:text-emerald-400 font-bold tabular-num">₹{p.amountPaidToday}</td>
+                              <td className={`py-3 px-4 text-right font-black tabular-num ${p.remainingDue > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>₹{p.remainingDue}</td>
+                              <td className="py-3 px-4 font-medium text-xs text-muted-foreground">{p.paymentMode || 'Cash'}</td>
                               <td className="py-3 px-4">
-                                <Badge variant={p.status === 'Paid' ? 'default' : 'destructive'} className="mt-1 text-[10px]">
-                                  {p.status}
+                                <Badge variant={p.computedStatus === 'Paid' ? 'default' : 'destructive'} className="text-[10px] font-bold">
+                                  {p.computedStatus}
                                 </Badge>
                               </td>
                               <td className="py-3 px-4 text-right">
                                 <div className="flex items-center justify-end gap-1">
-                                  <Link href={`/patients/${patient.id}/payments/${p.id}/edit`}>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground" title="Edit Invoice">
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                  </Link>
-                                  <DeletePaymentButton paymentId={p.id} invoiceNumber={p.invoiceNumber} compact />
+                                  {p.id && (
+                                    <>
+                                      <Link href={`/patients/${patient.id}/payments/${p.id}/edit`}>
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground" title="Edit Invoice">
+                                          <Edit className="h-4 w-4" />
+                                        </Button>
+                                      </Link>
+                                      <DeletePaymentButton paymentId={p.id} invoiceNumber={p.invoiceNumber || ''} compact />
+                                    </>
+                                  )}
                                 </div>
                               </td>
                             </tr>

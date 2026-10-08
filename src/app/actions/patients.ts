@@ -6,6 +6,7 @@ import { verifySession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 import { generateInvoiceNumber } from './payments'
 import { getISTDayBounds } from '@/lib/date-utils'
+import { calculatePatientBilling } from '@/lib/billing'
 
 function safeInt(val: any): number | null {
   if (val === null || val === undefined || val === '') return null
@@ -50,26 +51,31 @@ export async function createPatient(formData: FormData) {
 
   // Auto-generate Patient ID (e.g., P-0001) with concurrency collision handling
   let patientId = ''
-  let attempts = 0
-  while (attempts < 10) {
-    const lastPatient = await prisma.patient.findFirst({
+  const [lastPatient, totalCount] = await Promise.all([
+    prisma.patient.findFirst({
       orderBy: { patientId: 'desc' },
       select: { patientId: true },
-    })
-    
-    let maxNum = 0
-    if (lastPatient && lastPatient.patientId.startsWith('P-')) {
-      const lastNum = parseInt(lastPatient.patientId.replace('P-', ''), 10)
-      if (!isNaN(lastNum)) maxNum = lastNum
-    }
-    const totalCount = await prisma.patient.count()
-    const base = Math.max(maxNum, totalCount)
+    }),
+    prisma.patient.count(),
+  ])
+
+  let maxNum = 0
+  if (lastPatient && lastPatient.patientId.startsWith('P-')) {
+    const lastNum = parseInt(lastPatient.patientId.replace('P-', ''), 10)
+    if (!isNaN(lastNum)) maxNum = lastNum
+  }
+
+  const base = Math.max(maxNum, totalCount)
+
+  for (let attempts = 0; attempts < 10; attempts++) {
     const nextIdNum = base + 1 + attempts
     patientId = `P-${nextIdNum.toString().padStart(4, '0')}`
 
-    const existing = await prisma.patient.findUnique({ where: { patientId } })
+    const existing = await prisma.patient.findUnique({
+      where: { patientId },
+      select: { id: true },
+    })
     if (!existing) break
-    attempts++
   }
 
   try {
@@ -136,6 +142,12 @@ export async function updatePatient(id: string, formData: FormData) {
   }
 
   try {
+    const existingPatient = await prisma.patient.findUnique({
+      where: { id },
+      select: { perVisitFee: true }
+    })
+    const wasZeroRate = !existingPatient || (Number(existingPatient.perVisitFee) || 0) === 0
+
     const patient = await prisma.patient.update({
       where: { id },
       data: {
@@ -162,8 +174,8 @@ export async function updatePatient(id: string, formData: FormData) {
 
     let unbilledCount = 0
 
-    // If perVisitFee is set (> 0), automatically create invoices for any past unbilled visits
-    if (perVisitFee > 0) {
+    // Only backfill unbilled visits if perVisitFee is newly set from 0, avoiding resurrecting deleted/free bills on simple edits
+    if (wasZeroRate && perVisitFee > 0) {
       const unbilledVisits = await prisma.visit.findMany({
         where: {
           patientId: id,
@@ -175,11 +187,24 @@ export async function updatePatient(id: string, formData: FormData) {
       for (const visit of unbilledVisits) {
         const currentPayments = await prisma.payment.findMany({
           where: { patientId: id },
-          select: { totalBill: true, amountPaidToday: true }
+          select: {
+            id: true,
+            invoiceNumber: true,
+            totalBill: true,
+            amountPaidToday: true,
+            status: true,
+            paymentNotes: true,
+            visitId: true,
+            paymentDate: true,
+            visit: { select: { id: true, status: true } },
+          }
         })
-        const pastBilled = currentPayments.reduce((s, p) => s + p.totalBill, 0)
-        const pastPaid = currentPayments.reduce((s, p) => s + p.amountPaidToday, 0)
-        const previousDue = Math.max(0, pastBilled - pastPaid)
+        const currentVisits = await prisma.visit.findMany({
+          where: { patientId: id },
+          select: { id: true, status: true, date: true }
+        })
+        const pastBilling = calculatePatientBilling(currentPayments, currentVisits)
+        const previousDue = pastBilling.remainingDue
 
         const visitFee = perVisitFee
         const totalBill = visitFee
@@ -224,6 +249,11 @@ export async function deletePatient(id: string) {
   const session = await verifySession()
   if (!session || !session.userId) {
     return { error: 'Unauthorized. Please login again.' }
+  }
+
+  // Security guard: Only Super Admin can permanently wipe patient records
+  if (session.role !== 'Super Admin') {
+    return { error: 'Unauthorized. Only Super Admin has permission to delete patient records.' }
   }
 
   try {
@@ -282,11 +312,23 @@ export async function togglePresentStatus(id: string, status: boolean) {
         if (!existingSchedulePaymentToday) {
           const pastPayments = await prisma.payment.findMany({
             where: { patientId: id },
-            select: { totalBill: true, amountPaidToday: true }
+            select: {
+              id: true,
+              invoiceNumber: true,
+              totalBill: true,
+              amountPaidToday: true,
+              status: true,
+              paymentNotes: true,
+              visitId: true,
+              paymentDate: true,
+            }
           })
-          const pastBilled = pastPayments.reduce((s, p) => s + p.totalBill, 0)
-          const pastPaid = pastPayments.reduce((s, p) => s + p.amountPaidToday, 0)
-          const previousDue = Math.max(0, pastBilled - pastPaid)
+          const pastVisits = await prisma.visit.findMany({
+            where: { patientId: id },
+            select: { id: true, status: true, date: true }
+          })
+          const pastBilling = calculatePatientBilling(pastPayments, pastVisits)
+          const previousDue = pastBilling.remainingDue
 
           const visitFee = patient.perVisitFee
           const totalBill = visitFee
@@ -428,11 +470,23 @@ export async function markVisitDone(id: string) {
         } else if (patient.perVisitFee > 0) {
           const pastPayments = await prisma.payment.findMany({
             where: { patientId: id },
-            select: { totalBill: true, amountPaidToday: true }
+            select: {
+              id: true,
+              invoiceNumber: true,
+              totalBill: true,
+              amountPaidToday: true,
+              status: true,
+              paymentNotes: true,
+              visitId: true,
+              paymentDate: true,
+            }
           })
-          const pastBilled = pastPayments.reduce((s, p) => s + p.totalBill, 0)
-          const pastPaid = pastPayments.reduce((s, p) => s + p.amountPaidToday, 0)
-          const previousDue = Math.max(0, pastBilled - pastPaid)
+          const pastVisits = await prisma.visit.findMany({
+            where: { patientId: id },
+            select: { id: true, status: true, date: true }
+          })
+          const pastBilling = calculatePatientBilling(pastPayments, pastVisits)
+          const previousDue = pastBilling.remainingDue
 
           const visitFee = patient.perVisitFee
           const totalBill = visitFee

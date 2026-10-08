@@ -497,8 +497,8 @@ export default function PaymentsTable({ payments }: PaymentsTableProps) {
             </div>
 
             {/* ── Desktop Table View (≥ md) ── */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className="hidden md:block overflow-x-auto pb-1">
+              <table className="w-full text-sm min-w-[760px]">
                 <thead>
                   <tr className="border-b bg-muted/30">
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Invoice</th>
